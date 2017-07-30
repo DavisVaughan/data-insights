@@ -1,0 +1,8 @@
+theme = "hugo-theme-blueberry-detox"
+baseURL = "http://example.org/"
+languageCode = "en-us"
+title = "Data Insights"
+
+[params]
+
+  description = "hi"
