@@ -1,8 +1,12 @@
 theme = "hugo-theme-blueberry-detox"
-baseURL = "http://example.org/"
+baseURL = "https://blog.davisvaughan.com/"
 languageCode = "en-us"
 title = "Data Insights"
 
 [params]
 
-  description = "hi"
+    disqusShortname = "datainsights"
+    google_analytics = "UA-99003915-1"
+    
+    twitter_name = "dvaughan32"
+    github = "DavisVaughan"

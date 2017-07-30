@@ -53,7 +53,7 @@ description: 'Setup your own RStudio and Shiny Servers!'
 <p>There’s one last thing to do before we can access the server. We have to setup the security to allow HTTP (web browser) access. In the “Description” tab in the bottom half of the above image, scroll down until you see “Security Groups.” You’ll likely have something like “launch-wizard-1” there. Click on that.</p>
 <p>On the next screen, click the “Inbound” tab down where “Description” is listed. As you can see, only the SSH option is available for accessing the instance. Let’s change that.</p>
 <p>Click:</p>
-<pre class="r"><code>EDIT -&gt; Add Rule -&gt; Type set it to HTTP -&gt; change the source from Custom to Anywhere -&gt; Save</code></pre>
+<pre class="text"><code>EDIT -&gt; Add Rule -&gt; Type set it to HTTP -&gt; change the source from Custom to Anywhere -&gt; Save</code></pre>
 <p>Note that this is not a secure option, but it’ll get you going.</p>
 <p>Finally, to check that you’re up and running, go back to your instances tab (the same image as above). See the Public DNS (IPv4) box? Copy that, and paste it into your browser as a URL. It should take you to an authentication page for RStudio Server. Congrats! You’ve figured something out that took me hours.</p>
 <p>Defaults:</p>

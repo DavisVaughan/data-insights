@@ -90,7 +90,7 @@ On the next screen, click the "Inbound" tab down where "Description" is listed. 
 
 Click: 
 
-```{r, eval=FALSE}
+```{r, highlight=FALSE, eval=FALSE}
 EDIT -> Add Rule -> Type set it to HTTP -> change the source from Custom to Anywhere -> Save
 ```
 
