@@ -3,7 +3,6 @@ title: Amazon RDS + R
 author: Davis Vaughan
 date: '2017-05-10'
 slug: 'rds-and-r'
-description: "Connect to Amazon's database service from R"
 ---
 
 ```{r setup, include=FALSE, message=FALSE}

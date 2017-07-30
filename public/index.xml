@@ -22,16 +22,6 @@
     </item>
     
     <item>
-      <title>About Me</title>
-      <link>/about/about/</link>
-      <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
-      
-      <guid>/about/about/</guid>
-      <description>Who am I? Hi! I’m Davis Vaughan. A Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R, and love automating tasks with it. I’m also a coffee enthusiast, as most R users seem to be.
- What else? I’m the other half of Business Science. We develop open source software for financial analysis. Check out the site to learn more, and feel free to contact us if you’re interested in our consultant services.</description>
-    </item>
-    
-    <item>
       <title>Amazon RDS &#43; R</title>
       <link>/post/rds-and-r/</link>
       <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
@@ -39,6 +29,25 @@
       <guid>/post/rds-and-r/</guid>
       <description>Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
 For those of you who don’t know, RDS is an easy way to create a database in the cloud. In this post, I won’t be showing you how to setup an RDS instance, but I will show you how to connect to it if you have one running.</description>
+    </item>
+    
+    <item>
+      <title>About Me</title>
+      <link>/about/about/</link>
+      <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
+      
+      <guid>/about/about/</guid>
+      <description>Who am I? Hi! I’m Davis Vaughan, a Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R and Shiny, and love automating tasks with it. I’m also a coffee enthusiast, as most R users seem to be.
+ What else? I’m the other half of Business Science. We develop open source software for financial analysis. Check out the site to learn more, and feel free to contact us if you’re interested in our consultant services.</description>
+    </item>
+    
+    <item>
+      <title>Archive</title>
+      <link>/archive/archive/</link>
+      <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
+      
+      <guid>/archive/archive/</guid>
+      <description> 05/15/2017 - RStudio and Shiny Servers with AWS - Part 1 05/10/2017 - Amazon RDS + R  </description>
     </item>
     
   </channel>

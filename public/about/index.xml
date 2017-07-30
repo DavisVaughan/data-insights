@@ -6,7 +6,7 @@
     <description>Recent content in Abouts on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 10 May 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 01 Jan 1900 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/about/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,10 +14,10 @@
     <item>
       <title>About Me</title>
       <link>/about/about/</link>
-      <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
       
       <guid>/about/about/</guid>
-      <description>Who am I? Hi! I’m Davis Vaughan. A Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R, and love automating tasks with it. I’m also a coffee enthusiast, as most R users seem to be.
+      <description>Who am I? Hi! I’m Davis Vaughan, a Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R and Shiny, and love automating tasks with it. I’m also a coffee enthusiast, as most R users seem to be.
  What else? I’m the other half of Business Science. We develop open source software for financial analysis. Check out the site to learn more, and feel free to contact us if you’re interested in our consultant services.</description>
     </item>
     

@@ -3,7 +3,6 @@ title: RStudio and Shiny Servers with AWS - Part 1
 author: Davis Vaughan
 date: '2017-05-15'
 slug: 'rstudio-shiny-aws-1'
-description: 'Setup your own RStudio and Shiny Servers!'
 ---
 
 ```{r setup, include=FALSE, message=FALSE}
