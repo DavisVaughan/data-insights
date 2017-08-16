@@ -12,13 +12,12 @@
     
     
     <item>
-      <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; webscraping analysis</title>
+      <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; web scraping analysis</title>
       <link>https://blog.davisvaughan.com/post/hadley-pleased/</link>
       <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
       
       <guid>https://blog.davisvaughan.com/post/hadley-pleased/</guid>
-      <description>Introduction Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R webscraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:
- Scrape the RStudio blog archive page to construct URL links to each blog post Scrape the blog post text and metadata from each post Use a bit of tidytext for some exploratory analysis Perform a statistical test to compare Hadley’s use of “pleased” to the other blog post authors  Spoiler alert: Hadley uses “pleased” ALOT.</description>
+      <description>Introduction Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R web scraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</description>
     </item>
     
     <item>

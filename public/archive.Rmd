@@ -5,6 +5,6 @@ date: '1900-01-01'
 slug: 'archive'
 ---
 
-* 08/16/2017 - [Which RStudio blog posts “pleased” Hadley? A tidytext + webscraping analysis](/post/hadley-pleased)
+* 08/16/2017 - [Which RStudio blog posts “pleased” Hadley? A tidytext + web scraping analysis](/post/hadley-pleased)
 * 05/15/2017 - [RStudio and Shiny Servers with AWS - Part 1](/post/rstudio-shiny-aws-1)
 * 05/10/2017 - [Amazon RDS + R](/post/rds-and-r)

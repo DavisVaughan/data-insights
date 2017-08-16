@@ -1,5 +1,5 @@
 ---
-title: "Which RStudio blog posts “pleased” Hadley? A tidytext + webscraping analysis"
+title: "Which RStudio blog posts “pleased” Hadley? A tidytext + web scraping analysis"
 author: "Davis Vaughan"
 date: '2017-08-16'
 slug: "hadley-pleased"
@@ -9,7 +9,7 @@ slug: "hadley-pleased"
 
 <div id="introduction" class="section level3">
 <h3>Introduction</h3>
-<p>Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R webscraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</p>
+<p>Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R web scraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</p>
 <ul>
 <li>Scrape the RStudio blog archive page to construct URL links to each blog post</li>
 <li>Scrape the blog post text and metadata from each post</li>
@@ -312,18 +312,18 @@ select(tokenized_blog, title, word)</code></pre>
 
 select(tokenized_blog, title, word)</code></pre>
 <pre><code>## # A tibble: 39,768 x 2
-##                                     title       word
-##                                     &lt;chr&gt;      &lt;chr&gt;
-##  1 RStudio 1.1 Preview - Data Connections  company’s
-##  2 RStudio 1.1 Preview - Data Connections    release
-##  3 RStudio 1.1 Preview - Data Connections       odbc
-##  4 RStudio 1.1 Preview - Data Connections       odbc
-##  5 RStudio 1.1 Preview - Data Connections       form
-##  6 RStudio 1.1 Preview - Data Connections       type
-##  7 RStudio 1.1 Preview - Data Connections seamlessly
-##  8 RStudio 1.1 Preview - Data Connections    reading
-##  9 RStudio 1.1 Preview - Data Connections    picture
-## 10 RStudio 1.1 Preview - Data Connections        csv
+##                                     title            word
+##                                     &lt;chr&gt;           &lt;chr&gt;
+##  1 RStudio 1.1 Preview - Data Connections          server
+##  2 RStudio 1.1 Preview - Data Connections          here’s
+##  3 RStudio 1.1 Preview - Data Connections           isn’t
+##  4 RStudio 1.1 Preview - Data Connections straightforward
+##  5 RStudio 1.1 Preview - Data Connections             pro
+##  6 RStudio 1.1 Preview - Data Connections         command
+##  7 RStudio 1.1 Preview - Data Connections         console
+##  8 RStudio 1.1 Preview - Data Connections           makes
+##  9 RStudio 1.1 Preview - Data Connections           makes
+## 10 RStudio 1.1 Preview - Data Connections          you’re
 ## # ... with 39,758 more rows</code></pre>
 </div>
 <div id="top-15-words-overall" class="section level3">

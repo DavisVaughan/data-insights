@@ -1,5 +1,5 @@
 ---
-title: "Which RStudio blog posts “pleased” Hadley? A tidytext + webscraping analysis"
+title: "Which RStudio blog posts “pleased” Hadley? A tidytext + web scraping analysis"
 author: "Davis Vaughan"
 date: '2017-08-16'
 slug: "hadley-pleased"
@@ -7,7 +7,7 @@ slug: "hadley-pleased"
 
 ### Introduction
 
-Awhile back, I saw a conversation on twitter about how Hadley uses the word "pleased" very often when introducing a new blog post (I couldn't seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R webscraping muscles a bit, I've decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:
+Awhile back, I saw a conversation on twitter about how Hadley uses the word "pleased" very often when introducing a new blog post (I couldn't seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R web scraping muscles a bit, I've decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:
 
 * Scrape the RStudio blog archive page to construct URL links to each blog post
 * Scrape the blog post text and metadata from each post
