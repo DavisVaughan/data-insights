@@ -1,0 +1,31 @@
+---
+title: About Me
+author: Davis Vaughan
+date: '1900-01-01'
+slug: 'about'
+---
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("/img/about/pic.jpg")
+```
+
+### Who am I?
+
+Hi! I'm Davis Vaughan, a Master's student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R and Shiny, and love automating tasks with it. I'm also a coffee enthusiast, as most R users seem to be.
+
+### What else?
+
+I'm the other half of [Business Science](http://www.business-science.io/). We develop open source software for financial analysis. Check out the site to learn more, and feel free to contact us if you're interested in our consultant services.
+
+I helped co-author two R packages with [Matt Dancho](https://github.com/mdancho84):
+
+- [tidyquant](https://business-science.github.io/tidyquant/) - Bringing financial analysis to the tidyverse
+- [timetk](https://business-science.github.io/timetk/) - A collection of tools for working with time series 
+
+I'm also interested in Actuarial Science and Quantitative Finance. I'll be looking for job opportunities post graduation in May 2018.
+
+_"Think different."_ - Steve Jobs
+
+### Want to get in touch?
+
+I'm always up for a conversation about R or Finance. Tweet at me [here](https://twitter.com/dvaughan32) or send me an email at _dvaughan@business-science.io_

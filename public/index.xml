@@ -2,52 +2,62 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Data Insights</title>
-    <link>/</link>
+    <link>https://blog.davisvaughan.com/</link>
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 15 May 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 16 Aug 2017 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.davisvaughan.com/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; webscraping analysis</title>
+      <link>https://blog.davisvaughan.com/post/hadley-pleased/</link>
+      <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.davisvaughan.com/post/hadley-pleased/</guid>
+      <description>Introduction Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R webscraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:
+ Scrape the RStudio blog archive page to construct URL links to each blog post Scrape the blog post text and metadata from each post Use a bit of tidytext for some exploratory analysis Perform a statistical test to compare Hadley’s use of “pleased” to the other blog post authors  Spoiler alert: Hadley uses “pleased” ALOT.</description>
+    </item>
+    
+    <item>
       <title>RStudio and Shiny Servers with AWS - Part 1</title>
-      <link>/post/rstudio-shiny-aws-1/</link>
+      <link>https://blog.davisvaughan.com/post/rstudio-shiny-aws-1/</link>
       <pubDate>Mon, 15 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>/post/rstudio-shiny-aws-1/</guid>
+      <guid>https://blog.davisvaughan.com/post/rstudio-shiny-aws-1/</guid>
       <description>After realizing how fast I can burn through my free 25 hours on shinyapps.io, I decided to repurpose my RStudio Server to also work with Shiny Server. Here’s my new setup:
  1 AWS EC2 server with an elastic IP address 1 Route 55 Amazon domain linked to the EC2 elastic IP (davisvaughan.com) RStudio Server Shiny Server  In case I ever have to go through this madness again, or if anyone else wants to, I’ve compiled some step by step notes on the setup.</description>
     </item>
     
     <item>
       <title>Amazon RDS &#43; R</title>
-      <link>/post/rds-and-r/</link>
+      <link>https://blog.davisvaughan.com/post/rds-and-r/</link>
       <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>/post/rds-and-r/</guid>
+      <guid>https://blog.davisvaughan.com/post/rds-and-r/</guid>
       <description>Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
 For those of you who don’t know, RDS is an easy way to create a database in the cloud. In this post, I won’t be showing you how to setup an RDS instance, but I will show you how to connect to it if you have one running.</description>
     </item>
     
     <item>
       <title>About Me</title>
-      <link>/about/about/</link>
+      <link>https://blog.davisvaughan.com/about/</link>
       <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
       
-      <guid>/about/about/</guid>
+      <guid>https://blog.davisvaughan.com/about/</guid>
       <description>Who am I? Hi! I’m Davis Vaughan, a Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R and Shiny, and love automating tasks with it. I’m also a coffee enthusiast, as most R users seem to be.
  What else? I’m the other half of Business Science. We develop open source software for financial analysis. Check out the site to learn more, and feel free to contact us if you’re interested in our consultant services.</description>
     </item>
     
     <item>
       <title>Archive</title>
-      <link>/archive/archive/</link>
+      <link>https://blog.davisvaughan.com/archive/</link>
       <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
       
-      <guid>/archive/archive/</guid>
-      <description> 05/15/2017 - RStudio and Shiny Servers with AWS - Part 1 05/10/2017 - Amazon RDS + R  </description>
+      <guid>https://blog.davisvaughan.com/archive/</guid>
+      <description> 08/16/2017 - What is Hadley “pleased” about? A tidytext analysis. 05/15/2017 - RStudio and Shiny Servers with AWS - Part 1 05/10/2017 - Amazon RDS + R  </description>
     </item>
     
   </channel>

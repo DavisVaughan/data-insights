@@ -1,0 +1,434 @@
+---
+title: "Which RStudio blog posts “pleased” Hadley? A tidytext + webscraping analysis"
+author: "Davis Vaughan"
+date: '2017-08-16'
+slug: "hadley-pleased"
+---
+
+
+
+<div id="introduction" class="section level3">
+<h3>Introduction</h3>
+<p>Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R webscraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</p>
+<ul>
+<li>Scrape the RStudio blog archive page to construct URL links to each blog post</li>
+<li>Scrape the blog post text and metadata from each post</li>
+<li>Use a bit of <code>tidytext</code> for some exploratory analysis</li>
+<li>Perform a statistical test to compare Hadley’s use of “pleased” to the other blog post authors</li>
+</ul>
+<p>Spoiler alert: Hadley uses “pleased” ALOT.</p>
+</div>
+<div id="required-packages" class="section level3">
+<h3>Required packages</h3>
+<pre class="r"><code>library(tidyverse)
+library(tidytext)
+library(rvest)
+library(xml2)</code></pre>
+</div>
+<div id="extract-the-html-from-the-rstudio-blog-archive" class="section level3">
+<h3>Extract the HTML from the RStudio blog archive</h3>
+<p>To be able to extract the text from each blog post, we first need to have a link to that blog post. Luckily, RStudio keeps an up to date archive page that we can scrape. Using <code>xml2</code>, we can get the HTML off that page.</p>
+<pre class="r"><code>archive_page &lt;- &quot;https://blog.rstudio.com/archives/&quot;
+
+archive_html &lt;- read_html(archive_page)
+
+# Doesn&#39;t seem very useful...yet
+archive_html</code></pre>
+<pre><code>## {xml_document}
+## &lt;html lang=&quot;en-us&quot;&gt;
+## [1] &lt;head&gt;\n&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset= ...
+## [2] &lt;body&gt;\n    &lt;nav class=&quot;menu&quot;&gt;&lt;svg version=&quot;1.1&quot; xmlns=&quot;http://www.w ...</code></pre>
+<p>Now we use a bit of <code>rvest</code> magic combined with the HTML inspector in Chrome to figure out which elements contain the info we need (I also highly recommend <a href="http://selectorgadget.com/">SelectorGadget</a> for this kind of work). Looking at the image below, you can see that all of the links are contained within the <code>main</code> tag as <code>a</code> tags (links).</p>
+<p><img src="/img/hadley-pleased/html-inspector.png" /><!-- --></p>
+<p>The code below extracts all of the links, and then adds the prefix containing the base URL of the site.</p>
+<pre class="r"><code>links &lt;- archive_html %&gt;%
+  
+  # Only the &quot;main&quot; body of the archive
+  html_nodes(&quot;main&quot;) %&gt;%
+  
+  # Grab any node that is a link
+  html_nodes(&quot;a&quot;) %&gt;%
+  
+  # Extract the hyperlink reference from those link tags
+  # The hyperlink is an attribute as opposed to a node
+  html_attr(&quot;href&quot;) %&gt;%
+  
+  # Prefix them all with the base URL
+  paste0(&quot;http://blog.rstudio.com&quot;, .)
+
+head(links)</code></pre>
+<pre><code>## [1] &quot;http://blog.rstudio.com/2017/08/16/rstudio-preview-connections/&quot;             
+## [2] &quot;http://blog.rstudio.com/2017/08/15/contributed-talks-diversity-scholarships/&quot;
+## [3] &quot;http://blog.rstudio.com/2017/08/11/rstudio-v1-1-preview-terminal/&quot;           
+## [4] &quot;http://blog.rstudio.com/2017/08/10/upcoming-workshops/&quot;                      
+## [5] &quot;http://blog.rstudio.com/2017/08/03/rstudio-connect-v1-5-4-plumber/&quot;          
+## [6] &quot;http://blog.rstudio.com/2017/07/31/sparklyr-0-6/&quot;</code></pre>
+</div>
+<div id="html-from-each-blog-post" class="section level3">
+<h3>HTML from each blog post</h3>
+<p>Now that we have every link, we’re ready to extract the HTML from each individual blog post. To make things more manageable, we start by creating a tibble, and then using the <code>mutate + map</code> combination to created a column of XML Nodesets (we will use this combination a lot). Each nodeset contains the HTML for that blog post (exactly like the HTML for the archive page).</p>
+<pre class="r"><code>blog_data &lt;- tibble(links)
+
+blog_data &lt;- blog_data %&gt;%
+  mutate(main = map(
+                    # Iterate through every link
+                    .x = links, 
+                    
+                    # For each link, read the HTML for that page, and return the main section 
+                    .f = ~read_html(.) %&gt;%
+                            html_nodes(&quot;main&quot;)
+                    )
+         )
+
+select(blog_data, main)</code></pre>
+<pre><code>## # A tibble: 249 x 1
+##                 main
+##               &lt;list&gt;
+##  1 &lt;S3: xml_nodeset&gt;
+##  2 &lt;S3: xml_nodeset&gt;
+##  3 &lt;S3: xml_nodeset&gt;
+##  4 &lt;S3: xml_nodeset&gt;
+##  5 &lt;S3: xml_nodeset&gt;
+##  6 &lt;S3: xml_nodeset&gt;
+##  7 &lt;S3: xml_nodeset&gt;
+##  8 &lt;S3: xml_nodeset&gt;
+##  9 &lt;S3: xml_nodeset&gt;
+## 10 &lt;S3: xml_nodeset&gt;
+## # ... with 239 more rows</code></pre>
+<pre class="r"><code>blog_data$main[1]</code></pre>
+<pre><code>## [[1]]
+## {xml_nodeset (1)}
+## [1] &lt;main&gt;&lt;div class=&quot;article-meta&quot;&gt;\n&lt;h1&gt;&lt;span class=&quot;title&quot;&gt;RStudio 1. ...</code></pre>
+</div>
+<div id="meta-information" class="section level3">
+<h3>Meta information</h3>
+<p>Before extracting the blog post itself, lets grab the meta information about each post, specifically:</p>
+<ul>
+<li>Author</li>
+<li>Title</li>
+<li>Date</li>
+<li>Category</li>
+<li>Tags</li>
+</ul>
+<p>In the exploratory analysis, we will use author and title, but the other information might be useful for future analysis.</p>
+<p>Looking at the first blog post, the Author, Date, and Title are all HTML class names that we can feed into <code>rvest</code> to extract that information.</p>
+<p><img src="/img/hadley-pleased/date-author-title.png" /><!-- --></p>
+<p>In the code below, an example of extracting the author information is shown. To select a HTML class (like “author”) as opposed to a tag (like “main”), we have to put a period in front of the class name. Once the html node we are interested in has been identified, we can extract the text for that node using <code>html_text()</code>.</p>
+<pre class="r"><code>blog_data$main[[1]] %&gt;%
+  html_nodes(&quot;.author&quot;) %&gt;%
+  html_text()</code></pre>
+<pre><code>## [1] &quot;Jonathan McPherson&quot;</code></pre>
+<p>To scale up to grab the author for all posts, we use <code>map_chr()</code> since we want a character of the author’s name returned.</p>
+<pre class="r"><code>map_chr(.x = blog_data$main,
+        .f = ~html_nodes(.x, &quot;.author&quot;) %&gt;%
+                html_text()) %&gt;%
+  head(10)</code></pre>
+<pre><code>##  [1] &quot;Jonathan McPherson&quot; &quot;Hadley Wickham&quot;     &quot;Gary Ritchie&quot;      
+##  [4] &quot;Roger Oberg&quot;        &quot;Jeff Allen&quot;         &quot;Javier Luraschi&quot;   
+##  [7] &quot;Hadley Wickham&quot;     &quot;Roger Oberg&quot;        &quot;Garrett Grolemund&quot; 
+## [10] &quot;Hadley Wickham&quot;</code></pre>
+<p>Finally, notice that if we switch <code>&quot;.author&quot;</code> with <code>&quot;.title&quot;</code> or <code>&quot;.date&quot;</code> then we can grab that information as well. This kind of thinking means that we should create a function for extracting these pieces of information!</p>
+<pre class="r"><code>extract_info &lt;- function(html, class_name) {
+  map_chr(
+          # Given the list of main HTMLs
+          .x = html,
+          
+          # Extract the text we are interested in for each one 
+          .f = ~html_nodes(.x, class_name) %&gt;%
+                  html_text())
+}
+
+# Extract the data
+blog_data &lt;- blog_data %&gt;%
+  mutate(
+     author = extract_info(main, &quot;.author&quot;),
+     title  = extract_info(main, &quot;.title&quot;),
+     date   = extract_info(main, &quot;.date&quot;)
+    )
+
+select(blog_data, author, date)</code></pre>
+<pre><code>## # A tibble: 249 x 2
+##                author       date
+##                 &lt;chr&gt;      &lt;chr&gt;
+##  1 Jonathan McPherson 2017-08-16
+##  2     Hadley Wickham 2017-08-15
+##  3       Gary Ritchie 2017-08-11
+##  4        Roger Oberg 2017-08-10
+##  5         Jeff Allen 2017-08-03
+##  6    Javier Luraschi 2017-07-31
+##  7     Hadley Wickham 2017-07-13
+##  8        Roger Oberg 2017-07-12
+##  9  Garrett Grolemund 2017-07-11
+## 10     Hadley Wickham 2017-06-27
+## # ... with 239 more rows</code></pre>
+<pre class="r"><code>select(blog_data, title)</code></pre>
+<pre><code>## # A tibble: 249 x 1
+##                                                                          title
+##                                                                          &lt;chr&gt;
+##  1                                      RStudio 1.1 Preview - Data Connections
+##  2 rstudio::conf(2018): Contributed talks, e-posters, and diversity scholarshi
+##  3                                              RStudio v1.1 Preview: Terminal
+##  4                                                Building tidy tools workshop
+##  5                            RStudio Connect v1.5.4 - Now Supporting Plumber!
+##  6                                                                sparklyr 0.6
+##  7                                                                 haven 1.1.0
+##  8                                   Registration open for rstudio::conf 2018!
+##  9                                                          Introducing learnr
+## 10                                                                dbplyr 1.1.0
+## # ... with 239 more rows</code></pre>
+</div>
+<div id="categories-and-tags" class="section level3">
+<h3>Categories and tags</h3>
+<p>The other bits of meta data that might be interesting are the categories and tags that the post falls under. This is a little bit more involved, because both the categories and tags fall under the same class, <code>&quot;.terms&quot;</code>. To separate them, we need to look into the href to see if the information is either a tag or a category (href = “/categories/” VS href = “/tags/”).</p>
+<p><img src="/img/hadley-pleased/cat-tag.png" /><!-- --></p>
+<p>The function below extracts either the categories or the tags, depending on the argument, by:</p>
+<ul>
+<li>Extracting the <code>&quot;.terms&quot;</code> class, and then all of the links inside of it (<code>a</code> tags).</li>
+<li>Checking each link to see if the hyperlink reference contains “categories” or “tags” depending on the one that we are interested in. If it does, it returns the text corresponding to that link, otherwise it returns NAs which are then removed.</li>
+</ul>
+<p>The final step results in two list columns containing character vectors of varying lengths corresponding to the categories and tags of each post.</p>
+<pre class="r"><code>extract_tag_or_cat &lt;- function(html, info_name) {
+  
+  # Extract the links under the terms class
+  cats_and_tags &lt;- map(.x = html, 
+                       .f = ~html_nodes(.x, &quot;.terms&quot;) %&gt;%
+                              html_nodes(&quot;a&quot;))
+  
+  # For each link, if the href contains the word categories/tags 
+  # return the text corresponding to that link
+  map(cats_and_tags, 
+    ~if_else(condition = grepl(info_name, html_attr(.x, &quot;href&quot;)), 
+             true      = html_text(.x), 
+             false     = NA_character_) %&gt;%
+      .[!is.na(.)])
+}
+
+# Apply our new extraction function
+blog_data &lt;- blog_data %&gt;%
+  mutate(
+    categories = extract_tag_or_cat(main, &quot;categories&quot;),
+    tags       = extract_tag_or_cat(main, &quot;tags&quot;)
+  )
+
+select(blog_data, categories, tags)</code></pre>
+<pre><code>## # A tibble: 249 x 2
+##    categories       tags
+##        &lt;list&gt;     &lt;list&gt;
+##  1  &lt;chr [1]&gt;  &lt;chr [0]&gt;
+##  2  &lt;chr [1]&gt;  &lt;chr [0]&gt;
+##  3  &lt;chr [1]&gt;  &lt;chr [3]&gt;
+##  4  &lt;chr [3]&gt;  &lt;chr [8]&gt;
+##  5  &lt;chr [3]&gt;  &lt;chr [2]&gt;
+##  6  &lt;chr [1]&gt;  &lt;chr [3]&gt;
+##  7  &lt;chr [2]&gt;  &lt;chr [0]&gt;
+##  8  &lt;chr [4]&gt; &lt;chr [13]&gt;
+##  9  &lt;chr [2]&gt;  &lt;chr [2]&gt;
+## 10  &lt;chr [2]&gt;  &lt;chr [0]&gt;
+## # ... with 239 more rows</code></pre>
+<pre class="r"><code>blog_data$categories[4]</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;Packages&quot;  &quot;tidyverse&quot; &quot;Training&quot;</code></pre>
+<pre class="r"><code>blog_data$tags[4]</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;Advanced R&quot;       &quot;data science&quot;     &quot;ggplot2&quot;         
+## [4] &quot;Hadley Wickham&quot;   &quot;R&quot;                &quot;RStudio Workshop&quot;
+## [7] &quot;r training&quot;       &quot;tutorial&quot;</code></pre>
+</div>
+<div id="the-blog-post-itself" class="section level3">
+<h3>The blog post itself</h3>
+<p>Finally, to extract the blog post itself, we can notice that each piece of text in the post is inside of a paragraph tag (<code>p</code>). Being careful to avoid the <code>&quot;.terms&quot;</code> class that contained the categories and tags, which also happens to be in a paragraph tag, we can extract the full blog posts. To ignore the <code>&quot;.terms&quot;</code> class, use the <code>:not()</code> selector.</p>
+<pre class="r"><code>blog_data &lt;- blog_data %&gt;%
+  mutate(
+    text = map_chr(main, ~html_nodes(.x, &quot;p:not(.terms)&quot;) %&gt;%
+                 html_text() %&gt;%
+                 # The text is returned as a character vector. 
+                 # Collapse them all into 1 string.
+                 paste0(collapse = &quot; &quot;))
+  )
+
+select(blog_data, text)</code></pre>
+<pre><code>## # A tibble: 249 x 1
+##                                                                           text
+##                                                                          &lt;chr&gt;
+##  1 Today, we’re continuing our blog series on new features in RStudio 1.1. If 
+##  2 rstudio::conf, the conference on all things R and RStudio, will take place 
+##  3 Today we’re excited to announce availability of our first Preview Release f
+##  4 Have you embraced the tidyverse? Do you now want to expand it to meet your 
+##  5 We’re thrilled to announce support for hosting Plumber APIs in RStudio Conn
+##  6 We’re excited to announce a new release of the sparklyr package, available 
+##  7 &quot;I’m pleased to announce the release of haven 1.1.0. Haven is designed to f
+##  8 RStudio is very excited to announce that rstudio::conf 2018 is open for reg
+##  9 We’re pleased to introduce the learnr package, now available on CRAN. The l
+## 10 &quot;I’m pleased to announce the release of the dbplyr package, which now conta
+## # ... with 239 more rows</code></pre>
+</div>
+<div id="who-writes-the-most-posts" class="section level3">
+<h3>Who writes the most posts?</h3>
+<p>Now that we have all of this data, what can we do with it? To start with, who writes the most posts?</p>
+<pre class="r"><code>blog_data %&gt;%
+  group_by(author) %&gt;%
+  summarise(count = n()) %&gt;%
+  mutate(author = reorder(author, count)) %&gt;%
+  
+  # Create a bar graph of author counts
+  ggplot(mapping = aes(x = author, y = count)) + 
+  geom_col() +
+  coord_flip() +
+  labs(title    = &quot;Who writes the most RStudio blog posts?&quot;,
+       subtitle = &quot;By a huge margin, Hadley!&quot;) +
+  # Shoutout to Bob Rudis for the always fantastic themes
+  hrbrthemes::theme_ipsum(grid = &quot;Y&quot;)</code></pre>
+<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-11-1.png" width="792" /></p>
+</div>
+<div id="tidytext" class="section level3">
+<h3>Tidytext</h3>
+<p>I’ve never used <code>tidytext</code> before today, but to get our feet wet, let’s create a tokenized tidy version of our data. By using <code>unnest_tokens()</code> the data will be reshaped to a long format holding 1 word per row, for each blog post. This tidy format lends itself to all manner of analysis, and a number of them are outlined in Julia Silge and David Robinson’s <a href="http://tidytextmining.com/">Text Mining with R</a>.</p>
+<pre class="r"><code>tokenized_blog &lt;- blog_data %&gt;%
+  select(title, author, date, text) %&gt;%
+  unnest_tokens(output = word, input = text)
+
+select(tokenized_blog, title, word)</code></pre>
+<pre><code>## # A tibble: 84,542 x 2
+##                                     title       word
+##                                     &lt;chr&gt;      &lt;chr&gt;
+##  1 RStudio 1.1 Preview - Data Connections      today
+##  2 RStudio 1.1 Preview - Data Connections      we’re
+##  3 RStudio 1.1 Preview - Data Connections continuing
+##  4 RStudio 1.1 Preview - Data Connections        our
+##  5 RStudio 1.1 Preview - Data Connections       blog
+##  6 RStudio 1.1 Preview - Data Connections     series
+##  7 RStudio 1.1 Preview - Data Connections         on
+##  8 RStudio 1.1 Preview - Data Connections        new
+##  9 RStudio 1.1 Preview - Data Connections   features
+## 10 RStudio 1.1 Preview - Data Connections         in
+## # ... with 84,532 more rows</code></pre>
+</div>
+<div id="remove-stop-words" class="section level3">
+<h3>Remove stop words</h3>
+<p>A number of words like “a” or “the” are included in the blog that don’t really add value to a text analysis. These stop words can be removed using an <code>anti_join()</code> with the <code>stop_words</code> dataset that comes with <code>tidytext</code>. After removing stop words, the number of rows was cut in half!</p>
+<pre class="r"><code>tokenized_blog &lt;- tokenized_blog %&gt;%
+  anti_join(stop_words, by = &quot;word&quot;) %&gt;%
+  arrange(desc(date))
+
+select(tokenized_blog, title, word)</code></pre>
+<pre><code>## # A tibble: 39,768 x 2
+##                                     title       word
+##                                     &lt;chr&gt;      &lt;chr&gt;
+##  1 RStudio 1.1 Preview - Data Connections        dig
+##  2 RStudio 1.1 Preview - Data Connections    console
+##  3 RStudio 1.1 Preview - Data Connections       code
+##  4 RStudio 1.1 Preview - Data Connections    variety
+##  5 RStudio 1.1 Preview - Data Connections continuing
+##  6 RStudio 1.1 Preview - Data Connections     system
+##  7 RStudio 1.1 Preview - Data Connections     server
+##  8 RStudio 1.1 Preview - Data Connections    drivers
+##  9 RStudio 1.1 Preview - Data Connections    drivers
+## 10 RStudio 1.1 Preview - Data Connections    drivers
+## # ... with 39,758 more rows</code></pre>
+</div>
+<div id="top-15-words-overall" class="section level3">
+<h3>Top 15 words overall</h3>
+<p>Out of pure curiousity, what are the top 15 words for all of the blog posts?</p>
+<pre class="r"><code>tokenized_blog %&gt;%
+  count(word, sort = TRUE) %&gt;%
+  slice(1:15) %&gt;%
+  mutate(word = reorder(word, n)) %&gt;%
+  
+  ggplot(aes(word, n)) +
+  geom_col() + 
+  coord_flip() + 
+  labs(title = &quot;Top 15 words overall&quot;) +
+  hrbrthemes::theme_ipsum(grid = &quot;Y&quot;)</code></pre>
+<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-14-1.png" width="792" /></p>
+</div>
+<div id="is-hadley-more-pleased-than-everyone-else" class="section level3">
+<h3>Is Hadley more “pleased” than everyone else?</h3>
+<p>As mentioned at the beginning of the post, Hadley apparently uses the word “pleased” in his blog posts an above average number of times. Can we verify this statistically?</p>
+<p><em>Our null hypothesis is that the proportion of blog posts that use the word “pleased” written by Hadley is less than or equal to the proportion of those written by the rest of the RStudio team.</em></p>
+<p>More simply, our null is that Hadley uses “pleased” less than or the same as the rest of the team.</p>
+<p>Let’s check visually to compare the two groups of posts.</p>
+<pre class="r"><code>pleased &lt;- tokenized_blog %&gt;%
+  
+  # Group by blog post
+  group_by(title) %&gt;%
+  
+  # If the blog post contains &quot;pleased&quot; put yes, otherwise no
+  # Add a column checking if the author was Hadley
+  mutate(
+    contains_pleased = case_when(
+      &quot;pleased&quot; %in% word ~ &quot;Yes&quot;,
+      TRUE                ~ &quot;No&quot;),
+    
+    is_hadley = case_when(
+      author == &quot;Hadley Wickham&quot; ~ &quot;Hadley&quot;,
+      TRUE                       ~ &quot;Not Hadley&quot;)
+    ) %&gt;%
+  
+  # Remove all duplicates now
+  distinct(title, contains_pleased, is_hadley)
+
+pleased %&gt;%
+  ggplot(aes(x = contains_pleased)) +
+  geom_bar() +
+  facet_wrap(~is_hadley, scales = &quot;free_y&quot;) +
+  labs(title    = &quot;Does this blog post contain &#39;pleased&#39;?&quot;, 
+       subtitle = &quot;Nearly half of Hadley&#39;s do!&quot;,
+       x        = &quot;Contains &#39;pleased&#39;&quot;,
+       y        = &quot;Count&quot;) +
+  hrbrthemes::theme_ipsum(grid = &quot;Y&quot;)</code></pre>
+<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-15-1.png" width="792" /></p>
+</div>
+<div id="is-there-a-statistical-difference-here" class="section level3">
+<h3>Is there a statistical difference here?</h3>
+<p>To check if there is a statistical difference, we will use a test for difference in proportions contained in the R function, <code>prop.test()</code>. First, we need a continency table of the counts. Given the current form of our dataset, this isn’t too hard with the <code>table()</code> function from base R.</p>
+<pre class="r"><code>contingency_table &lt;- pleased %&gt;%
+  ungroup() %&gt;%
+  select(is_hadley, contains_pleased) %&gt;%
+  # Order the factor so Yes is before No for easy interpretation
+  mutate(contains_pleased = factor(contains_pleased, levels = c(&quot;Yes&quot;, &quot;No&quot;))) %&gt;%
+  table()
+
+contingency_table</code></pre>
+<pre><code>##             contains_pleased
+## is_hadley    Yes  No
+##   Hadley      43  45
+##   Not Hadley  17 144</code></pre>
+<p>From our null hypothesis, we want to perform a <em>one sided</em> test. The alternative to our null is that Hadley uses “pleased” <em>more</em> than the rest of the RStudio team. For this reason, we specify <code>alternative = &quot;greater&quot;</code>.</p>
+<pre class="r"><code>test_prop &lt;- contingency_table %&gt;%
+  prop.test(alternative = &quot;greater&quot;)
+
+test_prop</code></pre>
+<pre><code>## 
+##  2-sample test for equality of proportions with continuity
+##  correction
+## 
+## data:  .
+## X-squared = 43.575, df = 1, p-value = 2.04e-11
+## alternative hypothesis: greater
+## 95 percent confidence interval:
+##  0.2779818 1.0000000
+## sample estimates:
+##    prop 1    prop 2 
+## 0.4886364 0.1055901</code></pre>
+<p>We could also tidy this up with <code>broom</code> if we were inclined to.</p>
+<pre class="r"><code>broom::tidy(test_prop)</code></pre>
+<pre><code>##   estimate1 estimate2 statistic      p.value parameter  conf.low conf.high
+## 1 0.4886364 0.1055901  43.57517 2.039913e-11         1 0.2779818         1
+##                                                                 method
+## 1 2-sample test for equality of proportions with continuity correction
+##   alternative
+## 1     greater</code></pre>
+</div>
+<div id="test-conclusion" class="section level3">
+<h3>Test conclusion</h3>
+<ul>
+<li>48.86% of Hadley’s posts contain “pleased”</li>
+<li>10.56% of the rest of the RStudio team’s posts contain “pleased”</li>
+<li>With a p-value of 2.04e-11, we reject the null that Hadley uses “pleased” less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!</li>
+</ul>
+<p>Hadley uses “pleased” quite a bit!</p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>This post used a lot of different tools, but that’s the beauty of having over 12,000 R packages at our disposal. I think that this dataset could be used in a number of other ways, so be on the lookout for more posts!</p>
+</div>
