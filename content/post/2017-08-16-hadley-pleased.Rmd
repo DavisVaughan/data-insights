@@ -190,9 +190,13 @@ blog_data <- blog_data %>%
 
 select(blog_data, categories, tags)
 
-blog_data$categories[4]
+blog_data %>%
+  filter(title == "Building tidy tools workshop") %>%
+  pull(categories)
 
-blog_data$tags[4]
+blog_data %>%
+  filter(title == "Building tidy tools workshop") %>%
+  pull(tags)
 ```
 
 ### The blog post itself
@@ -349,9 +353,9 @@ broom::tidy(test_prop)
 
 ### Test conclusion
 
-* 48.86% of Hadley's posts contain "pleased"
-* 10.56% of the rest of the RStudio team's posts contain "pleased"
-* With a p-value of 2.04e-11, we reject the null that Hadley uses "pleased" less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!
+* `r paste0(round(test_prop$estimate[[1]]*100,2),"%")` of Hadley's posts contain "pleased"
+* `r paste0(round(test_prop$estimate[[2]]*100,2),"%")` of the rest of the RStudio team's posts contain "pleased"
+* With a p-value of `r test_prop$p.value`, we reject the null that Hadley uses "pleased" less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!
 
 Hadley uses "pleased" quite a bit!
 

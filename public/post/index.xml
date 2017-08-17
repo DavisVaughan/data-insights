@@ -2,40 +2,40 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Data Insights</title>
-    <link>https://blog.davisvaughan.com/post/</link>
+    <link>/post/</link>
     <description>Recent content in Posts on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 16 Aug 2017 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://blog.davisvaughan.com/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; web scraping analysis</title>
-      <link>https://blog.davisvaughan.com/post/hadley-pleased/</link>
+      <link>/post/hadley-pleased/</link>
       <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.davisvaughan.com/post/hadley-pleased/</guid>
+      <guid>/post/hadley-pleased/</guid>
       <description>Introduction Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R web scraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</description>
     </item>
     
     <item>
       <title>RStudio and Shiny Servers with AWS - Part 1</title>
-      <link>https://blog.davisvaughan.com/post/rstudio-shiny-aws-1/</link>
+      <link>/post/rstudio-shiny-aws-1/</link>
       <pubDate>Mon, 15 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.davisvaughan.com/post/rstudio-shiny-aws-1/</guid>
+      <guid>/post/rstudio-shiny-aws-1/</guid>
       <description>After realizing how fast I can burn through my free 25 hours on shinyapps.io, I decided to repurpose my RStudio Server to also work with Shiny Server. Here’s my new setup:
  1 AWS EC2 server with an elastic IP address 1 Route 55 Amazon domain linked to the EC2 elastic IP (davisvaughan.com) RStudio Server Shiny Server  In case I ever have to go through this madness again, or if anyone else wants to, I’ve compiled some step by step notes on the setup.</description>
     </item>
     
     <item>
       <title>Amazon RDS &#43; R</title>
-      <link>https://blog.davisvaughan.com/post/rds-and-r/</link>
+      <link>/post/rds-and-r/</link>
       <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>https://blog.davisvaughan.com/post/rds-and-r/</guid>
+      <guid>/post/rds-and-r/</guid>
       <description>Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
 For those of you who don’t know, RDS is an easy way to create a database in the cloud. In this post, I won’t be showing you how to setup an RDS instance, but I will show you how to connect to it if you have one running.</description>
     </item>

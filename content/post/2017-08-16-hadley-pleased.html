@@ -58,11 +58,11 @@ archive_html</code></pre>
 
 head(links)</code></pre>
 <pre><code>## [1] &quot;http://blog.rstudio.com/2017/08/16/rstudio-preview-connections/&quot;             
-## [2] &quot;http://blog.rstudio.com/2017/08/15/contributed-talks-diversity-scholarships/&quot;
-## [3] &quot;http://blog.rstudio.com/2017/08/11/rstudio-v1-1-preview-terminal/&quot;           
-## [4] &quot;http://blog.rstudio.com/2017/08/10/upcoming-workshops/&quot;                      
-## [5] &quot;http://blog.rstudio.com/2017/08/03/rstudio-connect-v1-5-4-plumber/&quot;          
-## [6] &quot;http://blog.rstudio.com/2017/07/31/sparklyr-0-6/&quot;</code></pre>
+## [2] &quot;http://blog.rstudio.com/2017/08/16/master-the-tidyverse/&quot;                    
+## [3] &quot;http://blog.rstudio.com/2017/08/15/contributed-talks-diversity-scholarships/&quot;
+## [4] &quot;http://blog.rstudio.com/2017/08/15/shiny-1-0-4/&quot;                             
+## [5] &quot;http://blog.rstudio.com/2017/08/11/rstudio-v1-1-preview-terminal/&quot;           
+## [6] &quot;http://blog.rstudio.com/2017/08/10/upcoming-workshops/&quot;</code></pre>
 </div>
 <div id="html-from-each-blog-post" class="section level3">
 <h3>HTML from each blog post</h3>
@@ -81,7 +81,7 @@ blog_data &lt;- blog_data %&gt;%
          )
 
 select(blog_data, main)</code></pre>
-<pre><code>## # A tibble: 249 x 1
+<pre><code>## # A tibble: 251 x 1
 ##                 main
 ##               &lt;list&gt;
 ##  1 &lt;S3: xml_nodeset&gt;
@@ -94,7 +94,7 @@ select(blog_data, main)</code></pre>
 ##  8 &lt;S3: xml_nodeset&gt;
 ##  9 &lt;S3: xml_nodeset&gt;
 ## 10 &lt;S3: xml_nodeset&gt;
-## # ... with 239 more rows</code></pre>
+## # ... with 241 more rows</code></pre>
 <pre class="r"><code>blog_data$main[1]</code></pre>
 <pre><code>## [[1]]
 ## {xml_nodeset (1)}
@@ -123,10 +123,10 @@ select(blog_data, main)</code></pre>
         .f = ~html_nodes(.x, &quot;.author&quot;) %&gt;%
                 html_text()) %&gt;%
   head(10)</code></pre>
-<pre><code>##  [1] &quot;Jonathan McPherson&quot; &quot;Hadley Wickham&quot;     &quot;Gary Ritchie&quot;      
-##  [4] &quot;Roger Oberg&quot;        &quot;Jeff Allen&quot;         &quot;Javier Luraschi&quot;   
-##  [7] &quot;Hadley Wickham&quot;     &quot;Roger Oberg&quot;        &quot;Garrett Grolemund&quot; 
-## [10] &quot;Hadley Wickham&quot;</code></pre>
+<pre><code>##  [1] &quot;Jonathan McPherson&quot; &quot;Roger Oberg&quot;        &quot;Hadley Wickham&quot;    
+##  [4] &quot;Winston Chang&quot;      &quot;Gary Ritchie&quot;       &quot;Roger Oberg&quot;       
+##  [7] &quot;Jeff Allen&quot;         &quot;Javier Luraschi&quot;    &quot;Hadley Wickham&quot;    
+## [10] &quot;Roger Oberg&quot;</code></pre>
 <p>Finally, notice that if we switch <code>&quot;.author&quot;</code> with <code>&quot;.title&quot;</code> or <code>&quot;.date&quot;</code> then we can grab that information as well. This kind of thinking means that we should create a function for extracting these pieces of information!</p>
 <pre class="r"><code>extract_info &lt;- function(html, class_name) {
   map_chr(
@@ -147,35 +147,35 @@ blog_data &lt;- blog_data %&gt;%
     )
 
 select(blog_data, author, date)</code></pre>
-<pre><code>## # A tibble: 249 x 2
+<pre><code>## # A tibble: 251 x 2
 ##                author       date
 ##                 &lt;chr&gt;      &lt;chr&gt;
 ##  1 Jonathan McPherson 2017-08-16
-##  2     Hadley Wickham 2017-08-15
-##  3       Gary Ritchie 2017-08-11
-##  4        Roger Oberg 2017-08-10
-##  5         Jeff Allen 2017-08-03
-##  6    Javier Luraschi 2017-07-31
-##  7     Hadley Wickham 2017-07-13
-##  8        Roger Oberg 2017-07-12
-##  9  Garrett Grolemund 2017-07-11
-## 10     Hadley Wickham 2017-06-27
-## # ... with 239 more rows</code></pre>
+##  2        Roger Oberg 2017-08-16
+##  3     Hadley Wickham 2017-08-15
+##  4      Winston Chang 2017-08-15
+##  5       Gary Ritchie 2017-08-11
+##  6        Roger Oberg 2017-08-10
+##  7         Jeff Allen 2017-08-03
+##  8    Javier Luraschi 2017-07-31
+##  9     Hadley Wickham 2017-07-13
+## 10        Roger Oberg 2017-07-12
+## # ... with 241 more rows</code></pre>
 <pre class="r"><code>select(blog_data, title)</code></pre>
-<pre><code>## # A tibble: 249 x 1
+<pre><code>## # A tibble: 251 x 1
 ##                                                                          title
 ##                                                                          &lt;chr&gt;
 ##  1                                      RStudio 1.1 Preview - Data Connections
-##  2 rstudio::conf(2018): Contributed talks, e-posters, and diversity scholarshi
-##  3                                              RStudio v1.1 Preview: Terminal
-##  4                                                Building tidy tools workshop
-##  5                            RStudio Connect v1.5.4 - Now Supporting Plumber!
-##  6                                                                sparklyr 0.6
-##  7                                                                 haven 1.1.0
-##  8                                   Registration open for rstudio::conf 2018!
-##  9                                                          Introducing learnr
-## 10                                                                dbplyr 1.1.0
-## # ... with 239 more rows</code></pre>
+##  2                                                        Master the tidyverse
+##  3 rstudio::conf(2018): Contributed talks, e-posters, and diversity scholarshi
+##  4                                                                 Shiny 1.0.4
+##  5                                              RStudio v1.1 Preview: Terminal
+##  6                                                Building tidy tools workshop
+##  7                            RStudio Connect v1.5.4 - Now Supporting Plumber!
+##  8                                                                sparklyr 0.6
+##  9                                                                 haven 1.1.0
+## 10                                   Registration open for rstudio::conf 2018!
+## # ... with 241 more rows</code></pre>
 </div>
 <div id="categories-and-tags" class="section level3">
 <h3>Categories and tags</h3>
@@ -211,24 +211,28 @@ blog_data &lt;- blog_data %&gt;%
   )
 
 select(blog_data, categories, tags)</code></pre>
-<pre><code>## # A tibble: 249 x 2
+<pre><code>## # A tibble: 251 x 2
 ##    categories       tags
 ##        &lt;list&gt;     &lt;list&gt;
 ##  1  &lt;chr [1]&gt;  &lt;chr [0]&gt;
-##  2  &lt;chr [1]&gt;  &lt;chr [0]&gt;
-##  3  &lt;chr [1]&gt;  &lt;chr [3]&gt;
-##  4  &lt;chr [3]&gt;  &lt;chr [8]&gt;
-##  5  &lt;chr [3]&gt;  &lt;chr [2]&gt;
-##  6  &lt;chr [1]&gt;  &lt;chr [3]&gt;
-##  7  &lt;chr [2]&gt;  &lt;chr [0]&gt;
-##  8  &lt;chr [4]&gt; &lt;chr [13]&gt;
-##  9  &lt;chr [2]&gt;  &lt;chr [2]&gt;
-## 10  &lt;chr [2]&gt;  &lt;chr [0]&gt;
-## # ... with 239 more rows</code></pre>
-<pre class="r"><code>blog_data$categories[4]</code></pre>
+##  2  &lt;chr [3]&gt;  &lt;chr [8]&gt;
+##  3  &lt;chr [1]&gt;  &lt;chr [0]&gt;
+##  4  &lt;chr [2]&gt;  &lt;chr [0]&gt;
+##  5  &lt;chr [1]&gt;  &lt;chr [3]&gt;
+##  6  &lt;chr [3]&gt;  &lt;chr [8]&gt;
+##  7  &lt;chr [3]&gt;  &lt;chr [2]&gt;
+##  8  &lt;chr [1]&gt;  &lt;chr [3]&gt;
+##  9  &lt;chr [2]&gt;  &lt;chr [0]&gt;
+## 10  &lt;chr [4]&gt; &lt;chr [13]&gt;
+## # ... with 241 more rows</code></pre>
+<pre class="r"><code>blog_data %&gt;%
+  filter(title == &quot;Building tidy tools workshop&quot;) %&gt;%
+  pull(categories)</code></pre>
 <pre><code>## [[1]]
 ## [1] &quot;Packages&quot;  &quot;tidyverse&quot; &quot;Training&quot;</code></pre>
-<pre class="r"><code>blog_data$tags[4]</code></pre>
+<pre class="r"><code>blog_data %&gt;%
+  filter(title == &quot;Building tidy tools workshop&quot;) %&gt;%
+  pull(tags)</code></pre>
 <pre><code>## [[1]]
 ## [1] &quot;Advanced R&quot;       &quot;data science&quot;     &quot;ggplot2&quot;         
 ## [4] &quot;Hadley Wickham&quot;   &quot;R&quot;                &quot;RStudio Workshop&quot;
@@ -247,20 +251,20 @@ select(blog_data, categories, tags)</code></pre>
   )
 
 select(blog_data, text)</code></pre>
-<pre><code>## # A tibble: 249 x 1
+<pre><code>## # A tibble: 251 x 1
 ##                                                                           text
 ##                                                                          &lt;chr&gt;
 ##  1 Today, we’re continuing our blog series on new features in RStudio 1.1. If 
-##  2 rstudio::conf, the conference on all things R and RStudio, will take place 
-##  3 Today we’re excited to announce availability of our first Preview Release f
-##  4 Have you embraced the tidyverse? Do you now want to expand it to meet your 
-##  5 We’re thrilled to announce support for hosting Plumber APIs in RStudio Conn
-##  6 We’re excited to announce a new release of the sparklyr package, available 
-##  7 &quot;I’m pleased to announce the release of haven 1.1.0. Haven is designed to f
-##  8 RStudio is very excited to announce that rstudio::conf 2018 is open for reg
-##  9 We’re pleased to introduce the learnr package, now available on CRAN. The l
-## 10 &quot;I’m pleased to announce the release of the dbplyr package, which now conta
-## # ... with 239 more rows</code></pre>
+##  2 If you’ve read the book “R for Data Science” or plan to, now you can dive d
+##  3 rstudio::conf, the conference on all things R and RStudio, will take place 
+##  4 Shiny 1.0.4 is now available on CRAN. To install it, run: For most Shiny us
+##  5 Today we’re excited to announce availability of our first Preview Release f
+##  6 Have you embraced the tidyverse? Do you now want to expand it to meet your 
+##  7 We’re thrilled to announce support for hosting Plumber APIs in RStudio Conn
+##  8 We’re excited to announce a new release of the sparklyr package, available 
+##  9 &quot;I’m pleased to announce the release of haven 1.1.0. Haven is designed to f
+## 10 RStudio is very excited to announce that rstudio::conf 2018 is open for reg
+## # ... with 241 more rows</code></pre>
 </div>
 <div id="who-writes-the-most-posts" class="section level3">
 <h3>Who writes the most posts?</h3>
@@ -288,7 +292,7 @@ select(blog_data, text)</code></pre>
   unnest_tokens(output = word, input = text)
 
 select(tokenized_blog, title, word)</code></pre>
-<pre><code>## # A tibble: 84,542 x 2
+<pre><code>## # A tibble: 84,950 x 2
 ##                                     title       word
 ##                                     &lt;chr&gt;      &lt;chr&gt;
 ##  1 RStudio 1.1 Preview - Data Connections      today
@@ -301,7 +305,7 @@ select(tokenized_blog, title, word)</code></pre>
 ##  8 RStudio 1.1 Preview - Data Connections        new
 ##  9 RStudio 1.1 Preview - Data Connections   features
 ## 10 RStudio 1.1 Preview - Data Connections         in
-## # ... with 84,532 more rows</code></pre>
+## # ... with 84,940 more rows</code></pre>
 </div>
 <div id="remove-stop-words" class="section level3">
 <h3>Remove stop words</h3>
@@ -311,20 +315,20 @@ select(tokenized_blog, title, word)</code></pre>
   arrange(desc(date))
 
 select(tokenized_blog, title, word)</code></pre>
-<pre><code>## # A tibble: 39,768 x 2
-##                                     title            word
-##                                     &lt;chr&gt;           &lt;chr&gt;
-##  1 RStudio 1.1 Preview - Data Connections          server
-##  2 RStudio 1.1 Preview - Data Connections          here’s
-##  3 RStudio 1.1 Preview - Data Connections           isn’t
-##  4 RStudio 1.1 Preview - Data Connections straightforward
-##  5 RStudio 1.1 Preview - Data Connections             pro
-##  6 RStudio 1.1 Preview - Data Connections         command
-##  7 RStudio 1.1 Preview - Data Connections         console
-##  8 RStudio 1.1 Preview - Data Connections           makes
-##  9 RStudio 1.1 Preview - Data Connections           makes
-## 10 RStudio 1.1 Preview - Data Connections          you’re
-## # ... with 39,758 more rows</code></pre>
+<pre><code>## # A tibble: 39,968 x 2
+##                                     title      word
+##                                     &lt;chr&gt;     &lt;chr&gt;
+##  1                   Master the tidyverse character
+##  2                   Master the tidyverse      rare
+##  3 RStudio 1.1 Preview - Data Connections     we’re
+##  4                   Master the tidyverse        30
+##  5 RStudio 1.1 Preview - Data Connections   objects
+##  6                   Master the tidyverse       set
+##  7                   Master the tidyverse   popular
+##  8 RStudio 1.1 Preview - Data Connections   console
+##  9 RStudio 1.1 Preview - Data Connections  clicking
+## 10 RStudio 1.1 Preview - Data Connections     isn’t
+## # ... with 39,958 more rows</code></pre>
 </div>
 <div id="top-15-words-overall" class="section level3">
 <h3>Top 15 words overall</h3>
@@ -392,7 +396,7 @@ contingency_table</code></pre>
 <pre><code>##             contains_pleased
 ## is_hadley    Yes  No
 ##   Hadley      43  45
-##   Not Hadley  17 144</code></pre>
+##   Not Hadley  17 146</code></pre>
 <p>From our null hypothesis, we want to perform a <em>one sided</em> test. The alternative to our null is that Hadley uses “pleased” <em>more</em> than the rest of the RStudio team. For this reason, we specify <code>alternative = &quot;greater&quot;</code>.</p>
 <pre class="r"><code>test_prop &lt;- contingency_table %&gt;%
   prop.test(alternative = &quot;greater&quot;)
@@ -403,17 +407,17 @@ test_prop</code></pre>
 ##  correction
 ## 
 ## data:  .
-## X-squared = 43.575, df = 1, p-value = 2.04e-11
+## X-squared = 44.319, df = 1, p-value = 1.395e-11
 ## alternative hypothesis: greater
 ## 95 percent confidence interval:
-##  0.2779818 1.0000000
+##  0.2795051 1.0000000
 ## sample estimates:
 ##    prop 1    prop 2 
-## 0.4886364 0.1055901</code></pre>
+## 0.4886364 0.1042945</code></pre>
 <p>We could also tidy this up with <code>broom</code> if we were inclined to.</p>
 <pre class="r"><code>broom::tidy(test_prop)</code></pre>
 <pre><code>##   estimate1 estimate2 statistic      p.value parameter  conf.low conf.high
-## 1 0.4886364 0.1055901  43.57517 2.039913e-11         1 0.2779818         1
+## 1 0.4886364 0.1042945  44.31935 1.394726e-11         1 0.2795051         1
 ##                                                                 method
 ## 1 2-sample test for equality of proportions with continuity correction
 ##   alternative
@@ -423,8 +427,8 @@ test_prop</code></pre>
 <h3>Test conclusion</h3>
 <ul>
 <li>48.86% of Hadley’s posts contain “pleased”</li>
-<li>10.56% of the rest of the RStudio team’s posts contain “pleased”</li>
-<li>With a p-value of 2.04e-11, we reject the null that Hadley uses “pleased” less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!</li>
+<li>10.43% of the rest of the RStudio team’s posts contain “pleased”</li>
+<li>With a p-value of 1.394725810^{-11}, we reject the null that Hadley uses “pleased” less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!</li>
 </ul>
 <p>Hadley uses “pleased” quite a bit!</p>
 </div>

@@ -65,11 +65,18 @@ knitr::include_graphics("/img/aws-rds-r/2017-05-10-aws-dashboard.png")
 
 Well, alright...that was...cool? How do we know it's working? Let's get some data to load into the database. We will use some Apple stock data retrieved through `tidyquant`.
 
-```{r}
+```{r, eval=FALSE}
 aapl <- tq_get("AAPL")
 
 slice(aapl, 1:10)
 ``` 
+
+```{r, echo=FALSE}
+aapl <- readr::read_rds("data/aws-rds-r/aapl.rds")
+
+slice(aapl, 1:10)
+```
+
 
 To write the tibble (data frame) to the database, we will use another function called `dbWriteTable()`. It's pretty straightforward. "name" is the name of the table you are creating, and "value" is the data frame you want to write.
 

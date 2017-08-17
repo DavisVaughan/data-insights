@@ -2,49 +2,49 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://blog.davisvaughan.com/post/hadley-pleased/</loc>
+    <loc>/post/hadley-pleased/</loc>
     <lastmod>2017-08-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/post/rstudio-shiny-aws-1/</loc>
+    <loc>/post/rstudio-shiny-aws-1/</loc>
     <lastmod>2017-05-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/post/rds-and-r/</loc>
+    <loc>/post/rds-and-r/</loc>
     <lastmod>2017-05-10T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/about/</loc>
+    <loc>/about/</loc>
     <lastmod>1900-01-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/archive/</loc>
+    <loc>/archive/</loc>
     <lastmod>1900-01-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/categories/</loc>
+    <loc>/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/</loc>
+    <loc>/</loc>
     <lastmod>2017-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/post/</loc>
+    <loc>/post/</loc>
     <lastmod>2017-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://blog.davisvaughan.com/tags/</loc>
+    <loc>/tags/</loc>
     <priority>0</priority>
   </url>
   
