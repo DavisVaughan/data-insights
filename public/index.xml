@@ -6,10 +6,19 @@
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 16 Aug 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 28 Aug 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Financial Numerical Methods - Part 1: Vectorized Stock Price Simulation</title>
+      <link>/post/fin-num-methods-1/</link>
+      <pubDate>Mon, 28 Aug 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/post/fin-num-methods-1/</guid>
+      <description>Why am I posting about this? School has started up, and I’m in a class called Financial Computing. I thought it might be interesting to share some of my assignments and explain what I learn along the way. Most of the posts won’t be describing the Stochastic Calculus involved in each assignment, but will instead focus on the details of the implementation in R. I don’t claim to have the best way for any of these assignments, but perhaps you can learn something!</description>
+    </item>
     
     <item>
       <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; web scraping analysis</title>
@@ -56,7 +65,7 @@ For those of you who don’t know, RDS is an easy way to create a database in th
       <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
       
       <guid>/archive/</guid>
-      <description> 08/16/2017 - Which RStudio blog posts “pleased” Hadley? A tidytext + web scraping analysis 05/15/2017 - RStudio and Shiny Servers with AWS - Part 1 05/10/2017 - Amazon RDS + R  </description>
+      <description> 08/28/2017 - Financial Numerical Methods - Part 1: Vectorized Stock Price Simulation 08/16/2017 - Which RStudio blog posts “pleased” Hadley? A tidytext + web scraping analysis 05/15/2017 - RStudio and Shiny Servers with AWS - Part 1 05/10/2017 - Amazon RDS + R  </description>
     </item>
     
   </channel>
