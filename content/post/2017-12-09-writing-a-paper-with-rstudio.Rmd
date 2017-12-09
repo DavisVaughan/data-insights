@@ -44,7 +44,7 @@ For the first, I initially looked into the [`rticles`](https://cran.r-project.or
 
 For the second, there are plenty of options out there for creating LaTeX tables
 in R, `xtable`, `stargazer`, etc. However, I recently had found [`huxtable`](https://hughjonesd.github.io/huxtable/) and 
-was instantly drawn to its intuitive pipable syntax for creating tables from
+was instantly drawn to its intuitive pipeable syntax for creating tables from
 data frames. Now that I have a good bit of experience with it, I can say for
 certain that it is incredibly flexible, and I doubt I'll ever use another 
 package for table creation.
