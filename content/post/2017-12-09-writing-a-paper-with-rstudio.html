@@ -66,24 +66,22 @@ r_{t_i}         = \epsilon_{t_i} \\
 \epsilon_{t_i}  = \sigma_{t_i}  z_{t_i} \\
 \sigma_{t_i}    = \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
 \]</span></p>
-<p>Unfortunately, this doesn’t align the equations at the equal sign, and I think that that looks pretty nice. Normally to do this, you would add <code>&amp;=</code> instead of just <code>=</code> for each equals sign, but I don’t think RMarkdown recognizes that because it doesn’t work (this would be another nice feature). Instead I had to do:</p>
-<pre><code>\begin{equation}
-  \begin{aligned}
-r_{t_i}         &amp;= \epsilon_{t_i} \\
-\epsilon_{t_i}  &amp;= \sigma_{t_i}  z_{t_i} \\
-\sigma_{t_i}    &amp;= \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
-       \label{eqn:example} 
-  \end{aligned}
-\end{equation}</code></pre>
+<p>Unfortunately, this doesn’t align the equations at the equal sign, and I think that that looks pretty nice. To do this, you can add <code>&amp;=</code> instead of just <code>=</code> along with adding <code>\begin{aligned}</code> and <code>\end{aligned}</code> before and after the equation.</p>
+<pre><code>$$
+\begin{aligned}
+  r_{t_i}         &amp;= \epsilon_{t_i} \\
+  \epsilon_{t_i}  &amp;= \sigma_{t_i}  z_{t_i} \\
+  \sigma_{t_i}    &amp;= \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
+\end{aligned}
+$$</code></pre>
 <p>to get:</p>
-<span class="math display">\[\begin{equation}
-  \begin{aligned}
-r_{t_i}         &amp;= \epsilon_{t_i} \\
-\epsilon_{t_i}  &amp;= \sigma_{t_i}  z_{t_i} \\
-\sigma_{t_i}    &amp;= \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
-       \label{eqn:example} 
-  \end{aligned}
-\end{equation}\]</span>
+<p><span class="math display">\[
+\begin{aligned}
+  r_{t_i}         &amp;= \epsilon_{t_i} \\
+  \epsilon_{t_i}  &amp;= \sigma_{t_i}  z_{t_i} \\
+  \sigma_{t_i}    &amp;= \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
+\end{aligned}
+\]</span></p>
 <p>Nice!</p>
 </div>
 <div id="overall" class="section level3">
