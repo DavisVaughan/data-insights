@@ -1,0 +1,92 @@
+---
+title: Writing a paper with RStudio
+author: Davis Vaughan
+date: '2017-12-09'
+slug: writing-a-paper-with-rstudio
+---
+
+
+
+<div id="intro" class="section level3">
+<h3>Intro</h3>
+<p>This semester I had to write a paper for my Financial Econometrics class. My topic was on analyzing the volatility of Bitcoin using GARCH modeling. I’m not particularly interested in Bitcoin, but with all the recent news around it, and with its highly volatile characteristics, I figured it would be a good candidate for analysis.</p>
+<p>I did the analysis in R, but I wanted to take it a step further. Could I write the entire paper in R and RStudio in a fairly professional format? Yes.</p>
+<p><img src="/img/2017-12-09-writing-a-paper-with-rstudio/paper-sample.png" /><!-- --></p>
+<p>I figured I would outline a few issues I had along the way, and talk about the experience for anyone that might do something similar.</p>
+</div>
+<div id="github" class="section level3">
+<h3>Github</h3>
+<p>If you want to go view the entire paper and analysis, it’s on Github. Check out the repo <a href="https://github.com/DavisVaughan/fin-econ-project-bitcoin">here</a>. The PDF paper itself is buried <a href="https://github.com/DavisVaughan/fin-econ-project-bitcoin/blob/master/paper/Forecasting%20daily%20Bitcoin%20volatility%20using%20Garch%20models%20with%20intraday%20data/Forecasting_daily_Bitcoin_volatility_using_Garch_models_with_intraday_data.pdf">here</a>.</p>
+<p>If you really want to follow the analysis steps, look in <code>R/</code> to see the code that generates everything else. Do note that I had to keep the raw data zipped to get it on Github, so to run the data cleaning script, you will have to unzip the file in <code>data/raw/</code>. The paper is written in <code>paper/</code>.</p>
+</div>
+<div id="tooling" class="section level3">
+<h3>Tooling</h3>
+<p>To even begin thinking about this, I needed two R packages. One that allowed me to write the post in RMarkdown and render it into a journal style format, and one that created nice looking and customizable tables.</p>
+<p>For the first, I initially looked into the <a href="https://cran.r-project.org/web/packages/rticles/index.html"><code>rticles</code></a> package from the RStudio team, which is amazing, but I wasn’t satisfied with the journal styles that they had as options. I then remembered that Dirk Eddelbuettel and James Balamuta had created <a href="https://cran.r-project.org/web/packages/pinp/index.html"><code>pinp</code></a>, or, Pinp Is Not PNAS, as an extension of <code>rticles</code> and in particular the PNAS journal format. This one fit the bill for me, as it provided an uncluttered journal layout with a bit of nice coloring as well.</p>
+<p>For the second, there are plenty of options out there for creating LaTeX tables in R, <code>xtable</code>, <code>stargazer</code>, etc. However, I recently had found <a href="https://hughjonesd.github.io/huxtable/"><code>huxtable</code></a> and was instantly drawn to its intuitive pipable syntax for creating tables from data frames. Now that I have a good bit of experience with it, I can say for certain that it is incredibly flexible, and I doubt I’ll ever use another package for table creation.</p>
+<p>I was initially pretty worried about how well the two would play together. Sure enough, after rendering a table or two I got errors that (for a non LaTeX expert) seemed faily cryptic. However, it turned out to be a LaTeX package (not R package) dependency problem where <code>huxtable</code> needed packages that <code>pinp</code> didn’t use by default. That was easily fixed by adding the following to the top of the YAML header provided by <code>pinp</code>:</p>
+<pre><code>header-includes:
+   - \usepackage{tabularx,colortbl,multirow,hhline,mathtools}</code></pre>
+<p>I’ll also add in there that I used the <code>rugarch</code> package for all of my GARCH modeling, and it exceeded my expectations. Its author Alexios has created a fantastic S4 class system that makes trying different versions of GARCH models dead simple.</p>
+</div>
+<div id="adding-images" class="section level3">
+<h3>Adding images</h3>
+<p>I had created a script in my analysis that generated a number of graphics that I wanted to include in the paper. The <code>pinp</code> vignette is an excellent source of examples for these common use cases, and the following allowed me to embed my images in the paper and add a caption with minimal effort:</p>
+<pre><code>\begin{figure*}
+  \begin{center}
+    \includegraphics[width=1.00\textwidth, height=8.5in]{../../visualizations/returns} 
+  \end{center}
+  \caption{Descriptive plots of 5-minute and daily returns}\label{fig}
+\end{figure*}</code></pre>
+<p>Notice the relative path <code>../../visualizations/returns</code> where I backtrack up two levels from the location of the RMarkdown paper document and then into my visualizations folder. My file structure looked a bit like this:</p>
+<pre><code>fin-econ-project/
+
+  - fin-econ-project.Rproj
+  
+  - visualizations/
+    - returns.png
+    
+  - paper/
+    - forecasting-volatility/
+        - forecasting-volatility.Rmd</code></pre>
+<p>Ideally, I would have set my directory to be the RStudio Project directory so I could have just done <code>visualizations/returns</code>, but <code>pinp</code> and <code>rticles</code> both dump a large number of files into whatever directory you render it from, and I didn’t want that cluttering things up. Perhaps specifying the location of that file dump can be a separate feature?</p>
+</div>
+<div id="adding-equations" class="section level3">
+<h3>Adding equations</h3>
+<p>Adding mathematical equations can be done in two main ways.</p>
+<p>As usual, you can add inline math with the use of a dollar sign, then the equation, then end with a dollar sign, it ends up looking like this: <span class="math inline">\(x + y = z\)</span>. Make sure that you <em>don’t</em> leave a space between the dollar signs and the equation, otherwise it doesn’t render and you end up with: $ x + y = z $.</p>
+<p>Larger chunks of equations that need their own lines can be specified using two dollar signs on each side:</p>
+<pre><code>$$ 
+r_{t_i}         = \epsilon_{t_i} \\
+\epsilon_{t_i}  = \sigma_{t_i}  z_{t_i} \\
+\sigma_{t_i}    = \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
+$$</code></pre>
+<p><span class="math display">\[ 
+r_{t_i}         = \epsilon_{t_i} \\
+\epsilon_{t_i}  = \sigma_{t_i}  z_{t_i} \\
+\sigma_{t_i}    = \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
+\]</span></p>
+<p>Unfortunately, this doesn’t align the equations at the equal sign, and I think that that looks pretty nice. Normally to do this, you would add <code>&amp;=</code> instead of just <code>=</code> for each equals sign, but I don’t think RMarkdown recognizes that because it doesn’t work (this would be another nice feature). Instead I had to do:</p>
+<pre><code>\begin{equation}
+  \begin{aligned}
+r_{t_i}         &amp;= \epsilon_{t_i} \\
+\epsilon_{t_i}  &amp;= \sigma_{t_i}  z_{t_i} \\
+\sigma_{t_i}    &amp;= \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
+       \label{eqn:example} 
+  \end{aligned}
+\end{equation}</code></pre>
+<p>to get:</p>
+<span class="math display">\[\begin{equation}
+  \begin{aligned}
+r_{t_i}         &amp;= \epsilon_{t_i} \\
+\epsilon_{t_i}  &amp;= \sigma_{t_i}  z_{t_i} \\
+\sigma_{t_i}    &amp;= \alpha \epsilon_{t_{i-1}}  + \beta \sigma_{t_{i-1}}
+       \label{eqn:example} 
+  \end{aligned}
+\end{equation}\]</span>
+<p>Nice!</p>
+</div>
+<div id="overall" class="section level3">
+<h3>Overall</h3>
+<p>For the most part, I enjoyed writing the paper straight from RStudio. Once I figured out a few of the pain points with directory locations, images, equations, and dependencies, the process was pretty smooth. The only other comment I have is that the <code>pinp</code> Knit process is a bit slow. I doubt this has too much to do with the implementation, but more with the underlying rendering engines. I wish there was some way to have Live Rendering like with <code>blogdown</code> so that I could just keep a rendered version of the paper up and have it reload every time I save. That would be the dream!</p>
+</div>
