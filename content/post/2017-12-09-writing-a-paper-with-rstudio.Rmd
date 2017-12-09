@@ -255,3 +255,16 @@ there was some way to have Live Rendering like with `blogdown` so that I could j
 keep a rendered version of the paper up and have it reload every time I save.
 That would be the dream!
 
+### Update
+
+Thanks to Dirk, the dream has come true.
+
+<center>
+```{r, echo = FALSE}
+blogdown::shortcode("tweet", "939607571673075712")
+```
+</center>
+
+<blockquote class="twitter-video" data-lang="en"><p lang="en" dir="ltr">&quot;Even dreams may come true ...&quot; <a href="https://t.co/yeHJ6Haj2n">pic.twitter.com/yeHJ6Haj2n</a></p>&mdash; Davis Vaughan (@dvaughan32) <a href="https://twitter.com/dvaughan32/status/939619565738364929?ref_src=twsrc%5Etfw">December 9, 2017</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
