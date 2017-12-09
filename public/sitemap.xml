@@ -2,59 +2,59 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>/post/writing-a-paper-with-rstudio/</loc>
+    <loc>https://blog.davisvaughan.com/post/writing-a-paper-with-rstudio/</loc>
     <lastmod>2017-12-09T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/fin-num-methods-1/</loc>
+    <loc>https://blog.davisvaughan.com/post/fin-num-methods-1/</loc>
     <lastmod>2017-08-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/hadley-pleased/</loc>
+    <loc>https://blog.davisvaughan.com/post/hadley-pleased/</loc>
     <lastmod>2017-08-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/rstudio-shiny-aws-1/</loc>
+    <loc>https://blog.davisvaughan.com/post/rstudio-shiny-aws-1/</loc>
     <lastmod>2017-05-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/rds-and-r/</loc>
+    <loc>https://blog.davisvaughan.com/post/rds-and-r/</loc>
     <lastmod>2017-05-10T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/about/</loc>
+    <loc>https://blog.davisvaughan.com/about/</loc>
     <lastmod>1900-01-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/archive/</loc>
+    <loc>https://blog.davisvaughan.com/archive/</loc>
     <lastmod>1900-01-01T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/categories/</loc>
+    <loc>https://blog.davisvaughan.com/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/</loc>
+    <loc>https://blog.davisvaughan.com/</loc>
     <lastmod>2017-12-09T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/post/</loc>
+    <loc>https://blog.davisvaughan.com/post/</loc>
     <lastmod>2017-12-09T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/</loc>
+    <loc>https://blog.davisvaughan.com/tags/</loc>
     <priority>0</priority>
   </url>
   
