@@ -29,6 +29,79 @@ slug: writing-a-paper-with-rstudio
    - \usepackage{tabularx,colortbl,multirow,hhline,mathtools}</code></pre>
 <p>I’ll also add in there that I used the <code>rugarch</code> package for all of my GARCH modeling, and it exceeded my expectations. Its author Alexios has created a fantastic S4 class system that makes trying different versions of GARCH models dead simple.</p>
 </div>
+<div id="huxtable" class="section level3">
+<h3>Huxtable</h3>
+<p>I really wish <code>huxtable</code> had more publicity. It is a highly underused package for everything that it can do. For example, the following table was created using <code>huxtable</code>. Notice the math symbols in the first column, the fact that the standard errors are closer to the row above them due to smaller margins, and the bolding of certain cells.</p>
+<p><img src="/post/2017-12-09-writing-a-paper-with-rstudio_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>The <code>tibble</code> used to create the core table looked like this:</p>
+<pre><code>## # A tibble: 14 x 4
+##    metric                   `5-Min`    Daily `5-Min No Outlier`
+##    &lt;chr&gt;                      &lt;dbl&gt;    &lt;dbl&gt;              &lt;dbl&gt;
+##  1 MAPE                    0.0278   0.0372             0.0249  
+##  2 RMSE                    0.00407  0.00285            0.00244 
+##  3 MZ Intercept            0.00226  0.00167            0.00127 
+##  4 MZ Intercept Std. Error 0.000271 0.000486           0.000314
+##  5 MZ Slope                0.282    0.441              0.798   
+##  6 MZ Slope Std. Error     0.0540   0.144              0.113   
+##  7 MZ $R^2$                0.200    0.0792             0.316   
+##  8 MAPE                    0.281    0.325              0.279   
+##  9 RMSE                    0.00788  0.00711            0.00700 
+## 10 MZ Intercept            0.00250  0.00232            0.00164 
+## 11 MZ Intercept Std. Error 0.000756 0.00127            0.000963
+## 12 MZ Slope                0.161    0.196              0.607   
+## 13 MZ Slope Std. Error     0.151    0.376              0.347   
+## 14 MZ $R^2$                0.0104   0.00249            0.0275</code></pre>
+<p>And the R code to generate the table looked like:</p>
+<pre class="r"><code>library(huxtable)
+
+triple_blank &lt;- function() {
+  c(&quot;&quot;, &quot;&quot;, &quot;&quot;)
+}
+
+ht &lt;- hux_data %&gt;%
+  huxtable() %&gt;%
+  
+  # Column names
+  add_colnames() %&gt;%
+  
+  # Proxy rows
+  insert_row(&quot;Proxy: RV&quot;,    triple_blank(), after = 1) %&gt;%
+  insert_row(&quot;Proxy: $r^2$&quot;, triple_blank(), after = 9) %&gt;%
+  
+  # Number rounding
+  set_number_format(everywhere, everywhere, &quot;%5.4f&quot;) %&gt;%
+  
+  # Bold
+  set_bold(matrix(c(2,10)), 1, TRUE) %&gt;%
+  set_bold(1, everywhere, TRUE) %&gt;%
+  
+  # Alignment
+  set_align(everywhere, everywhere, &#39;center&#39;) %&gt;%
+  set_align(everywhere, 1, &#39;right&#39;) %&gt;%
+  
+  # Padding
+  set_all_padding(value = 10) %&gt;%
+  set_top_padding(c(6, 8, 14, 16), everywhere, 0) %&gt;%
+  set_bottom_padding(c(5, 7, 13, 15), everywhere, 0) %&gt;%
+  set_left_padding(everywhere, 1, -40) %&gt;%
+
+  # Borders
+  set_bottom_border(matrix(c(1, 9)), everywhere, value = .3) %&gt;%
+  set_right_border(everywhere, 1, .3) %&gt;%
+  
+  # Escape latex
+  set_escape_contents(everywhere, 1, FALSE) %&gt;%
+  set_escape_contents(1, everywhere, FALSE) %&gt;%
+  
+  set_caption(&quot;Out of sample performance of GARCH(1,1) Normal models. MAPE for 5-min is lower than for daily. Across the board, using RV as a proxy over $r^2$ gives more accurate results. Removing the 1 extreme forecast from the 5-min method results in a much higher MZ $R^2$, and a MZ slope much closer to 1.&quot;) 
+
+ht[1,1] &lt;- &quot;&quot;
+
+ht</code></pre>
+<p>You even get to view your table in the console without knitting the document to check that you put lines / bolding / even coloring in the right place. This saves more time than you might think!</p>
+<p><img src="/post/2017-12-09-writing-a-paper-with-rstudio_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>I find the pipeable syntax very intuitive, and the family of <code>set_*()</code> functions allow for endless combinations. I didn’t even venture into the world of conditional cell formatting, but I hear that that is pretty powerful too.</p>
+</div>
 <div id="adding-images" class="section level3">
 <h3>Adding images</h3>
 <p>I had created a script in my analysis that generated a number of graphics that I wanted to include in the paper. The <code>pinp</code> vignette is an excellent source of examples for these common use cases, and the following allowed me to embed my images in the paper and add a caption with minimal effort:</p>

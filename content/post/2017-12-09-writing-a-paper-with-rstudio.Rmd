@@ -63,6 +63,96 @@ modeling, and it exceeded my expectations. Its author Alexios has created a
 fantastic S4 class system that makes trying different versions of GARCH models
 dead simple.
 
+### Huxtable
+
+I really wish `huxtable` had more publicity. It is a highly underused package
+for everything that it can do. For example, the following table was created
+using `huxtable`. Notice the math symbols in the first column, the fact that
+the standard errors are closer to the row above them due to smaller margins, and
+the bolding of certain cells. 
+
+
+
+```{r, echo=FALSE, fig.asp=.8, fig.align='center'}
+library(png)
+library(grid)
+p <- readPNG("../../static/img/2017-12-09-writing-a-paper-with-rstudio/huxtable-example.png")
+grid.raster(p)
+```
+
+The `tibble` used to create the core table looked like this:
+
+```{r, echo = FALSE}
+hux <- readr::read_rds("data/2017-12-09-writing-a-paper-with-rstudio/huxtable-example.rds")
+hux
+```
+
+And the R code to generate the table looked like:
+
+```{r, eval=FALSE}
+library(huxtable)
+
+triple_blank <- function() {
+  c("", "", "")
+}
+
+ht <- hux_data %>%
+  huxtable() %>%
+  
+  # Column names
+  add_colnames() %>%
+  
+  # Proxy rows
+  insert_row("Proxy: RV",    triple_blank(), after = 1) %>%
+  insert_row("Proxy: $r^2$", triple_blank(), after = 9) %>%
+  
+  # Number rounding
+  set_number_format(everywhere, everywhere, "%5.4f") %>%
+  
+  # Bold
+  set_bold(matrix(c(2,10)), 1, TRUE) %>%
+  set_bold(1, everywhere, TRUE) %>%
+  
+  # Alignment
+  set_align(everywhere, everywhere, 'center') %>%
+  set_align(everywhere, 1, 'right') %>%
+  
+  # Padding
+  set_all_padding(value = 10) %>%
+  set_top_padding(c(6, 8, 14, 16), everywhere, 0) %>%
+  set_bottom_padding(c(5, 7, 13, 15), everywhere, 0) %>%
+  set_left_padding(everywhere, 1, -40) %>%
+
+  # Borders
+  set_bottom_border(matrix(c(1, 9)), everywhere, value = .3) %>%
+  set_right_border(everywhere, 1, .3) %>%
+  
+  # Escape latex
+  set_escape_contents(everywhere, 1, FALSE) %>%
+  set_escape_contents(1, everywhere, FALSE) %>%
+  
+  set_caption("Out of sample performance of GARCH(1,1) Normal models. MAPE for 5-min is lower than for daily. Across the board, using RV as a proxy over $r^2$ gives more accurate results. Removing the 1 extreme forecast from the 5-min method results in a much higher MZ $R^2$, and a MZ slope much closer to 1.") 
+
+ht[1,1] <- ""
+
+ht
+```
+
+You even get to view your table in the console without knitting the document to
+check that you put lines / bolding / even coloring in the right place. This
+saves more time than you might think!
+
+```{r, echo=FALSE, fig.asp=.7, fig.align='center'}
+library(png)
+library(grid)
+p <- readPNG("../../static/img/2017-12-09-writing-a-paper-with-rstudio/huxtable-console.png")
+grid.raster(p)
+```
+
+I find the pipeable syntax very intuitive, and the family of `set_*()` functions
+allow for endless combinations. I didn't even venture into the world of 
+conditional cell formatting, but I hear that that is pretty powerful too.
+
 ### Adding images
 
 I had created a script in my analysis that generated a number of graphics that
