@@ -43,26 +43,10 @@ and a picture to highlight the problems.
 knitr::include_graphics("/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/highlight-problems.png")
 ```
 
-  1. `Cash Inflows (Income)` in column A is a "main header" with "sub-headers" in column B
-  rows 7-13. This violates principle 2, because each row is not a standalone 
-  observation. You need information from row 6 (the title of the category) to 
-  figure out what category `Cash Collections` belongs in. Ideally, `Cash Inflows (Income)`
-  would be repeated in column A, rows 7-10 and in row 13 to uniquely identify 
-  that row.
-
-  2. Row 4 identifies 13 columns in this dataset (12 months and a total column). In the 
-  tidy world, this violates principle 1, because those 13 can actually be reduced to
-  just 1 column, `month`, where we will just understand that `TOTALS` is the sum of 
-  the others. Some people would even drop the `TOTALS` column, as it is easily
-  computed from the 12 months of data and may cause confusion when looking at monthly
-  totals.
-
-  3. A general problem is that there are spaces in every other column. We can fix
-  that easy enough.
-
-  4. A last major problem is that some "main headers" actually contain data in 
-  their rows, and some don't. For instance, row 5 has a main header of `Beginning Cash Balance` and also has data for each month. Compare that to `Cash Inflows (Income)` which
-  instead has subcategories. We will deal with all this as we go through the tidying process.
+  1. `Cash Inflows (Income)` in column A is a "main header" with "sub-headers" in column B rows 7-13. This violates principle 2, because each row is not a standalone observation. You need information from row 6 (the title of the category) to figure out what category `Cash Collections` belongs in. Ideally, `Cash Inflows (Income)` would be repeated in column A, rows 7-10 and in row 13 to uniquely identify that row. </br><br>
+  2. Row 4 identifies 13 columns in this dataset (12 months and a total column). In the tidy world, this violates principle 1, because those 13 can actually be reduced to just 1 column, `month`, where we will just understand that `TOTALS` is the sum of the others. Some people would even drop the `TOTALS` column, as it is easily computed from the 12 months of data and may cause confusion when looking at monthly totals. </br><br>
+  3. A general problem is that there are spaces in every other column. We can fix that easy enough. </br><br>
+  4. A last major problem is that some "main headers" actually contain data in their rows, and some don't. For instance, row 5 has a main header of `Beginning Cash Balance` and also has data for each month. Compare that to `Cash Inflows (Income)` which instead has subcategories. We will deal with all this as we go through the tidying process.
 
 ### Following along
 
