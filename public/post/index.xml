@@ -6,10 +6,21 @@
     <description>Recent content in Posts on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 16 Feb 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 06 Mar 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Copula Resources</title>
+      <link>/post/copula-resources/</link>
+      <pubDate>Tue, 06 Mar 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/copula-resources/</guid>
+      <description>A number of resources I found useful while learning about copulas.
+NC State University lecture notes - A consise introduction into copulas. This is a good place to start but not a good place to find examples.
+Copulas for Finance: A Reading Guide and Some Applications - A much more intense survey of copulas. Math heavy but full of examples. Page 20 includes a few simulation techniques, but overcomplicates the simple ones (Gaussian copula) in order to stay general.</description>
+    </item>
     
     <item>
       <title>Tidying Excel cash flow spreadsheets using R</title>
