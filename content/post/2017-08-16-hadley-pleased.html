@@ -36,8 +36,8 @@ archive_html &lt;- read_html(archive_page)
 archive_html</code></pre>
 <pre><code>## {xml_document}
 ## &lt;html lang=&quot;en-us&quot;&gt;
-## [1] &lt;head&gt;\n&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset= ...
-## [2] &lt;body&gt;\n    &lt;nav class=&quot;menu&quot;&gt;&lt;svg version=&quot;1.1&quot; xmlns=&quot;http://www.w ...</code></pre>
+## [1] &lt;head&gt;\n&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;\n&lt;meta charset=&quot;u ...
+## [2] &lt;body&gt;\n    &lt;nav class=&quot;menu&quot;&gt;&lt;svg version=&quot;1.1&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; xmlns:xli ...</code></pre>
 <p>Now we use a bit of <code>rvest</code> magic combined with the HTML inspector in Chrome to figure out which elements contain the info we need (I also highly recommend <a href="http://selectorgadget.com/">SelectorGadget</a> for this kind of work). Looking at the image below, you can see that all of the links are contained within the <code>main</code> tag as <code>a</code> tags (links).</p>
 <p><img src="/img/hadley-pleased/html-inspector.png" /><!-- --></p>
 <p>The code below extracts all of the links, and then adds the prefix containing the base URL of the site.</p>
@@ -61,8 +61,8 @@ head(links)</code></pre>
 ## [2] &quot;http://blog.rstudio.com/2017/08/22/rstudio-v1-1-preview-object-explorer/&quot;    
 ## [3] &quot;http://blog.rstudio.com/2017/08/18/google-cloud-platform/&quot;                   
 ## [4] &quot;http://blog.rstudio.com/2017/08/16/rstudio-preview-connections/&quot;             
-## [5] &quot;http://blog.rstudio.com/2017/08/16/master-the-tidyverse/&quot;                    
-## [6] &quot;http://blog.rstudio.com/2017/08/15/contributed-talks-diversity-scholarships/&quot;</code></pre>
+## [5] &quot;http://blog.rstudio.com/2017/08/15/contributed-talks-diversity-scholarships/&quot;
+## [6] &quot;http://blog.rstudio.com/2017/08/15/shiny-1-0-4/&quot;</code></pre>
 </div>
 <div id="html-from-each-blog-post" class="section level3">
 <h3>HTML from each blog post</h3>
@@ -80,25 +80,10 @@ blog_data &lt;- blog_data %&gt;%
                     )
          )
 
-select(blog_data, main)</code></pre>
-<pre><code>## # A tibble: 254 x 1
-##                 main
-##               &lt;list&gt;
-##  1 &lt;S3: xml_nodeset&gt;
-##  2 &lt;S3: xml_nodeset&gt;
-##  3 &lt;S3: xml_nodeset&gt;
-##  4 &lt;S3: xml_nodeset&gt;
-##  5 &lt;S3: xml_nodeset&gt;
-##  6 &lt;S3: xml_nodeset&gt;
-##  7 &lt;S3: xml_nodeset&gt;
-##  8 &lt;S3: xml_nodeset&gt;
-##  9 &lt;S3: xml_nodeset&gt;
-## 10 &lt;S3: xml_nodeset&gt;
-## # ... with 244 more rows</code></pre>
-<pre class="r"><code>blog_data$main[1]</code></pre>
+blog_data$main[1]</code></pre>
 <pre><code>## [[1]]
 ## {xml_nodeset (1)}
-## [1] &lt;main&gt;&lt;div class=&quot;article-meta&quot;&gt;\n&lt;h1&gt;&lt;span class=&quot;title&quot;&gt;Newer to R ...</code></pre>
+## [1] &lt;main&gt;&lt;div class=&quot;article-meta&quot;&gt;\n&lt;h1&gt;&lt;span class=&quot;title&quot;&gt;Newer to R? rstudio::conf 2018 is fo ...</code></pre>
 </div>
 <div id="meta-information" class="section level3">
 <h3>Meta information</h3>
@@ -124,9 +109,9 @@ select(blog_data, main)</code></pre>
                 html_text()) %&gt;%
   head(10)</code></pre>
 <pre><code>##  [1] &quot;Roger Oberg&quot;        &quot;Kevin Ushey&quot;        &quot;Roger Oberg&quot;       
-##  [4] &quot;Jonathan McPherson&quot; &quot;Roger Oberg&quot;        &quot;Hadley Wickham&quot;    
-##  [7] &quot;Winston Chang&quot;      &quot;Gary Ritchie&quot;       &quot;Roger Oberg&quot;       
-## [10] &quot;Jeff Allen&quot;</code></pre>
+##  [4] &quot;Jonathan McPherson&quot; &quot;Hadley Wickham&quot;     &quot;Winston Chang&quot;     
+##  [7] &quot;Gary Ritchie&quot;       &quot;Roger Oberg&quot;        &quot;Jeff Allen&quot;        
+## [10] &quot;Javier Luraschi&quot;</code></pre>
 <p>Finally, notice that if we switch <code>&quot;.author&quot;</code> with <code>&quot;.title&quot;</code> or <code>&quot;.date&quot;</code> then we can grab that information as well. This kind of thinking means that we should create a function for extracting these pieces of information!</p>
 <pre class="r"><code>extract_info &lt;- function(html, class_name) {
   map_chr(
@@ -144,38 +129,37 @@ blog_data &lt;- blog_data %&gt;%
      author = extract_info(main, &quot;.author&quot;),
      title  = extract_info(main, &quot;.title&quot;),
      date   = extract_info(main, &quot;.date&quot;)
-    )
-
-select(blog_data, author, date)</code></pre>
-<pre><code>## # A tibble: 254 x 2
-##                author       date
-##                 &lt;chr&gt;      &lt;chr&gt;
-##  1        Roger Oberg 2017-08-25
-##  2        Kevin Ushey 2017-08-22
-##  3        Roger Oberg 2017-08-18
+    )</code></pre>
+<pre class="r"><code>select(blog_data, author, date)</code></pre>
+<pre><code>## # A tibble: 253 x 2
+##    author             date      
+##    &lt;chr&gt;              &lt;chr&gt;     
+##  1 Roger Oberg        2017-08-25
+##  2 Kevin Ushey        2017-08-22
+##  3 Roger Oberg        2017-08-18
 ##  4 Jonathan McPherson 2017-08-16
-##  5        Roger Oberg 2017-08-16
-##  6     Hadley Wickham 2017-08-15
-##  7      Winston Chang 2017-08-15
-##  8       Gary Ritchie 2017-08-11
-##  9        Roger Oberg 2017-08-10
-## 10         Jeff Allen 2017-08-03
-## # ... with 244 more rows</code></pre>
+##  5 Hadley Wickham     2017-08-15
+##  6 Winston Chang      2017-08-15
+##  7 Gary Ritchie       2017-08-11
+##  8 Roger Oberg        2017-08-10
+##  9 Jeff Allen         2017-08-03
+## 10 Javier Luraschi    2017-07-31
+## # ... with 243 more rows</code></pre>
 <pre class="r"><code>select(blog_data, title)</code></pre>
-<pre><code>## # A tibble: 254 x 1
-##                                                                          title
-##                                                                          &lt;chr&gt;
-##  1 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  2                                      RStudio v1.1 Preview - Object Explorer
-##  3       RStudio Server Pro is ready for BigQuery on the Google Cloud Platform
-##  4                                      RStudio 1.1 Preview - Data Connections
-##  5                                                        Master the tidyverse
-##  6 rstudio::conf(2018): Contributed talks, e-posters, and diversity scholarshi
-##  7                                                                 Shiny 1.0.4
-##  8                                              RStudio v1.1 Preview: Terminal
-##  9                                                Building tidy tools workshop
-## 10                            RStudio Connect v1.5.4 - Now Supporting Plumber!
-## # ... with 244 more rows</code></pre>
+<pre><code>## # A tibble: 253 x 1
+##    title                                                                   
+##    &lt;chr&gt;                                                                   
+##  1 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends Augu…
+##  2 RStudio v1.1 Preview - Object Explorer                                  
+##  3 RStudio Server Pro is ready for BigQuery on the Google Cloud Platform   
+##  4 RStudio 1.1 Preview - Data Connections                                  
+##  5 rstudio::conf(2018): Contributed talks, e-posters, and diversity schola…
+##  6 Shiny 1.0.4                                                             
+##  7 RStudio v1.1 Preview: Terminal                                          
+##  8 Building tidy tools workshop                                            
+##  9 RStudio Connect v1.5.4 - Now Supporting Plumber!                        
+## 10 sparklyr 0.6                                                            
+## # ... with 243 more rows</code></pre>
 </div>
 <div id="categories-and-tags" class="section level3">
 <h3>Categories and tags</h3>
@@ -208,23 +192,22 @@ blog_data &lt;- blog_data %&gt;%
   mutate(
     categories = extract_tag_or_cat(main, &quot;categories&quot;),
     tags       = extract_tag_or_cat(main, &quot;tags&quot;)
-  )
-
-select(blog_data, categories, tags)</code></pre>
-<pre><code>## # A tibble: 254 x 2
-##    categories      tags
-##        &lt;list&gt;    &lt;list&gt;
-##  1  &lt;chr [3]&gt; &lt;chr [1]&gt;
-##  2  &lt;chr [1]&gt; &lt;chr [0]&gt;
-##  3  &lt;chr [2]&gt; &lt;chr [4]&gt;
-##  4  &lt;chr [1]&gt; &lt;chr [0]&gt;
-##  5  &lt;chr [3]&gt; &lt;chr [8]&gt;
-##  6  &lt;chr [1]&gt; &lt;chr [0]&gt;
-##  7  &lt;chr [2]&gt; &lt;chr [0]&gt;
-##  8  &lt;chr [1]&gt; &lt;chr [3]&gt;
-##  9  &lt;chr [3]&gt; &lt;chr [8]&gt;
-## 10  &lt;chr [3]&gt; &lt;chr [2]&gt;
-## # ... with 244 more rows</code></pre>
+  )</code></pre>
+<pre class="r"><code>select(blog_data, categories, tags)</code></pre>
+<pre><code>## # A tibble: 253 x 2
+##    categories tags     
+##    &lt;list&gt;     &lt;list&gt;   
+##  1 &lt;chr [3]&gt;  &lt;chr [1]&gt;
+##  2 &lt;chr [1]&gt;  &lt;chr [0]&gt;
+##  3 &lt;chr [2]&gt;  &lt;chr [4]&gt;
+##  4 &lt;chr [1]&gt;  &lt;chr [0]&gt;
+##  5 &lt;chr [1]&gt;  &lt;chr [0]&gt;
+##  6 &lt;chr [2]&gt;  &lt;chr [0]&gt;
+##  7 &lt;chr [1]&gt;  &lt;chr [3]&gt;
+##  8 &lt;chr [3]&gt;  &lt;chr [8]&gt;
+##  9 &lt;chr [3]&gt;  &lt;chr [2]&gt;
+## 10 &lt;chr [1]&gt;  &lt;chr [3]&gt;
+## # ... with 243 more rows</code></pre>
 <pre class="r"><code>blog_data %&gt;%
   filter(title == &quot;Building tidy tools workshop&quot;) %&gt;%
   pull(categories)</code></pre>
@@ -248,23 +231,22 @@ select(blog_data, categories, tags)</code></pre>
                  # The text is returned as a character vector. 
                  # Collapse them all into 1 string.
                  paste0(collapse = &quot; &quot;))
-  )
-
-select(blog_data, text)</code></pre>
-<pre><code>## # A tibble: 254 x 1
-##                                                                           text
-##                                                                          &lt;chr&gt;
-##  1 &quot;Immersion is among the most effective ways to learn any language. Immersin
-##  2 Today, we’re continuing our blog series on new features in RStudio 1.1. If 
-##  3 RStudio is excited to announce the availability of RStudio Server Pro on th
-##  4 Today, we’re continuing our blog series on new features in RStudio 1.1. If 
-##  5 If you’ve read the book “R for Data Science” or plan to, now you can dive d
-##  6 rstudio::conf, the conference on all things R and RStudio, will take place 
-##  7 Shiny 1.0.4 is now available on CRAN. To install it, run: For most Shiny us
-##  8 Today we’re excited to announce availability of our first Preview Release f
-##  9 Have you embraced the tidyverse? Do you now want to expand it to meet your 
-## 10 We’re thrilled to announce support for hosting Plumber APIs in RStudio Conn
-## # ... with 244 more rows</code></pre>
+  )</code></pre>
+<pre class="r"><code>select(blog_data, text)</code></pre>
+<pre><code>## # A tibble: 253 x 1
+##    text                                                                    
+##    &lt;chr&gt;                                                                   
+##  1 &quot;Immersion is among the most effective ways to learn any language. Imme…
+##  2 Today, we’re continuing our blog series on new features in RStudio 1.1.…
+##  3 RStudio is excited to announce the availability of RStudio Server Pro o…
+##  4 Today, we’re continuing our blog series on new features in RStudio 1.1.…
+##  5 rstudio::conf, the conference on all things R and RStudio, will take pl…
+##  6 Shiny 1.0.4 is now available on CRAN. To install it, run: For most Shin…
+##  7 Today we’re excited to announce availability of our first Preview Relea…
+##  8 Have you embraced the tidyverse? Do you now want to expand it to meet y…
+##  9 We’re thrilled to announce support for hosting Plumber APIs in RStudio …
+## 10 We’re excited to announce a new release of the sparklyr package, availa…
+## # ... with 243 more rows</code></pre>
 </div>
 <div id="who-writes-the-most-posts" class="section level3">
 <h3>Who writes the most posts?</h3>
@@ -282,30 +264,31 @@ select(blog_data, text)</code></pre>
        subtitle = &quot;By a huge margin, Hadley!&quot;) +
   # Shoutout to Bob Rudis for the always fantastic themes
   hrbrthemes::theme_ipsum(grid = &quot;Y&quot;)</code></pre>
-<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-11-1.png" width="792" /></p>
+<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-26-1.png" width="792" /></p>
 </div>
 <div id="tidytext" class="section level3">
 <h3>Tidytext</h3>
 <p>I’ve never used <code>tidytext</code> before today, but to get our feet wet, let’s create a tokenized tidy version of our data. By using <code>unnest_tokens()</code> the data will be reshaped to a long format holding 1 word per row, for each blog post. This tidy format lends itself to all manner of analysis, and a number of them are outlined in Julia Silge and David Robinson’s <a href="http://tidytextmining.com/">Text Mining with R</a>.</p>
 <pre class="r"><code>tokenized_blog &lt;- blog_data %&gt;%
-  select(title, author, date, text) %&gt;%
+  mutate(short_title = str_sub(title, end = 15)) %&gt;%
+  select(title, short_title, author, date, text) %&gt;%
   unnest_tokens(output = word, input = text)
 
-select(tokenized_blog, title, word)</code></pre>
-<pre><code>## # A tibble: 86,046 x 2
-##                                                                          title
-##                                                                          &lt;chr&gt;
-##  1 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  2 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  3 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  4 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  5 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  6 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  7 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  8 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  9 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-## 10 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-## # ... with 86,036 more rows, and 1 more variables: word &lt;chr&gt;</code></pre>
+select(tokenized_blog, short_title, word)</code></pre>
+<pre><code>## # A tibble: 85,761 x 2
+##    short_title     word     
+##    &lt;chr&gt;           &lt;chr&gt;    
+##  1 Newer to R? rst immersion
+##  2 Newer to R? rst is       
+##  3 Newer to R? rst among    
+##  4 Newer to R? rst the      
+##  5 Newer to R? rst most     
+##  6 Newer to R? rst effective
+##  7 Newer to R? rst ways     
+##  8 Newer to R? rst to       
+##  9 Newer to R? rst learn    
+## 10 Newer to R? rst any      
+## # ... with 85,751 more rows</code></pre>
 </div>
 <div id="remove-stop-words" class="section level3">
 <h3>Remove stop words</h3>
@@ -314,21 +297,21 @@ select(tokenized_blog, title, word)</code></pre>
   anti_join(stop_words, by = &quot;word&quot;) %&gt;%
   arrange(desc(date))
 
-select(tokenized_blog, title, word)</code></pre>
-<pre><code>## # A tibble: 40,465 x 2
-##                                                                          title
-##                                                                          &lt;chr&gt;
-##  1 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  2 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  3 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  4 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  5 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  6 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  7 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  8 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-##  9 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-## 10 Newer to R? rstudio::conf 2018 is for you! Early bird pricing ends August 3
-## # ... with 40,455 more rows, and 1 more variables: word &lt;chr&gt;</code></pre>
+select(tokenized_blog, short_title, word)</code></pre>
+<pre><code>## # A tibble: 40,315 x 2
+##    short_title     word     
+##    &lt;chr&gt;           &lt;chr&gt;    
+##  1 Newer to R? rst immersion
+##  2 Newer to R? rst effective
+##  3 Newer to R? rst learn    
+##  4 Newer to R? rst language 
+##  5 Newer to R? rst immersing
+##  6 Newer to R? rst advanced 
+##  7 Newer to R? rst users    
+##  8 Newer to R? rst improve  
+##  9 Newer to R? rst language 
+## 10 Newer to R? rst rare     
+## # ... with 40,305 more rows</code></pre>
 </div>
 <div id="top-15-words-overall" class="section level3">
 <h3>Top 15 words overall</h3>
@@ -343,7 +326,7 @@ select(tokenized_blog, title, word)</code></pre>
   coord_flip() + 
   labs(title = &quot;Top 15 words overall&quot;) +
   hrbrthemes::theme_ipsum(grid = &quot;Y&quot;)</code></pre>
-<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-14-1.png" width="792" /></p>
+<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-29-1.png" width="792" /></p>
 </div>
 <div id="is-hadley-more-pleased-than-everyone-else" class="section level3">
 <h3>Is Hadley more “pleased” than everyone else?</h3>
@@ -380,7 +363,7 @@ pleased %&gt;%
        x        = &quot;Contains &#39;pleased&#39;&quot;,
        y        = &quot;Count&quot;) +
   hrbrthemes::theme_ipsum(grid = &quot;Y&quot;)</code></pre>
-<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-15-1.png" width="792" /></p>
+<p><img src="/post/2017-08-16-hadley-pleased_files/figure-html/unnamed-chunk-30-1.png" width="792" /></p>
 </div>
 <div id="is-there-a-statistical-difference-here" class="section level3">
 <h3>Is there a statistical difference here?</h3>
@@ -396,7 +379,7 @@ contingency_table</code></pre>
 <pre><code>##             contains_pleased
 ## is_hadley    Yes  No
 ##   Hadley      43  45
-##   Not Hadley  17 149</code></pre>
+##   Not Hadley  17 148</code></pre>
 <p>From our null hypothesis, we want to perform a <em>one sided</em> test. The alternative to our null is that Hadley uses “pleased” <em>more</em> than the rest of the RStudio team. For this reason, we specify <code>alternative = &quot;greater&quot;</code>.</p>
 <pre class="r"><code>test_prop &lt;- contingency_table %&gt;%
   prop.test(alternative = &quot;greater&quot;)
@@ -407,17 +390,17 @@ test_prop</code></pre>
 ##  correction
 ## 
 ## data:  .
-## X-squared = 45.434, df = 1, p-value = 7.893e-12
+## X-squared = 45.063, df = 1, p-value = 9.541e-12
 ## alternative hypothesis: greater
 ## 95 percent confidence interval:
-##  0.2817184 1.0000000
+##  0.2809899 1.0000000
 ## sample estimates:
 ##    prop 1    prop 2 
-## 0.4886364 0.1024096</code></pre>
+## 0.4886364 0.1030303</code></pre>
 <p>We could also tidy this up with <code>broom</code> if we were inclined to.</p>
 <pre class="r"><code>broom::tidy(test_prop)</code></pre>
 <pre><code>##   estimate1 estimate2 statistic      p.value parameter  conf.low conf.high
-## 1 0.4886364 0.1024096    45.434 7.893481e-12         1 0.2817184         1
+## 1 0.4886364 0.1030303  45.06267 9.541448e-12         1 0.2809899         1
 ##                                                                 method
 ## 1 2-sample test for equality of proportions with continuity correction
 ##   alternative
@@ -427,8 +410,8 @@ test_prop</code></pre>
 <h3>Test conclusion</h3>
 <ul>
 <li>48.86% of Hadley’s posts contain “pleased”</li>
-<li>10.24% of the rest of the RStudio team’s posts contain “pleased”</li>
-<li>With a p-value of 7.893481210^{-12}, we reject the null that Hadley uses “pleased” less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!</li>
+<li>10.3% of the rest of the RStudio team’s posts contain “pleased”</li>
+<li>With a p-value of 9.541447710^{-12}, we reject the null that Hadley uses “pleased” less than or the same as the rest of the team. The evidence supports the idea that he has a much higher preference for it!</li>
 </ul>
 <p>Hadley uses “pleased” quite a bit!</p>
 </div>

@@ -116,18 +116,18 @@ library(dplyr)
 
 slice(aapl, 1:10)</code></pre>
 <pre><code>## # A tibble: 10 x 7
-##          date   open   high    low    close    volume adjusted
-##        &lt;date&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 2007-01-03 13.702 13.748 13.005 11.97143 309579900 10.77017
-##  2 2007-01-04 13.346 13.648 13.310 12.23714 211815100 11.00922
-##  3 2007-01-05 13.619 13.688 13.402 12.15000 208685400 10.93082
-##  4 2007-01-08 13.650 13.740 13.542 12.21000 199276700 10.98480
-##  5 2007-01-09 13.727 14.764 13.521 13.22429 837324600 11.89731
-##  6 2007-01-10 15.045 15.530 14.839 13.85714 738220000 12.46666
-##  7 2007-01-11 15.234 15.368 15.101 13.68572 360063200 12.31244
-##  8 2007-01-12 15.020 15.095 14.804 13.51714 328172600 12.16078
-##  9 2007-01-16 15.193 15.442 15.157 13.87143 311019100 12.47951
-## 10 2007-01-17 15.492 15.498 15.057 13.56428 411565000 12.20319</code></pre>
+##    date        open  high   low close    volume adjusted
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+##  1 2007-01-03  13.7  13.7  13.0  12.0 309579900     10.8
+##  2 2007-01-04  13.3  13.6  13.3  12.2 211815100     11.0
+##  3 2007-01-05  13.6  13.7  13.4  12.2 208685400     10.9
+##  4 2007-01-08  13.6  13.7  13.5  12.2 199276700     11.0
+##  5 2007-01-09  13.7  14.8  13.5  13.2 837324600     11.9
+##  6 2007-01-10  15.0  15.5  14.8  13.9 738220000     12.5
+##  7 2007-01-11  15.2  15.4  15.1  13.7 360063200     12.3
+##  8 2007-01-12  15.0  15.1  14.8  13.5 328172600     12.2
+##  9 2007-01-16  15.2  15.4  15.2  13.9 311019100     12.5
+## 10 2007-01-17  15.5  15.5  15.1  13.6 411565000     12.2</code></pre>
 <p>To write the tibble (data frame) to the database, we will use another function called <code>dbWriteTable()</code>. It’s pretty straightforward. “name” is the name of the table you are creating, and “value” is the data frame you want to write.</p>
 <pre class="r"><code>dbWriteTable(cn, name = &quot;apple&quot;, value = aapl)</code></pre>
 <p>Now the fun part! Let’s use a SQL query to pull it back down with <code>dbGetQuery()</code>. This function is a combination of <code>dbSendQuery()</code>, which returns a result set for your query, and <code>dbFetch()</code> which returns the rows from that result set.</p>
@@ -138,18 +138,18 @@ slice(aapl, 1:10)</code></pre>
 
 slice(apple_from_db, 1:10)</code></pre>
 <pre><code>## # A tibble: 10 x 8
-##    row_names       date  open  high   low close    volume adjusted
-##        &lt;chr&gt;      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1         1 2007-01-03 86.29 86.58 81.90 83.80 309579900 10.90416
-##  2         2 2007-01-04 84.05 85.95 83.82 85.66 211815100 11.14619
-##  3         3 2007-01-05 85.77 86.20 84.40 85.05 208685400 11.06681
-##  4         4 2007-01-08 85.96 86.53 85.28 85.47 199276700 11.12147
-##  5         5 2007-01-09 86.45 92.98 85.15 92.57 837324600 12.04533
-##  6         6 2007-01-10 94.75 97.80 93.45 97.00 738220000 12.62176
-##  7         7 2007-01-11 95.94 96.78 95.10 95.80 360063200 12.46562
-##  8         8 2007-01-12 94.59 95.06 93.23 94.62 328172600 12.31207
-##  9         9 2007-01-16 95.68 97.25 95.45 97.10 311019100 12.63477
-## 10        10 2007-01-17 97.56 97.60 94.82 94.95 411565000 12.35501</code></pre>
+##    row_names date        open  high   low close    volume adjusted
+##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+##  1 1         2007-01-03  86.3  86.6  81.9  83.8 309579900     10.9
+##  2 2         2007-01-04  84.1  85.9  83.8  85.7 211815100     11.1
+##  3 3         2007-01-05  85.8  86.2  84.4  85.0 208685400     11.1
+##  4 4         2007-01-08  86.0  86.5  85.3  85.5 199276700     11.1
+##  5 5         2007-01-09  86.5  93.0  85.2  92.6 837324600     12.0
+##  6 6         2007-01-10  94.7  97.8  93.5  97.0 738220000     12.6
+##  7 7         2007-01-11  95.9  96.8  95.1  95.8 360063200     12.5
+##  8 8         2007-01-12  94.6  95.1  93.2  94.6 328172600     12.3
+##  9 9         2007-01-16  95.7  97.3  95.5  97.1 311019100     12.6
+## 10 10        2007-01-17  97.6  97.6  94.8  94.9 411565000     12.4</code></pre>
 <p>There are a huge number of functions from <code>DBI</code> that you can use to communicate with databases. Maybe I will cover more in a separate post, but for now, let’s move on to <code>dplyr</code>.</p>
 </div>
 <div id="step-3-the-one-with-the-pliers" class="section level3">
@@ -172,36 +172,36 @@ apple_table</code></pre>
 <pre><code>## # Source:   table&lt;apple&gt; [?? x 8]
 ## # Database: mysql 5.6.27-log
 ## #   [user1@davisdbinstance.crarljboc8to.us-west-2.rds.amazonaws.com:/firstdb]
-##    row_names       date  open  high   low close    volume adjusted
-##        &lt;chr&gt;      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1         1 2007-01-03 86.29 86.58 81.90 83.80 309579900 10.90416
-##  2         2 2007-01-04 84.05 85.95 83.82 85.66 211815100 11.14619
-##  3         3 2007-01-05 85.77 86.20 84.40 85.05 208685400 11.06681
-##  4         4 2007-01-08 85.96 86.53 85.28 85.47 199276700 11.12147
-##  5         5 2007-01-09 86.45 92.98 85.15 92.57 837324600 12.04533
-##  6         6 2007-01-10 94.75 97.80 93.45 97.00 738220000 12.62176
-##  7         7 2007-01-11 95.94 96.78 95.10 95.80 360063200 12.46562
-##  8         8 2007-01-12 94.59 95.06 93.23 94.62 328172600 12.31207
-##  9         9 2007-01-16 95.68 97.25 95.45 97.10 311019100 12.63477
-## 10        10 2007-01-17 97.56 97.60 94.82 94.95 411565000 12.35501
+##    row_names date        open  high   low close    volume adjusted
+##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+##  1 1         2007-01-03  86.3  86.6  81.9  83.8 309579900     10.9
+##  2 2         2007-01-04  84.1  85.9  83.8  85.7 211815100     11.1
+##  3 3         2007-01-05  85.8  86.2  84.4  85.0 208685400     11.1
+##  4 4         2007-01-08  86.0  86.5  85.3  85.5 199276700     11.1
+##  5 5         2007-01-09  86.5  93.0  85.2  92.6 837324600     12.0
+##  6 6         2007-01-10  94.7  97.8  93.5  97.0 738220000     12.6
+##  7 7         2007-01-11  95.9  96.8  95.1  95.8 360063200     12.5
+##  8 8         2007-01-12  94.6  95.1  93.2  94.6 328172600     12.3
+##  9 9         2007-01-16  95.7  97.3  95.5  97.1 311019100     12.6
+## 10 10        2007-01-17  97.6  97.6  94.8  94.9 411565000     12.4
 ## # ... with more rows</code></pre>
 <p>The best part is that we can use almost any dplyr command with this! It queries the database, and does not do the manipulation in R. All of the familiar syntax of dplyr, but with databases. Let’s use <code>filter()</code> to get all of the rows after January 1, 2009.</p>
 <pre class="r"><code>filter(apple_table, date &gt; &quot;2009-01-01&quot;)</code></pre>
 <pre><code>## # Source:   lazy query [?? x 8]
 ## # Database: mysql 5.6.27-log
 ## #   [user1@davisdbinstance.crarljboc8to.us-west-2.rds.amazonaws.com:/firstdb]
-##    row_names       date  open  high   low close    volume adjusted
-##        &lt;chr&gt;      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1       505 2009-01-02 85.88 91.04 85.16 90.75 186503800 11.80851
-##  2       506 2009-01-05 93.17 96.18 92.71 94.58 295402100 12.30687
-##  3       507 2009-01-06 95.95 97.17 92.39 93.02 322327600 12.10388
-##  4       508 2009-01-07 91.81 92.50 90.26 91.01 188262200 11.84234
-##  5       509 2009-01-08 90.43 93.15 90.04 92.70 168375200 12.06224
-##  6       510 2009-01-09 93.21 93.38 90.14 90.58 136711400 11.78638
-##  7       511 2009-01-12 90.46 90.99 87.55 88.66 154429100 11.53655
-##  8       512 2009-01-13 88.24 89.74 86.35 87.71 199599400 11.41294
-##  9       513 2009-01-14 86.24 87.25 84.72 85.33 255416000 11.10325
-## 10       514 2009-01-15 80.57 84.12 80.05 83.38 457908500 10.84951
+##    row_names date        open  high   low close    volume adjusted
+##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+##  1 505       2009-01-02  85.9  91.0  85.2  90.8 186503800     11.8
+##  2 506       2009-01-05  93.2  96.2  92.7  94.6 295402100     12.3
+##  3 507       2009-01-06  96.0  97.2  92.4  93.0 322327600     12.1
+##  4 508       2009-01-07  91.8  92.5  90.3  91.0 188262200     11.8
+##  5 509       2009-01-08  90.4  93.2  90.0  92.7 168375200     12.1
+##  6 510       2009-01-09  93.2  93.4  90.1  90.6 136711400     11.8
+##  7 511       2009-01-12  90.5  91.0  87.6  88.7 154429100     11.5
+##  8 512       2009-01-13  88.2  89.7  86.4  87.7 199599400     11.4
+##  9 513       2009-01-14  86.2  87.3  84.7  85.3 255416000     11.1
+## 10 514       2009-01-15  80.6  84.1  80.1  83.4 457908500     10.8
 ## # ... with more rows</code></pre>
 <p>To do any serious manipulation outside of <code>dplyr</code>, you’ll likely have pull the data into memory to be able to use it with other R functions. Here, I’ll use the <code>dplyr</code> equivalent to <code>dbWriteTable()</code> to add the stock prices for IBM to the database.</p>
 <pre class="r"><code>ibm &lt;- tq_get(&quot;IBM&quot;)
@@ -224,18 +224,18 @@ real_tibble &lt;- real_tibble %&gt;%
 
 real_tibble</code></pre>
 <pre><code>## # A tibble: 2,542 x 8
-##          date   open   high   low  close   volume adjusted daily.returns
-##        &lt;date&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;
-##  1 2007-01-03  97.18  98.40 96.26  97.27  9196800 78.35465   0.000000000
-##  2 2007-01-04  97.25  98.79 96.88  98.31 10524500 79.19241   0.010691899
-##  3 2007-01-05  97.60  97.95 96.91  97.42  7221300 78.47548  -0.009052989
-##  4 2007-01-08  98.50  99.50 98.35  98.90 10340000 79.66768   0.015191994
-##  5 2007-01-09  99.08 100.33 99.07 100.07 11108200 80.61016   0.011830105
-##  6 2007-01-10  98.50  99.05 97.93  98.89  8744800 79.65962  -0.011791740
-##  7 2007-01-11  99.00  99.90 98.50  98.65  8000700 79.46630  -0.002426926
-##  8 2007-01-12  98.99  99.69 98.50  99.34  6636500 80.02211   0.006994374
-##  9 2007-01-16  99.40 100.84 99.30 100.82  9602200 81.21431   0.014898370
-## 10 2007-01-17 100.69 100.90 99.90 100.02  8200700 80.56988  -0.007934969
+##    date        open  high   low close   volume adjusted daily.returns
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;
+##  1 2007-01-03  97.2  98.4  96.3  97.3  9196800     78.4       0      
+##  2 2007-01-04  97.2  98.8  96.9  98.3 10524500     79.2       0.0107 
+##  3 2007-01-05  97.6  97.9  96.9  97.4  7221300     78.5      -0.00905
+##  4 2007-01-08  98.5  99.5  98.3  98.9 10340000     79.7       0.0152 
+##  5 2007-01-09  99.1 100.   99.1 100.  11108200     80.6       0.0118 
+##  6 2007-01-10  98.5  99.1  97.9  98.9  8744800     79.7      -0.0118 
+##  7 2007-01-11  99    99.9  98.5  98.7  8000700     79.5      -0.00243
+##  8 2007-01-12  99.0  99.7  98.5  99.3  6636500     80.0       0.00699
+##  9 2007-01-16  99.4 101.   99.3 101.   9602200     81.2       0.0149 
+## 10 2007-01-17 101.  101.   99.9 100.   8200700     80.6      -0.00793
 ## # ... with 2,532 more rows</code></pre>
 <p>Always disconnect when you’re finished!</p>
 <pre class="r"><code>dbDisconnect(cn)</code></pre>
