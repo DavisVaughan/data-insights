@@ -13,10 +13,10 @@
     
     <item>
       <title>Copula Resources</title>
-      <link>/post/copula-resources/</link>
+      <link>/post/2018-03-06-copula-resources/copula-resources/</link>
       <pubDate>Tue, 06 Mar 2018 00:00:00 +0000</pubDate>
       
-      <guid>/post/copula-resources/</guid>
+      <guid>/post/2018-03-06-copula-resources/copula-resources/</guid>
       <description>A number of resources I found useful while learning about copulas.
 NC State University lecture notes - A consise introduction into copulas. This is a good place to start but not a good place to find examples.
 Copulas for Finance: A Reading Guide and Some Applications - A much more intense survey of copulas. Math heavy but full of examples. Page 20 includes a few simulation techniques, but overcomplicates the simple ones (Gaussian copula) in order to stay general.</description>
