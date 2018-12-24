@@ -87,8 +87,10 @@ For those of you who don’t know, RDS is an easy way to create a database in th
       <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
       
       <guid>/about/</guid>
-      <description>Who am I? Hi! I’m Davis Vaughan, a Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R. I’m also a coffee enthusiast, as most R users seem to be.
- What else? I’m the other half of Business Science. We develop R packages for financial analysis. Additionally, we have a network of data scientists at our disposal to bring together the best team to work on consulting projects.</description>
+      <description>Who am I? I’m Davis, a Software Engineer at RStudio working on modeling in the tidyverse. I enjoy all things R. I’m also a coffee enthusiast, as most R users seem to be.
+ What else? I’ve developed a few R packages:
+ furrr probably rray  I also helped co-author a few R packages with Matt Dancho:
+ tidyquant timetk tibbletime   Want to get in touch? I’m always up for a conversation about R or Finance.</description>
     </item>
     
   </channel>

@@ -6,24 +6,27 @@ slug: 'about'
 ---
 
 ```{r, echo=FALSE, fig.align='center'}
-knitr::include_graphics("/img/about/pic.jpg")
+knitr::include_graphics("/img/about/about-headshot.jpg")
 ```
 
 ### Who am I?
 
-Hi! I'm Davis Vaughan, a Master's student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R. I'm also a coffee enthusiast, as most R users seem to be.
+I'm Davis, a Software Engineer at [RStudio](https://www.rstudio.com/) working on [modeling in the tidyverse](https://github.com/tidymodels). I enjoy all things R. I'm also a coffee enthusiast, as most R users seem to be.
 
 ### What else?
 
-I'm the other half of [Business Science](http://www.business-science.io/). We develop R packages for financial analysis. Additionally, we have a network of data scientists at our disposal to bring together the best team to work on consulting projects. Check out our website to learn more!
+I've developed a few R packages:
 
-I helped co-author two R packages with [Matt Dancho](https://github.com/mdancho84):
+- [furrr](https://davisvaughan.github.io/furrr/)
+- [probably](https://tidymodels.github.io/probably/)
+- [rray](https://davisvaughan.github.io/rray/)
 
-- [tidyquant](https://business-science.github.io/tidyquant/) - Bringing financial analysis to the tidyverse
-- [timetk](https://business-science.github.io/timetk/) - A collection of tools for working with time series 
+I also helped co-author a few R packages with [Matt Dancho](https://github.com/mdancho84):
 
-I'm also interested in Data Science and Quantitative Finance. I'll be looking for job opportunities post graduation in May 2018.
+- [tidyquant](https://business-science.github.io/tidyquant/)
+- [timetk](https://business-science.github.io/timetk/)
+- [tibbletime](https://business-science.github.io/tibbletime/)
 
 ### Want to get in touch?
 
-I'm always up for a conversation about R or Finance. Tweet at me [here](https://twitter.com/dvaughan32) or send me an email at _dvaughan@business-science.io_
+I'm always up for a conversation about R or Finance. Tweet at me [here](https://twitter.com/dvaughan32) or send me an email at _davis@rstudio.com_.
