@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Data Insights</title>
-    <link>/</link>
+    <link>https://blog.davisvaughan.com/</link>
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 06 Mar 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.davisvaughan.com/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Copula Resources</title>
-      <link>/2018/03/06/copula-resources/</link>
+      <link>https://blog.davisvaughan.com/2018/03/06/copula-resources/</link>
       <pubDate>Tue, 06 Mar 2018 00:00:00 +0000</pubDate>
       
-      <guid>/2018/03/06/copula-resources/</guid>
+      <guid>https://blog.davisvaughan.com/2018/03/06/copula-resources/</guid>
       <description>A number of resources I found useful while learning about copulas.
 NC State University lecture notes - A consise introduction into copulas. This is a good place to start but not a good place to find examples.
 Copulas for Finance: A Reading Guide and Some Applications - A much more intense survey of copulas. Math heavy but full of examples. Page 20 includes a few simulation techniques, but overcomplicates the simple ones (Gaussian copula) in order to stay general.</description>
@@ -24,58 +24,58 @@ Copulas for Finance: A Reading Guide and Some Applications - A much more intense
     
     <item>
       <title>Tidying Excel cash flow spreadsheets using R</title>
-      <link>/2018/02/16/tidying-excel-cash-flow-spreadsheets-in-r/</link>
+      <link>https://blog.davisvaughan.com/2018/02/16/tidying-excel-cash-flow-spreadsheets-in-r/</link>
       <pubDate>Fri, 16 Feb 2018 00:00:00 +0000</pubDate>
       
-      <guid>/2018/02/16/tidying-excel-cash-flow-spreadsheets-in-r/</guid>
+      <guid>https://blog.davisvaughan.com/2018/02/16/tidying-excel-cash-flow-spreadsheets-in-r/</guid>
       <description>If you love using Excel, and it fits your needs, then by all means do your thing. However, there is also interest out there for moving Excel analyses into R. If you are one of those people, and your Excel data is “messy,” then this post is for you. We will be using the unpivotr package (GitHub) to tidy up some Excel cash flow spreadsheets.
 Note: A few functions in the unpivotr package that are used here have been deprecated.</description>
     </item>
     
     <item>
       <title>Writing a paper with RStudio</title>
-      <link>/2017/12/09/writing-a-paper-with-rstudio/</link>
+      <link>https://blog.davisvaughan.com/2017/12/09/writing-a-paper-with-rstudio/</link>
       <pubDate>Sat, 09 Dec 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/12/09/writing-a-paper-with-rstudio/</guid>
+      <guid>https://blog.davisvaughan.com/2017/12/09/writing-a-paper-with-rstudio/</guid>
       <description>Intro This semester I had to write a paper for my Financial Econometrics class. My topic was on analyzing the volatility of Bitcoin using GARCH modeling. I’m not particularly interested in Bitcoin, but with all the recent news around it, and with its highly volatile characteristics, I figured it would be a good candidate for analysis.
 I did the analysis in R, but I wanted to take it a step further.</description>
     </item>
     
     <item>
       <title>Financial Numerical Methods - Part 1: Vectorized Stock Price Simulation</title>
-      <link>/2017/08/28/fin-num-methods-1/</link>
+      <link>https://blog.davisvaughan.com/2017/08/28/fin-num-methods-1/</link>
       <pubDate>Mon, 28 Aug 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/08/28/fin-num-methods-1/</guid>
+      <guid>https://blog.davisvaughan.com/2017/08/28/fin-num-methods-1/</guid>
       <description>Why am I posting about this? School has started up, and I’m in a class called Financial Computing. I thought it might be interesting to share some of my assignments and explain what I learn along the way. Most of the posts won’t be describing the Stochastic Calculus involved in each assignment, but will instead focus on the details of the implementation in R. I don’t claim to have the best way for any of these assignments, but perhaps you can learn something!</description>
     </item>
     
     <item>
       <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; web scraping analysis</title>
-      <link>/2017/08/16/hadley-pleased/</link>
+      <link>https://blog.davisvaughan.com/2017/08/16/hadley-pleased/</link>
       <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/08/16/hadley-pleased/</guid>
+      <guid>https://blog.davisvaughan.com/2017/08/16/hadley-pleased/</guid>
       <description>Introduction Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R web scraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</description>
     </item>
     
     <item>
       <title>RStudio and Shiny Servers with AWS - Part 1</title>
-      <link>/2017/05/15/rstudio-shiny-aws-1/</link>
+      <link>https://blog.davisvaughan.com/2017/05/15/rstudio-shiny-aws-1/</link>
       <pubDate>Mon, 15 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/05/15/rstudio-shiny-aws-1/</guid>
+      <guid>https://blog.davisvaughan.com/2017/05/15/rstudio-shiny-aws-1/</guid>
       <description>After realizing how fast I can burn through my free 25 hours on shinyapps.io, I decided to repurpose my RStudio Server to also work with Shiny Server. Here’s my new setup:
  1 AWS EC2 server with an elastic IP address 1 Route 55 Amazon domain linked to the EC2 elastic IP (davisvaughan.com) RStudio Server Shiny Server  In case I ever have to go through this madness again, or if anyone else wants to, I’ve compiled some step by step notes on the setup.</description>
     </item>
     
     <item>
       <title>Amazon RDS &#43; R</title>
-      <link>/2017/05/10/rds-and-r/</link>
+      <link>https://blog.davisvaughan.com/2017/05/10/rds-and-r/</link>
       <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>/2017/05/10/rds-and-r/</guid>
+      <guid>https://blog.davisvaughan.com/2017/05/10/rds-and-r/</guid>
       <description>Warning The code and advice in this post is still valid, but I have shut down the AWS database that this post pulled from, so it no longer runs. Additionally, the output is no longer shown.
  Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
 For those of you who don’t know, RDS is an easy way to create a database in the cloud.</description>
@@ -83,10 +83,10 @@ For those of you who don’t know, RDS is an easy way to create a database in th
     
     <item>
       <title>About Me</title>
-      <link>/about/</link>
+      <link>https://blog.davisvaughan.com/about/</link>
       <pubDate>Mon, 01 Jan 1900 00:00:00 +0000</pubDate>
       
-      <guid>/about/</guid>
+      <guid>https://blog.davisvaughan.com/about/</guid>
       <description>Who am I? Hi! I’m Davis Vaughan, a Master’s student studying Mathematical Finance at the University of North Carolina at Charlotte. I enjoy all things R. I’m also a coffee enthusiast, as most R users seem to be.
  What else? I’m the other half of Business Science. We develop R packages for financial analysis. Additionally, we have a network of data scientists at our disposal to bring together the best team to work on consulting projects.</description>
     </item>
