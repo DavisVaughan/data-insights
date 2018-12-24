@@ -12,7 +12,10 @@
 <main class="content" role="main">
 	<div class="container">
 	{{ range .Paginator.Pages }}
-		{{ .Render "li" }}
+	  {{/* Preventing the About and Archive from showing up on the home page */}}
+	  {{if and (ne .Title "About Me") (ne .Title "Archive")}}
+	    {{ .Render "li" }}
+	  {{end}}
 	{{ end }}
 	{{ partial "pagination.html" . }}
 	</div>
