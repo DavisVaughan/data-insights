@@ -22,9 +22,9 @@ slug: 'rstudio-shiny-aws-1'
 <p>Amazon is nice enough to provide 1 year’s worth of access to their <a href="https://aws.amazon.com/free/">Free Tier</a> for AWS. There are a huge number of options available, but the important one is that they provide a free 750 hours/month to deploy an EC2 instance. That’s just enough to keep 1 EC2 instance active 24/7, since 24 hours x 31 days = 744.</p>
 <p>If you aren’t familiar with EC2, think of it as your own personal always-on Linux computer that you can connect to through SSH, and access through the web by using an IP address. One step further and you can access it through a custom domain name.</p>
 <p>Create your free AWS account, and come back when you’ve finished. You should be able to click on the giant sign in button, and sign in to your console.</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/sign-in.png" /><!-- --></p>
+<p><img src="img/sign-in.png" /></p>
 <p>If all goes well, you’ll be at the console.</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/console.png" /><!-- --></p>
+<p><img src="img/console.png" /></p>
 <p>We won’t do anything else yet, just stay signed in.</p>
 </div>
 <div id="step-2-setup-the-rstudio-amazon-machine-image" class="section level3">
@@ -40,15 +40,15 @@ slug: 'rstudio-shiny-aws-1'
 </ul>
 <p>You can find the link to the image <a href="http://www.louisaslett.com/RStudio_AMI/">here</a>. Click one of the links on the right to start the setup, I normally click the one closest to me regionally.</p>
 <p>The Virginia link takes me here:</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/aws-rstudio-link.png" /><!-- --></p>
+<p><img src="img/aws-rstudio-link.png" /></p>
 <p>You can click through the settings, but to just get setup, click “Review and Launch.” It will let you review one last time, and will likely warn you about security, we will change all that later, just click “Launch.”</p>
 <p><em>Important!</em> Amazon will pop up a message box that talks about a <em>key pair</em>. This is how you will SSH into your server later on. This is really important, as you only get this screen one time, and can never come back to it. Setup a new key pair name (it can be anything), and click “Download Key Pair.”</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/key-pair.png" /><!-- --></p>
+<p><img src="img/key-pair.png" /></p>
 <p>Store the .pem key pair file somewhere on your local computer. This should be a secure location, but somewhere you can remember the file path to. Then click Launch Instances.</p>
 <p>At the top of the next screen, click Services, and then select EC2. This will take you to the EC2 Dashboard. You should see that you have “1 Running Instance.”</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/ec2-dashboard.png" /><!-- --></p>
+<p><img src="img/ec2-dashboard.png" /></p>
 <p>Click on “1 Running Instance,” and you’ll see your server starting up. Below, it’s the one that says “running.”</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/start-up.png" /><!-- --></p>
+<p><img src="img/start-up.png" /></p>
 <p>There’s one last thing to do before we can access the server. We have to setup the security to allow HTTP (web browser) access. In the “Description” tab in the bottom half of the above image, scroll down until you see “Security Groups.” You’ll likely have something like “launch-wizard-1” there. Click on that.</p>
 <p>On the next screen, click the “Inbound” tab down where “Description” is listed. As you can see, only the SSH option is available for accessing the instance. Let’s change that.</p>
 <p>Click:</p>
@@ -61,17 +61,17 @@ slug: 'rstudio-shiny-aws-1'
 <li>Password - rstudio</li>
 </ul>
 <p>Clever, right?</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/rstudio-login.png" /><!-- --></p>
+<p><img src="img/rstudio-login.png" /></p>
 <p>If it worked, you should see this.</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/logged-in.png" /><!-- --></p>
+<p><img src="img/logged-in.png" /></p>
 </div>
 <div id="step-3-new-password-for-rstudio-server" class="section level3">
 <h3>Step 3: New password for RStudio Server</h3>
 <p>It’s advised that you immediately change the password. There are two ways to do so. The first way is easy. In the <code>Welcome.R</code> file that is shown above, you’ll see a description for how to <code>library(&quot;RStudioAMI&quot;)</code> and then run <code>passwd()</code>. You can do that, but eventually you’ll have to SSH into your server for <em>something</em>, so you may as well learn how now.</p>
 <p>Have you still got the AWS Console Instances page up? The one where you found the Public DNS (IPv4). Here it is again.</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/start-up.png" /><!-- --></p>
+<p><img src="img/start-up.png" /></p>
 <p>AWS has made it pretty easy to connect through SSH. Click the “Connect” button. A window should pop up with some pretty detailed instructions. Do you have the path to your .pem file lying around? You’re going to need it!</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/ssh.png" /><!-- --></p>
+<p><img src="img/ssh.png" /></p>
 <p>I run on a Mac, so I’ll be using Terminal. If you run on Windows, you’ll need to download <a href="http://www.putty.org/">PuTTY</a>. Open up Terminal, and type in the following for step 3:</p>
 <pre class="bash"><code>chmod 400 path_to_file/file.pem</code></pre>
 <p>Note that you actually need to locate your pem file, and pass Terminal the path. This command hides the file, and is necessary to connect.</p>
@@ -79,7 +79,7 @@ slug: 'rstudio-shiny-aws-1'
 <pre class="bash"><code>ssh -i &quot;path_to_file/file.pem&quot; ubuntu@ec2-IPADDRESS.compute-1.amazonaws.com</code></pre>
 <p>Again, you’ll have to type in the correct path, but the IP address shown for you should be correct.</p>
 <p>When you connect for the first time, it might give you a prompt basically saying, “Are you sure?” Type yes. Hopefully you’ll see something like this:</p>
-<p><img src="/img/rstudio-shiny-server-aws-1/ssh-login.png" /><!-- --></p>
+<p><img src="img/ssh-login.png" width="542" /></p>
 <p>To update the password for the <code>rstudio</code> user:</p>
 <pre class="bash"><code>sudo passwd rstudio</code></pre>
 <p>Then follow the prompts. Type <code>exit</code> to disconnect from the server, and go back to your RStudio Server site. Try and login with the new password.</p>

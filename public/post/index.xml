@@ -62,10 +62,10 @@ I did the analysis in R, but I wanted to take it a step further.</description>
     
     <item>
       <title>RStudio and Shiny Servers with AWS - Part 1</title>
-      <link>/post/rstudio-shiny-aws-1/</link>
+      <link>/post/2017-05-15-rstudio-shiny-server-and-aws/rstudio-shiny-aws-1/</link>
       <pubDate>Mon, 15 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>/post/rstudio-shiny-aws-1/</guid>
+      <guid>/post/2017-05-15-rstudio-shiny-server-and-aws/rstudio-shiny-aws-1/</guid>
       <description>After realizing how fast I can burn through my free 25 hours on shinyapps.io, I decided to repurpose my RStudio Server to also work with Shiny Server. Here’s my new setup:
  1 AWS EC2 server with an elastic IP address 1 Route 55 Amazon domain linked to the EC2 elastic IP (davisvaughan.com) RStudio Server Shiny Server  In case I ever have to go through this madness again, or if anyone else wants to, I’ve compiled some step by step notes on the setup.</description>
     </item>

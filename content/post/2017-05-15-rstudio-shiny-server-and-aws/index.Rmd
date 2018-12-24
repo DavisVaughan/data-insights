@@ -30,15 +30,11 @@ If you aren't familiar with EC2, think of it as your own personal always-on Linu
 
 Create your free AWS account, and come back when you've finished. You should be able to click on the giant sign in button, and sign in to your console.
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/sign-in.png")
-```
+![](./img/sign-in.png)
 
 If all goes well, you'll be at the console.
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/console.png")
-```
+![](./img/console.png)
 
 We won't do anything else yet, just stay signed in.
 
@@ -57,31 +53,23 @@ You can find the link to the image [here](http://www.louisaslett.com/RStudio_AMI
 
 The Virginia link takes me here:
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/aws-rstudio-link.png")
-```
+![](./img/aws-rstudio-link.png)
 
 You can click through the settings, but to just get setup, click "Review and Launch." It will let you review one last time, and will likely warn you about security, we will change all that later, just click "Launch."
 
 _Important!_ Amazon will pop up a message box that talks about a _key pair_. This is how you will SSH into your server later on. This is really important, as you only get this screen one time, and can never come back to it. Setup a new key pair name (it can be anything), and click "Download Key Pair."
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/key-pair.png")
-```
+![](./img/key-pair.png)
 
 Store the .pem key pair file somewhere on your local computer. This should be a secure location, but somewhere you can remember the file path to. Then click Launch Instances.
 
 At the top of the next screen, click Services, and then select EC2. This will take you to the EC2 Dashboard. You should see that you have "1 Running Instance."
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/ec2-dashboard.png")
-```
+![](./img/ec2-dashboard.png)
 
 Click on "1 Running Instance," and you'll see your server starting up. Below, it's the one that says "running."
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/start-up.png")
-```
+![](./img/start-up.png)
 
 There's one last thing to do before we can access the server. We have to setup the security to allow HTTP (web browser) access. In the "Description" tab in the bottom half of the above image, scroll down until you see "Security Groups." You'll likely have something like "launch-wizard-1" there. Click on that.
 
@@ -104,15 +92,11 @@ Defaults:
 
 Clever, right?
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/rstudio-login.png")
-```
+![](./img/rstudio-login.png)
 
 If it worked, you should see this.
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/logged-in.png")
-```
+![](./img/logged-in.png)
 
 ### Step 3: New password for RStudio Server
 
@@ -120,15 +104,11 @@ It's advised that you immediately change the password. There are two ways to do 
 
 Have you still got the AWS Console Instances page up? The one where you found the Public DNS (IPv4). Here it is again.
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/start-up.png")
-```
+![](./img/start-up.png)
 
 AWS has made it pretty easy to connect through SSH. Click the "Connect" button. A window should pop up with some pretty detailed instructions. Do you have the path to your .pem file lying around? You're going to need it!
 
-```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/ssh.png")
-```
+![](./img/ssh.png)
 
 I run on a Mac, so I'll be using Terminal. If you run on Windows, you'll need to download [PuTTY](http://www.putty.org/). Open up Terminal, and type in the following for step 3:
 
@@ -149,7 +129,7 @@ Again, you'll have to type in the correct path, but the IP address shown for you
 When you connect for the first time, it might give you a prompt basically saying, "Are you sure?" Type yes. Hopefully you'll see something like this:
 
 ```{r echo=FALSE}
-knitr::include_graphics("/img/rstudio-shiny-server-aws-1/ssh-login.png")
+knitr::include_graphics("./img/ssh-login.png")
 ```
 
 To update the password for the `rstudio` user:
