@@ -43,15 +43,13 @@ archive_html
 
 # out <- capture.output(archive_html)
 # write_rds(out, "data/2017-08-16-hadley-pleased/archive_html.rds")
-cat(read_rds("data/2017-08-16-hadley-pleased/archive_html.rds"), sep = "\n")
+cat(read_rds("./data/archive_html.rds"), sep = "\n")
 ```
 
 
 Now we use a bit of `rvest` magic combined with the HTML inspector in Chrome to figure out which elements contain the info we need (I also highly recommend [SelectorGadget](http://selectorgadget.com/) for this kind of work). Looking at the image below, you can see that all of the links are contained within the `main` tag as `a` tags (links).
 
-```{r, echo=FALSE}
-knitr::include_graphics("/img/hadley-pleased/html-inspector.png")
-```
+![](./img/html-inspector.png)
 
 The code below extracts all of the links, and then adds the prefix containing the base URL of the site.
 
@@ -77,7 +75,7 @@ head(links)
 ```{r, echo=FALSE}
 # write_rds(links, "data/2017-08-16-hadley-pleased/links.r
 # write_rds(head(blog_data$links), "data/2017-08-16-hadley-pleased/links.rds")
-head(read_rds("data/2017-08-16-hadley-pleased/links.rds"))
+head(read_rds("./data/links.rds"))
 ```
 
 
@@ -105,7 +103,7 @@ blog_data$main[1]
 ```{r, echo=FALSE}
 # out <- capture.output(blog_data$main[1])
 # write_rds(out, "data/2017-08-16-hadley-pleased/blog-data.rds")
-cat(read_rds("data/2017-08-16-hadley-pleased/blog-data.rds"), sep ="\n")
+cat(read_rds("./data/blog-data.rds"), sep ="\n")
 ```
 
 
@@ -123,9 +121,7 @@ In the exploratory analysis, we will use author and title, but the other informa
 
 Looking at the first blog post, the Author, Date, and Title are all HTML class names that we can feed into `rvest` to extract that information.
 
-```{r, echo=FALSE}
-knitr::include_graphics("/img/hadley-pleased/date-author-title.png")
-```
+![](./img/date-author-title.png)
 
 In the code below, an example of extracting the author information is shown. To select a HTML class (like "author") as opposed to a tag (like "main"), we have to put a period in front of the class name. Once the html node we are interested in has been identified, we can extract the text for that node using `html_text()`.
 
@@ -157,7 +153,7 @@ map_chr(.x = blog_data$main,
 # 
 # write_rds(nms, "data/2017-08-16-hadley-pleased/nms.rds")
 
-read_rds("data/2017-08-16-hadley-pleased/nms.rds")
+read_rds("./data/nms.rds")
 ```
 
 
@@ -190,7 +186,7 @@ select(blog_data, author, date)
 ```{r, echo = FALSE}
 # blog_data_no_xml <- select(blog_data, -main)
 # write_rds(blog_data_no_xml, "data/2017-08-16-hadley-pleased/blog-data-no-xml.rds")
-blog_data_no_xml <- read_rds("data/2017-08-16-hadley-pleased/blog-data-no-xml.rds")
+blog_data_no_xml <- read_rds("./data/blog-data-no-xml.rds")
 select(blog_data_no_xml, author, date)
 ```
 
@@ -206,9 +202,7 @@ select(blog_data_no_xml, title)
 
 The other bits of meta data that might be interesting are the categories and tags that the post falls under. This is a little bit more involved, because both the categories and tags fall under the same class, `".terms"`. To separate them, we need to look into the href to see if the information is either a tag or a category (href = "/categories/" VS href = "/tags/").
 
-```{r, echo=FALSE}
-knitr::include_graphics("/img/hadley-pleased/cat-tag.png")
-```
+![](./img/cat-tag.png)
 
 The function below extracts either the categories or the tags, depending on the argument, by:
 
@@ -248,7 +242,7 @@ select(blog_data, categories, tags)
 
 ```{r, echo = FALSE}
 # write_rds(blog_data, "data/2017-08-16-hadley-pleased/blog-data-cat-tag.rds")
-blog_data_cat_tags <- read_rds("data/2017-08-16-hadley-pleased/blog-data-cat-tag.rds")
+blog_data_cat_tags <- read_rds("./data/blog-data-cat-tag.rds")
 select(blog_data_cat_tags, categories, tags)
 ```
 
@@ -296,7 +290,7 @@ blog_data <- blog_data %>%
 # # at this point, we dont need the xml anymore so overwrite blog_data
 # blog_data <- select(blog_data, -main)
 # write_rds(blog_data, "data/2017-08-16-hadley-pleased/blog-data-final.rds")
-blog_data <- read_rds("data/2017-08-16-hadley-pleased/blog-data-final.rds")
+blog_data <- read_rds("./data/blog-data-final.rds")
 ```
 
 ```{r}

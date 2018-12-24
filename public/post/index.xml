@@ -53,10 +53,10 @@ I did the analysis in R, but I wanted to take it a step further.</description>
     
     <item>
       <title>Which RStudio blog posts “pleased” Hadley? A tidytext &#43; web scraping analysis</title>
-      <link>/post/hadley-pleased/</link>
+      <link>/post/2017-08-16-hadley-pleased/hadley-pleased/</link>
       <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
       
-      <guid>/post/hadley-pleased/</guid>
+      <guid>/post/2017-08-16-hadley-pleased/hadley-pleased/</guid>
       <description>Introduction Awhile back, I saw a conversation on twitter about how Hadley uses the word “pleased” very often when introducing a new blog post (I couldn’t seem to find this tweet anymore. Can anyone help?). Out of curiousity, and to flex my R web scraping muscles a bit, I’ve decided to analyze the 240+ blog posts that RStudio has put out since 2011. This post will do a few things:</description>
     </item>
     
