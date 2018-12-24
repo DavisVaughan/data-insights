@@ -59,7 +59,10 @@ for everything that it can do. For example, the following table was created
 using <code>huxtable</code>. Notice the math symbols in the first column, the fact that
 the standard errors are closer to the row above them due to smaller margins, and
 the bolding of certain cells.</p>
-<p><img src="/post/2017-12-09-writing-a-paper-with-rstudio/index_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
+<center>
+<img src="img/huxtable-example.png" width="750"/>
+</center>
+<p><br></br></p>
 <p>The <code>tibble</code> used to create the core table looked like this:</p>
 <pre><code>## # A tibble: 14 x 4
 ##    metric                   `5-Min`    Daily `5-Min No Outlier`
@@ -128,7 +131,10 @@ ht</code></pre>
 <p>You even get to view your table in the console without knitting the document to
 check that you put lines / bolding / even coloring in the right place. This
 saves more time than you might think!</p>
-<p><img src="/post/2017-12-09-writing-a-paper-with-rstudio/index_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<center>
+<img src="img/huxtable-console.png" width="500"/>
+</center>
+<p><br></br></p>
 <p>I find the pipeable syntax very intuitive, and the family of <code>set_*()</code> functions
 allow for endless combinations. I didn’t even venture into the world of
 conditional cell formatting, but I hear that that is pretty powerful too.</p>

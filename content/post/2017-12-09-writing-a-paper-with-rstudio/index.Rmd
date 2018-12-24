@@ -69,14 +69,8 @@ using `huxtable`. Notice the math symbols in the first column, the fact that
 the standard errors are closer to the row above them due to smaller margins, and
 the bolding of certain cells. 
 
-
-
-```{r, echo=FALSE, fig.asp=.8, fig.align='center'}
-library(png)
-library(grid)
-p <- readPNG("./img/huxtable-example.png")
-grid.raster(p)
-```
+<center><img src="./img/huxtable-example.png" width="750"/></center>
+<br></br>
 
 The `tibble` used to create the core table looked like this:
 
@@ -140,12 +134,8 @@ You even get to view your table in the console without knitting the document to
 check that you put lines / bolding / even coloring in the right place. This
 saves more time than you might think!
 
-```{r, echo=FALSE, fig.asp=.7, fig.align='center'}
-library(png)
-library(grid)
-p <- readPNG("./img/huxtable-console.png")
-grid.raster(p)
-```
+<center><img src="./img/huxtable-console.png" width="500"/></center>
+<br></br>
 
 I find the pipeable syntax very intuitive, and the family of `set_*()` functions
 allow for endless combinations. I didn't even venture into the world of 
