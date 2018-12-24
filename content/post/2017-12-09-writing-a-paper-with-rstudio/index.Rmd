@@ -17,9 +17,7 @@ I did the analysis in R, but I wanted to take it a step further.
 Could I write the entire paper in R and RStudio in a fairly professional format?
 Yes.
 
-```{r, echo=FALSE}
-knitr::include_graphics("/img/2017-12-09-writing-a-paper-with-rstudio/paper-sample.png")
-```
+![](./img/paper-sample.png)
 
 I figured I would outline a few issues I had along the way, and talk about the
 experience for anyone that might do something similar.
@@ -76,14 +74,14 @@ the bolding of certain cells.
 ```{r, echo=FALSE, fig.asp=.8, fig.align='center'}
 library(png)
 library(grid)
-p <- readPNG("../../static/img/2017-12-09-writing-a-paper-with-rstudio/huxtable-example.png")
+p <- readPNG("./img/huxtable-example.png")
 grid.raster(p)
 ```
 
 The `tibble` used to create the core table looked like this:
 
 ```{r, echo = FALSE}
-hux <- readr::read_rds("data/2017-12-09-writing-a-paper-with-rstudio/huxtable-example.rds")
+hux <- readr::read_rds("./data/huxtable-example.rds")
 hux
 ```
 
@@ -145,7 +143,7 @@ saves more time than you might think!
 ```{r, echo=FALSE, fig.asp=.7, fig.align='center'}
 library(png)
 library(grid)
-p <- readPNG("../../static/img/2017-12-09-writing-a-paper-with-rstudio/huxtable-console.png")
+p <- readPNG("./img/huxtable-console.png")
 grid.raster(p)
 ```
 

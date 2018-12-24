@@ -34,10 +34,10 @@ Note: A few functions in the unpivotr package that are used here have been depre
     
     <item>
       <title>Writing a paper with RStudio</title>
-      <link>/post/writing-a-paper-with-rstudio/</link>
+      <link>/post/2017-12-09-writing-a-paper-with-rstudio/writing-a-paper-with-rstudio/</link>
       <pubDate>Sat, 09 Dec 2017 00:00:00 +0000</pubDate>
       
-      <guid>/post/writing-a-paper-with-rstudio/</guid>
+      <guid>/post/2017-12-09-writing-a-paper-with-rstudio/writing-a-paper-with-rstudio/</guid>
       <description>Intro This semester I had to write a paper for my Financial Econometrics class. My topic was on analyzing the volatility of Bitcoin using GARCH modeling. I’m not particularly interested in Bitcoin, but with all the recent news around it, and with its highly volatile characteristics, I figured it would be a good candidate for analysis.
 I did the analysis in R, but I wanted to take it a step further.</description>
     </item>
