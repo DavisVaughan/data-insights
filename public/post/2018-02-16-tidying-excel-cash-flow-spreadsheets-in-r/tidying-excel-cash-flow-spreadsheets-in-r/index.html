@@ -1,11 +1,73 @@
----
-title: "Tidying Excel cash flow spreadsheets using R"
-author: "Davis Vaughan"
-date: '2018-02-16'
-slug: tidying-excel-cash-flow-spreadsheets-in-r
----
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" prefix="og: http://ogp.me/ns#" xmlns:og="http://ogp.me/ns#"><!--<![endif]-->
 
-<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+    <head>
+                <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="author" content="">
+  
+	
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:creator" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:domain" content="/">
+	
+        <meta property="og:site_name" content="Data Insights">
+        <meta property="og:title" content="Data Insights">
+        <meta property="og:url" content="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r/tidying-excel-cash-flow-spreadsheets-in-r/">
+        <meta property="og:description" content="">
+    
+        <meta property="og:type" content="article" />
+        <meta property="og:article:author" content="" />
+        <meta property="og:article:published_time" content="2018-02-16T00:00:00Z" />
+    
+        <meta name="generator" content="Hugo 0.49.2" />
+        <title>Tidying Excel cash flow spreadsheets using R &middot; Data Insights</title>
+        <link rel="canonical" href="/" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="">
+        <link rel="stylesheet" type="text/css" href="/css/main.css"/>
+        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300|Montserrat:700|Kaushan+Script|Roboto|Fira+Mono" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <link rel="stylesheet" href="/css/monokai-sublime.css">
+        <script src="/js/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+
+<body>
+<!--[if lt IE 7]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chrome/‎">install Google Chrome</a> to experience this site.</p><![endif]-->
+
+    <header id="site-header">
+        <div class="container">
+            <a href="/" alt="Data Insights"><h3>Data Insights</h3></a>
+            <p class="blog-description">
+              <a href = "/">Home</a>
+              |
+              <a href = "/about/">About</a>
+              |
+              <a href = "/archive/">Archive</a>
+              |
+              <a href = "/resume/davis-vaughan-resume.pdf">Resume</a>
+            </p>
+        </div>
+    </header>
+<main class="content" role="main">
+	<div class="container">
+		<article class="post">
+	<header class="post-header">
+        <h3 class="p-post-title">Tidying Excel cash flow spreadsheets using R</h3>
+    </header>
+
+    <section class="post-content">
+        <link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
 
 
@@ -35,10 +97,10 @@ in the Financial world. Don’t worry too much about how hard this is to see, I�
 zoom in on relevant features as we go along. But do notice how columns C through
 Z are the months, and the left two columns represent main and sub-headers for
 the cash flow sheet.</p>
-<p><img src="/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/untidy-sheet-2.png" /><!-- --></p>
+<p><img src="img/untidy-sheet-2.png" /></p>
 <p>Why doesn’t this fit the “tidy” principles? Here are just a few things we might change,
 and a picture to highlight the problems.</p>
-<p><img src="/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/highlight-problems.png" /><!-- --></p>
+<p><img src="img/highlight-problems.png" /></p>
 <ol style="list-style-type: decimal">
 <li><code>Cash Inflows (Income)</code> in column A is a “main header” with “sub-headers” in column B rows 7-13. This violates principle 2, because each row is not a standalone observation. You need information from row 6 (the title of the category) to figure out what category <code>Cash Collections</code> belongs in. Ideally, <code>Cash Inflows (Income)</code> would be repeated in column A, rows 7-10 and in row 13 to uniquely identify that row. </br><br></li>
 <li>Row 4 identifies 13 columns in this dataset (12 months and a total column). In the tidy world, this violates principle 1, because those 13 can actually be reduced to just 1 column, <code>month</code>, where we will just understand that <code>TOTALS</code> is the sum of the others. Some people would even drop the <code>TOTALS</code> column, as it is easily computed from the 12 months of data and may cause confusion when looking at monthly totals. </br><br></li>
@@ -63,7 +125,7 @@ library(ggplot2)
 library(unpivotr)
 library(purrr)</code></pre>
 <p>First, let’s load the data and see what we get.</p>
-<pre class="r"><code>wb &lt;- &quot;data/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r/untidy.xlsx&quot;
+<pre class="r"><code>wb &lt;- &quot;./data/untidy.xlsx&quot;
 
 untidy_raw &lt;- read_excel(wb)
 
@@ -274,7 +336,7 @@ some pictures to help. For each of our 3 header groups, we need to tell <code>un
 how to join our main data cells (where the numbers are) to the actual headers. For instance,
 for the column header, all we have to do is go directly North from any data point
 to run into the corresponding header.</p>
-<p><img src="/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/north.png" style="display: block; margin: auto;" /></p>
+<p><img src="img/north.png" /></p>
 <p>We tell <code>unpivotr</code> this like so:</p>
 <pre class="r"><code>tokens_main %&gt;%
   N(header = col_headers) %&gt;% # passing in our col_headers tibble we extracted earlier
@@ -291,11 +353,11 @@ sheet do not have column headers, so they don’t show up here.</p>
 <p>Next, we need to take care of our row headers. To do so, we need two transformations.
 For the sub-headers, it is as simple as the column headers, we just go directly
 west from any cell to run into the sub-header.</p>
-<p><img src="/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/west.png" style="display: block; margin: auto;" /></p>
+<p><img src="img/west.png" /></p>
 <p>For the main headers we need to do something slightly more complicated. For each
 data cell, we need to run all the way to the west wall of the sheet, and then run
 north from there to run into, for example <code>Cash Inflows (Income)</code>.</p>
-<p><img src="/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/north-northwest.png" style="display: block; margin: auto;" /></p>
+<p><img src="img/north-northwest.png" /></p>
 <p><code>unpivotr</code> gives us the power to do this in the <code>WNW()</code> (West-NorthWest) function. It searches
 West and NorthWest for the first matching row header. Combining this with the
 <code>W()</code> function that is needed for the sub-headers, we get:</p>
@@ -423,10 +485,103 @@ at each one. <code>walk</code> is like <code>map</code> except it is mainly call
 “side effects” (like producing a plot) rather than for something like
 manipulating data and returning it to the user.</p>
 <pre class="r"><code>walk(main_headers, ~yearly_plot(tokens_plot_ready, .x))</code></pre>
-<p><img src="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r_files/figure-html/unnamed-chunk-15-1.png" width="792" /><img src="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r_files/figure-html/unnamed-chunk-15-2.png" width="792" /><img src="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r_files/figure-html/unnamed-chunk-15-3.png" width="792" /></p>
+<p><img src="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r/index_files/figure-html/unnamed-chunk-15-1.png" width="792" /><img src="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r/index_files/figure-html/unnamed-chunk-15-2.png" width="792" /><img src="/post/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r/index_files/figure-html/unnamed-chunk-15-3.png" width="792" /></p>
 </div>
 <div id="conclusion" class="section level3">
 <h3>Conclusion</h3>
 <p>I really think that <code>unpivotr</code> is a powerful package. Using map directions to
 tidy these data sets is a pretty neat idea! That’s all for now!</p>
 </div>
+
+    </section>
+
+    <hr>
+
+    <footer class="post-footer">
+        <section class="f-1">
+            <section class="share">
+                <span>Share:
+                <a class="icon-twitter" href="http://twitter.com/share?text=Tidying%20Excel%20cash%20flow%20spreadsheets%20using%20R&url=%2fpost%2f2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r%2ftidying-excel-cash-flow-spreadsheets-in-r%2f"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=%2fpost%2f2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r%2ftidying-excel-cash-flow-spreadsheets-in-r%2f"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="fa fa-facebook"></i>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=%2fpost%2f2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r%2ftidying-excel-cash-flow-spreadsheets-in-r%2f"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+                </span>
+            </section>
+
+            
+        </section>
+                
+        <section id="comments">
+            <div id="disqus_thread" class="post-comments"></div>
+            <script type="text/javascript">
+              if (window.location.hostname != "localhost") {
+                var disqus_shortname = 'datainsights';
+                (function() {
+                  var dsq = document.createElement('script');
+                  dsq.type = 'text/javascript';
+                  dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              }
+            </script>
+            <noscript>
+              Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+            </noscript>
+        </section>
+                
+    </footer>
+</article>
+	</div>
+</main>
+    <footer id="site-footer">
+        <div class="container">
+          
+          
+            <a href="https://www.twitter.com/dvaughan32" title="Twitter" target="_blank"><span class="tooltip"><i class="fa fa-twitter"></i></span></a>
+          
+          
+            <a href="https://www.github.com/DavisVaughan" title="GitHub" target="_blank"><span class="tooltip"><i class="fa fa-github"></i></span></a>
+          
+          <a href="/index.xml" title="Get the RSS feed"><span class="tooltip"><i class="fa fa-rss"></i></span></a>
+          <section>&copy; <a href="/"></a> 2017 | All rights reserved</section>
+          <section>Theme by <a href="http://www.jrdnbwmn.com">Jordan Bowman</a>. Generated with <a href="http://gohugo.io/">Hugo</a>.</section>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/fittext.js"></script>
+    <script type="text/javascript">
+      $(".heading").fitText();
+    </script>
+    
+    <script src="/js/math-code.js"></script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    });
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+
+    <script>
+        var _gaq=[['_setAccount','UA-99003915-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
+
+
+</body>
+</html>

@@ -39,16 +39,12 @@ zoom in on relevant features as we go along. But do notice how columns C through
 Z are the months, and the left two columns represent main and sub-headers for
 the cash flow sheet.
 
-```{r cash flow sheet, echo=FALSE}
-knitr::include_graphics("/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/untidy-sheet-2.png")
-```
+![](./img/untidy-sheet-2.png)
 
 Why doesn't this fit the "tidy" principles? Here are just a few things we might change,
 and a picture to highlight the problems.
 
-```{r typical problems, echo=FALSE}
-knitr::include_graphics("/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/highlight-problems.png")
-```
+![](./img/highlight-problems.png)
 
   1. `Cash Inflows (Income)` in column A is a "main header" with "sub-headers" in column B rows 7-13. This violates principle 2, because each row is not a standalone observation. You need information from row 6 (the title of the category) to figure out what category `Cash Collections` belongs in. Ideally, `Cash Inflows (Income)` would be repeated in column A, rows 7-10 and in row 13 to uniquely identify that row. </br><br>
   2. Row 4 identifies 13 columns in this dataset (12 months and a total column). In the tidy world, this violates principle 1, because those 13 can actually be reduced to just 1 column, `month`, where we will just understand that `TOTALS` is the sum of the others. Some people would even drop the `TOTALS` column, as it is easily computed from the 12 months of data and may cause confusion when looking at monthly totals. </br><br>
@@ -79,7 +75,7 @@ library(purrr)
 First, let's load the data and see what we get.
 
 ```{r}
-wb <- "data/2018-02-16-tidying-excel-cash-flow-spreadsheets-in-r/untidy.xlsx"
+wb <- "./data/untidy.xlsx"
 
 untidy_raw <- read_excel(wb)
 
@@ -227,9 +223,7 @@ how to join our main data cells (where the numbers are) to the actual headers. F
 for the column header, all we have to do is go directly North from any data point
 to run into the corresponding header.
 
-```{r north, echo=FALSE, fig.align='center'}
-knitr::include_graphics("/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/north.png")
-```
+![](./img/north.png)
 
 We tell `unpivotr` this like so:
 
@@ -248,17 +242,13 @@ Next, we need to take care of our row headers. To do so, we need two transformat
 For the sub-headers, it is as simple as the column headers, we just go directly
 west from any cell to run into the sub-header.
 
-```{r west, echo=FALSE, fig.align='center'}
-knitr::include_graphics("/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/west.png")
-```
+![](./img/west.png)
 
 For the main headers we need to do something slightly more complicated. For each
 data cell, we need to run all the way to the west wall of the sheet, and then run
 north from there to run into, for example `Cash Inflows (Income)`. 
 
-```{r nnw, echo=FALSE, fig.align='center'}
-knitr::include_graphics("/img/2018-02-16-tidying-excel-cash-flow-spreadsheets-using-R/north-northwest.png")
-```
+![](./img/north-northwest.png)
 
 `unpivotr` gives us the power to do this in the `WNW()` (West-NorthWest) function. It searches
 West and NorthWest for the first matching row header. Combining this with the 
