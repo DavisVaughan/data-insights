@@ -187,7 +187,7 @@ tibble::tibble(s_T = s_t[,6]) %&gt;%
   ggplot(mapping = aes(x=s_T)) +
   geom_histogram(bins = 500) + 
   labs(x = TeX(&#39;S_T&#39;), y = NULL, title = TeX(&#39;Log-normal Distribution of S_T&#39;) )</code></pre>
-<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1_files/figure-html/unnamed-chunk-9-1.png" width="792" /></p>
+<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-9-1.png" width="792" /></p>
 <p>We could also look at the 6-step path of 100 of our simulations.</p>
 <pre class="r"><code>as_tibble(s_t) %&gt;%
   rownames_to_column(var = &quot;iteration&quot;) %&gt;%
@@ -199,7 +199,7 @@ tibble::tibble(s_T = s_t[,6]) %&gt;%
   ggplot(aes(x = time_step, y = stock_price, group = iteration)) +
   geom_line() +
   labs(x = &quot;Time&quot;, y = &quot;Stock Price&quot;, title = &quot;100 Simulated Paths&quot;)</code></pre>
-<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1_files/figure-html/unnamed-chunk-10-1.png" width="792" /></p>
+<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-10-1.png" width="792" /></p>
 </div>
 <div id="conclusion-extra-content" class="section level3">
 <h3>Conclusion + Extra Content</h3>

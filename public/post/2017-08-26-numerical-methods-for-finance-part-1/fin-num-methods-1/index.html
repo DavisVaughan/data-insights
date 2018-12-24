@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" prefix="og: http://ogp.me/ns#" xmlns:og="http://ogp.me/ns#"><!--<![endif]-->
+
+    <head>
+                <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="author" content="">
+  
+	
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:creator" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:domain" content="/">
+	
+        <meta property="og:site_name" content="Data Insights">
+        <meta property="og:title" content="Data Insights">
+        <meta property="og:url" content="/post/2017-08-26-numerical-methods-for-finance-part-1/fin-num-methods-1/">
+        <meta property="og:description" content="">
+    
+        <meta property="og:type" content="article" />
+        <meta property="og:article:author" content="" />
+        <meta property="og:article:published_time" content="2017-08-28T00:00:00Z" />
+    
+        <meta name="generator" content="Hugo 0.49.2" />
+        <title>Financial Numerical Methods - Part 1: Vectorized Stock Price Simulation &middot; Data Insights</title>
+        <link rel="canonical" href="/" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="">
+        <link rel="stylesheet" type="text/css" href="/css/main.css"/>
+        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300|Montserrat:700|Kaushan+Script|Roboto|Fira+Mono" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <link rel="stylesheet" href="/css/monokai-sublime.css">
+        <script src="/js/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+
+<body>
+<!--[if lt IE 7]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chrome/‎">install Google Chrome</a> to experience this site.</p><![endif]-->
+
+    <header id="site-header">
+        <div class="container">
+            <a href="/" alt="Data Insights"><h3>Data Insights</h3></a>
+            <p class="blog-description">
+              <a href = "/">Home</a>
+              |
+              <a href = "/about/">About</a>
+              |
+              <a href = "/archive/">Archive</a>
+              |
+              <a href = "/resume/davis-vaughan-resume.pdf">Resume</a>
+            </p>
+        </div>
+    </header>
+<main class="content" role="main">
+	<div class="container">
+		<article class="post">
+	<header class="post-header">
+        <h3 class="p-post-title">Financial Numerical Methods - Part 1: Vectorized Stock Price Simulation</h3>
+    </header>
+
+    <section class="post-content">
+        <div id="why-am-i-posting-about-this" class="section level3">
+<h3>Why am I posting about this?</h3>
+<p>School has started up, and I’m in a class called <em>Financial Computing</em>. I thought it might be interesting to share some of my assignments and explain what I learn along the way. Most of the posts won’t be describing the <a href="https://www.quantstart.com/articles/Introduction-to-Stochastic-Calculus">Stochastic Calculus</a> involved in each assignment, but will instead focus on the details of the implementation in R. I don’t claim to have the best way for any of these assignments, but perhaps you can learn something!</p>
+</div>
+<div id="what-are-we-doing-today" class="section level3">
+<h3>What are we doing today?</h3>
+<p>In this post, I’ll work through simulating paths of a stock that follows the log normal distribution used in the <a href="https://www.coursera.org/learn/financial-engineering-1/lecture/pPqjt/the-black-scholes-model">Black Scholes model</a>. Importantly, I’ll explain my thought process as I tried to optimize the implementation from loops to vectors.</p>
+<p>As an added bonus, at the very bottom is some extra content on a basic function that I have created to replicate the concept of <em>broadcasting</em> from Python. Someone could (should?) probably create an entire package out of this idea.</p>
+</div>
+<div id="the-model" class="section level3">
+<h3>The Model</h3>
+<p>Under the Black Scholes model, the stock price, <code>$ S_t $</code>, at time <code>t</code> follows a Geometric Brownian Motion, which means that it satisfies the Stochastic Differential Equation:</p>
+<p><span class="math display">\[ dS_t = r S_t dt + \sigma S_t dW_t \]</span></p>
+<p>Where:</p>
+<ul>
+<li><code>$ r = $</code> Drift - The average log return per time unit</li>
+<li><code>$ \sigma = $</code> Volatility - How much variance is in that drift</li>
+<li><code>$ W_t = $</code> Brownian Motion - Random noise from a normal distribution with mean <code>0</code> and variance <code>t</code></li>
+</ul>
+<p>Interestingly, we actually have the solution to this equation (one of the few we have analytical solutions for):</p>
+<p><span class="math display">\[ S_t = S_0 \times e^{(r - \frac{1}{2} \sigma^2) t + \sigma W_t} \]</span></p>
+<p>More generally, this can be written as a formula providing us with the recursive equation:</p>
+<p><span class="math display">\[ S_{t_i} = S_{t_{i-1}} \times e^{(r - \frac{1}{2} \sigma^2) ({t_i - t_{i-1}}) + \sigma (W_{t_i} - W_{t_{i-1}}) } \]</span></p>
+<p>If you want to know how to get the solution, <a href="https://www.quantstart.com/articles/Geometric-Brownian-Motion">this</a> is a pretty good explanation, but be prepared to learn about <a href="http://www.math.tamu.edu/~stecher/425/Sp12/brownianMotion.pdf">Ito’s Lemma</a>.</p>
+</div>
+<div id="really-dude" class="section level3">
+<h3>Really, dude?</h3>
+<p>Okay, that’s a lot without any explanation, and I get that. But the point of this post is more to explain how to simulate paths of <code>$ S_t $</code>. So how do we do that?</p>
+<ul>
+<li>We will start from time 0 with an initial stock price, then we will generate the next stock price from that using the recursive formula, and so on.</li>
+<li>The only random piece is the brownian motion increment (<code>dW</code>), which we will generate at each time point using draws from a normal distribution.</li>
+<li>The time increment will be a constant value (<code>dt</code>) to keep things simple.</li>
+</ul>
+<p>I was given some starting parameters:</p>
+<pre class="r"><code># Set a seed too so I can reproduce the exact numbers
+set.seed(123)
+
+# Parameters
+r       &lt;- 0.028
+sigma   &lt;- 0.255
+time_T  &lt;- 0.5
+dt      &lt;- 1/12
+t_total &lt;- time_T / dt
+s_0     &lt;- 100
+N       &lt;- 10000</code></pre>
+<p>Where <code>time_T</code> and <code>dt</code> mean each simulation path will go from time 0 to <code>time_T</code> by increments of <code>dt</code>. Dividing <code>time_T / dt</code> gets us the total number of time steps required. <code>N</code> is the number of paths to simulate.</p>
+</div>
+<div id="first-attempt" class="section level3">
+<h3>First attempt</h3>
+<p>We all know loops are to be avoided when you can in R, and that you should instead vectorize the operations. At first, I thought this wasn’t going to be possible, as this is a recursive type of formula where the next value relies on the previous one. With that in mind, I created the following implementation.</p>
+<p>First off, set up a matrix to fill with the 10000 simulations (one per row), each one having 6 time steps (7 columns total including the initial stock price).</p>
+<pre class="r"><code># Create a 10000x7 matrix of NA&#39;s to fill in
+# Each row is a simulation
+s &lt;- matrix(NA_real_, nrow = N, ncol = t_total+1)
+
+# The first column is just the initial price
+s[,1] &lt;- s_0
+
+head(s)</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,]  100   NA   NA   NA   NA   NA   NA
+## [2,]  100   NA   NA   NA   NA   NA   NA
+## [3,]  100   NA   NA   NA   NA   NA   NA
+## [4,]  100   NA   NA   NA   NA   NA   NA
+## [5,]  100   NA   NA   NA   NA   NA   NA
+## [6,]  100   NA   NA   NA   NA   NA   NA</code></pre>
+<p>So far so good, now let’s create a matrix for <code>dW</code>, our brownian motion increments. A <em>very</em> important fact is that these are all independent of each other, so the generation of them is straightforward. Each increment:</p>
+<p><span class="math display">\[ W_{t_i} - W_{t_{i-1}} \]</span></p>
+<p>can be drawn from a normal distribution with mean 0 and variance <code>$ t_i - t_{i-1} $</code> (which is what I have defined as <code>dt</code> because it is a constant).</p>
+<pre class="r"><code># ~N(0, dt)
+# To fill in 10000 simulations, and move forward 6 steps, we need a 10000x6 matrix
+dW &lt;- rnorm(N * t_total, mean = 0, sd = sqrt(dt))
+dW &lt;- matrix(dW, N, t_total)
+head(dW)</code></pre>
+<pre><code>##             [,1]        [,2]        [,3]        [,4]        [,5]
+## [1,] -0.16179538  0.68436942 -0.24141807 -0.05588936  0.13929365
+## [2,] -0.06644652 -0.04815446 -0.06367394  0.07452070  0.20824004
+## [3,]  0.44996033  0.26759071 -0.60723241 -0.15539745 -0.14658701
+## [4,]  0.02035402 -0.16401128 -0.48145457 -0.34036612 -0.01867981
+## [5,]  0.03732215  0.06497791 -0.31695458  0.25999452  0.37589000
+## [6,]  0.49509662  0.32677618 -0.48082343 -0.00469084 -0.06311503
+##             [,6]
+## [1,]  0.07493710
+## [2,]  0.26486253
+## [3,] -0.20851535
+## [4,] -0.23333150
+## [5,] -0.04080481
+## [6,]  0.65154366</code></pre>
+<p>Based on this setup, I thought I would need a loop. The algorithm would step through the 10000 simulations all at once, but would have to loop through the 6 time steps one at a time, because each time step depended on the previous one. So, following the formula (below again for reference) I did this:</p>
+<p><span class="math display">\[ S_{t_i} = S_{t_{i-1}} \times e^{(r - \frac{1}{2} \sigma^2) ({t_i - t_{i-1}}) + \sigma (W_{t_i} - W_{t_{i-1}}) } \]</span></p>
+<pre class="r"><code>for(i in 1:(t_total)) {
+  s[,i+1] &lt;- s[,i] * exp((r - 1/2 * sigma^2) * dt + sigma * dW[,i])
+}
+
+head(s)</code></pre>
+<pre><code>##      [,1]      [,2]      [,3]      [,4]      [,5]      [,6]      [,7]
+## [1,]  100  95.92209 114.16839 107.31161 105.75330 109.53595 111.60722
+## [2,]  100  98.28292  97.04695  95.44803  97.24258 102.50728 109.62854
+## [3,]  100 112.11600 119.98823 102.73710  98.70849  95.05115  90.09528
+## [4,]  100 100.48258  96.33055  85.16909  78.05933  77.65918  73.14576
+## [5,]  100 100.91830 102.56581  94.56668 101.01083 111.13033 109.93864
+## [6,]  100 113.41388 123.22299 108.96314 108.79196 107.01479 126.30943</code></pre>
+<p>And that does work! But can we avoid the loop? YES WE CAN!</p>
+</div>
+<div id="math" class="section level3">
+<h3>MATH</h3>
+<p>To avoid the loop, we are going to manipulate a simple case, and then apply it generally. One key element for this vectorization is that <em>brownian motion increments are independent</em>. Let’s think about what actually happens from time 0-&gt;1 and from 1-&gt;2.</p>
+<p><span class="math display">\[ S_1 = S_0 \times e^{(r - \frac{1}{2} \sigma^2) (t_1 - t_0) + \sigma (W_1 - W_0)} \]</span></p>
+<p><span class="math display">\[ S_2 = S_1 \times e^{(r - \frac{1}{2} \sigma^2) (t_2 - t_1) + \sigma (W_2 - W_1)} \]</span></p>
+<p>If we plug the equation for <code>S_1</code> into the equation for <code>S_2</code>…</p>
+<p><span class="math display">\[ S_2 = (S_0 \times e^{(r - \frac{1}{2} \sigma^2) (t_1 - t_0) + \sigma (W_1 - W_0)}) \times e^{(r - \frac{1}{2} \sigma^2) (t_2 - t_1) + \sigma (W_2 - W_1)} \]</span></p>
+<p>And then combine exponents…</p>
+<p><span class="math display">\[ S_2 = (S_0 \times e^{(r - \frac{1}{2} \sigma^2) (t_1 - t_0 + t_2 - t_1) + \sigma (W_1 - W_0 + W_2 - W_1)}) \]</span></p>
+<p>Notice that some of the <code>t</code> and <code>W</code> terms cancel:</p>
+<p><span class="math display">\[ S_2 = (S_0 \times e^{(r - \frac{1}{2} \sigma^2) (t_2 - t_0) + \sigma (W_2 - W_0)}) \]</span></p>
+<p>And by definition <code>t_0</code> and <code>W_0</code> are <code>0</code>:</p>
+<p><span class="math display">\[ S_2 = S_0 \times e^{(r - \frac{1}{2} \sigma^2) t_2 + \sigma W_2} \]</span></p>
+<p>This is actually the form that was proposed as the solution to the geometric brownian motion stochastic differential equation:</p>
+<p><span class="math display">\[ S_t = S_0 \times e^{(r - \frac{1}{2} \sigma^2) t + \sigma W_t} \]</span></p>
+<p>It looks like we can actually generate <code>S_2</code> without needing to know <code>S_1</code> at all. Notice that the exponent now contains <code>t_2</code> and <code>W_2</code>. <code>t_2</code> is known beforehand, but <code>W_2</code> seems like it would rely on <code>W_1</code> in a way that has to be recursively calculated. Actually, if we think of <code>W_2</code> as a sum of brownian motion increments (I told you this would help):</p>
+<p><span class="math display">\[ W_2 = (W_2 - W_1) + (W_1 - W_0) = dW_2 + dW_1 \]</span></p>
+<p>then <code>W_2</code> is just the <em>cumulative sum</em> of the increments, and, by definition, each increment is independent of the previous increment so we can generate them all before hand (we already did this when we created the <code>dW</code> matrix).</p>
+<pre class="r"><code># Rowwise cumulative sum of dW generates W1, W2, W3, ... for each simulation
+W  &lt;- plyr::aaply(dW, 1, cumsum)
+head(W)</code></pre>
+<pre><code>##    
+## X1            1          2          3           4          5          6
+##   1 -0.16179538  0.5225740  0.2811560  0.22526661  0.3645603  0.4394974
+##   2 -0.06644652 -0.1146010 -0.1782749 -0.10375422  0.1044858  0.3693483
+##   3  0.44996033  0.7175510  0.1103186 -0.04507883 -0.1916658 -0.4001812
+##   4  0.02035402 -0.1436573 -0.6251118 -0.96547795 -0.9841578 -1.2174893
+##   5  0.03732215  0.1023001 -0.2146545  0.04534000  0.4212300  0.3804252
+##   6  0.49509662  0.8218728  0.3410494  0.33635853  0.2732435  0.9247872</code></pre>
+<p>Unlike the recursive formula from before where <code>dt</code> was used, the time that we are currently at, <code>t</code>, is used instead so we will need that as well.</p>
+<pre class="r"><code>time_steps &lt;- matrix(seq(from = dt, to = time_T, by = dt), 
+                     nrow = N, ncol = t_total, byrow = TRUE)
+head(time_steps)</code></pre>
+<pre><code>##            [,1]      [,2] [,3]      [,4]      [,5] [,6]
+## [1,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5
+## [2,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5
+## [3,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5
+## [4,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5
+## [5,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5
+## [6,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5</code></pre>
+<p>Now it’s a vectorized one-liner to calculate the stock price at each time!</p>
+<pre class="r"><code># Stock price simulation
+s_t &lt;- s_0 * exp((r - 1/2 * sigma^2) * time_steps + sigma * W)
+
+# Add the original stock price onto the front
+s_t &lt;- cbind(s_0, s_t)
+
+# Add 0 as the column name for initial value (it&#39;s important I promise)
+colnames(s_t)[1] &lt;- &quot;0&quot;
+
+head(s_t)</code></pre>
+<pre><code>##     0         1         2         3         4         5         6
+## 1 100  95.92209 114.16839 107.31161 105.75330 109.53595 111.60722
+## 2 100  98.28292  97.04695  95.44803  97.24258 102.50728 109.62854
+## 3 100 112.11600 119.98823 102.73710  98.70849  95.05115  90.09528
+## 4 100 100.48258  96.33055  85.16909  78.05933  77.65918  73.14576
+## 5 100 100.91830 102.56581  94.56668 101.01083 111.13033 109.93864
+## 6 100 113.41388 123.22299 108.96314 108.79196 107.01479 126.30943</code></pre>
+<p>Just as a sanity check, this should have produced the same results as the for loop</p>
+<pre class="r"><code># ignore the dimname attributes
+all.equal(s, s_t, check.attributes = FALSE)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+<div id="now-what" class="section level3">
+<h3>Now what?</h3>
+<p>There are a number of interesting things we could do with these results. One is to calculate the <a href="http://finance.bi.no/~bernt/gcc_prog/recipes/recipes/node12.html">fair price of a European Option</a> on this stock. I think I’ll save that for the next post.</p>
+<p>Something else we might do is visualize the distribution of <code>$ S_T $</code>, the stock price at the terminal (final) time. Because the stock price is modeled as an exponential of a normal random variable (<code>W_t</code>), the stock price itself has a log-normal distribution. For practicality, this means that it is right tailed and can’t drop below 0 (good properties of a stock).</p>
+<pre class="r"><code>library(tidyverse)
+
+# let&#39;s just take a moment and admire the fact that I can put LaTeX in ggplots
+library(latex2exp) 
+
+tibble::tibble(s_T = s_t[,6]) %&gt;%
+  ggplot(mapping = aes(x=s_T)) +
+  geom_histogram(bins = 500) + 
+  labs(x = TeX(&#39;S_T&#39;), y = NULL, title = TeX(&#39;Log-normal Distribution of S_T&#39;) )</code></pre>
+<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-9-1.png" width="792" /></p>
+<p>We could also look at the 6-step path of 100 of our simulations.</p>
+<pre class="r"><code>as_tibble(s_t) %&gt;%
+  rownames_to_column(var = &quot;iteration&quot;) %&gt;%
+  gather(time_step, stock_price, -iteration) %&gt;%
+  mutate(time_step = as.numeric(time_step),
+         iteration = as.factor(iteration)) %&gt;%
+  filter(iteration %in% 1:100) %&gt;%
+  
+  ggplot(aes(x = time_step, y = stock_price, group = iteration)) +
+  geom_line() +
+  labs(x = &quot;Time&quot;, y = &quot;Stock Price&quot;, title = &quot;100 Simulated Paths&quot;)</code></pre>
+<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-10-1.png" width="792" /></p>
+</div>
+<div id="conclusion-extra-content" class="section level3">
+<h3>Conclusion + Extra Content</h3>
+<p>If I haven’t bored you to tears yet, allow me to thank you for sticking around this long. I think these posts are useful because they force me to try and understand a concept a bit more than if I was just reading it from a book.</p>
+<p>As you may have noted in the post above, I had to create a large matrix <code>time_steps</code> for R to perform the matrix addition I wanted correctly. I thought it would have been simple. Ideally I could create a <code>1x6</code> matrix of times, and add it to a <code>10000x6</code> matrix of the brownian motions and have the times matrix <em>broadcasted</em> to each row of the brownian motion matrix, adding element by element to each row. This works in Python and Matlab, but R has a mind of it’s own.</p>
+<pre class="r"><code># First try with a vector
+x1 &lt;- c(1,2)
+x1</code></pre>
+<pre><code>## [1] 1 2</code></pre>
+<pre class="r"><code>x2 &lt;- matrix(c(1,2,3,4), nrow = 2, ncol = 2, byrow = TRUE)
+x2</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    1    2
+## [2,]    3    4</code></pre>
+<pre class="r"><code># I want to add c(1,2) to each row of x2
+x1 + x2</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    2    3
+## [2,]    5    6</code></pre>
+<p>That’s not right, it’s adding 1 to the first column of <code>x2</code>, then 2 to the second column of <code>x2</code>. To get what I want I could butcher it like this:</p>
+<pre class="r"><code>t(x1+t(x2))</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    2    4
+## [2,]    4    6</code></pre>
+<p>If <code>x1</code> was a matrix instead of a vector, then it gives a non-conformable array error.</p>
+<pre class="r"><code>x1 &lt;- matrix(x1, ncol = 2)
+x1</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    1    2</code></pre>
+<pre class="r"><code>x1 + x2</code></pre>
+<pre><code>## Error in x1 + x2: non-conformable arrays</code></pre>
+<p>So R is super strict here. That’s fine and all, but with other languages able to do this, and with it being such a natural way of thinking about this type of addition, I decided to roll my own function that allows me to add matrices together that meet certain conditions by broadcasting one of them over the other.</p>
+<pre class="r"><code># Broadcast addition
+# One of the special % % operators
+`%+%` &lt;- function(e1, e2) {
+  
+  stopifnot(is.matrix(e1))
+  stopifnot(is.matrix(e2))
+  
+  # e1 - e2 &amp; 1 has more rows &amp; equal cols
+  if(nrow(e1) &gt;= nrow(e2) &amp; ncol(e1) == ncol(e2)) {
+    case &lt;- &quot;1&quot;
+    
+    # e1 - e2 &amp; 2 has more rows &amp; equal cols
+  } else if(nrow(e1) &lt; nrow(e2) &amp; ncol(e1) == ncol(e2)) {
+    case &lt;- &quot;2&quot;
+    
+    # e1 - e2 &amp; 1 has more cols &amp; equal rows
+  } else if(ncol(e1) &gt;= ncol(e2) &amp; nrow(e1) == nrow(e2)) {
+    case &lt;- &quot;3&quot;
+    
+    # e1 - e2 &amp; 2 has more cols &amp; equal rows
+  } else if(ncol(e1) &lt; ncol(e2) &amp; nrow(e1) == nrow(e2)) {
+    case &lt;- &quot;4&quot;
+    
+    # Fail
+  } else {
+    stop(&quot;Incorrect dims&quot;)
+  }
+  
+  switch(case,
+         &quot;1&quot; = t(apply(e1, 1, function(x) {x + e2})),
+         &quot;2&quot; = t(apply(e2, 1, function(x) {x + e1})),
+         &quot;3&quot; = t(apply(e1, 2, function(x) {x + e2})),
+         &quot;4&quot; = t(apply(e2, 2, function(x) {x + e1})))
+}</code></pre>
+<p>Let’s see what this thing can do!</p>
+<pre class="r"><code>x1 %+% x2</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    2    4
+## [2,]    4    6</code></pre>
+<p>Nice! That’s what I want. One thing to note is that order of operations don’t work quite as you’d expect because of the precedence of the special <code>%+%</code> operator in relation to <code>+</code> and <code>*</code>, so you have to be really explicit.</p>
+<pre class="r"><code># This tries to do addition first
+x1 * 2 %+% x2</code></pre>
+<pre><code>## Error in 2 %+% x2: is.matrix(e1) is not TRUE</code></pre>
+<pre class="r"><code># Explicit parenthesis
+(x1 * 2) %+% x2</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,]    3    6
+## [2,]    5    8</code></pre>
+<p>Armed with the ability to broadcast addition, let’s redo the last step of the stock price simulation.</p>
+<pre class="r"><code># Instead of a massive matrix, just create a 1x6
+time_steps &lt;- matrix(seq(from = dt, to = time_T, by = dt), nrow = 1, ncol = t_total)
+time_steps</code></pre>
+<pre><code>##            [,1]      [,2] [,3]      [,4]      [,5] [,6]
+## [1,] 0.08333333 0.1666667 0.25 0.3333333 0.4166667  0.5</code></pre>
+<pre class="r"><code># Remember that W is 10000x6
+head(W)</code></pre>
+<pre><code>##    
+## X1            1          2          3           4          5          6
+##   1 -0.16179538  0.5225740  0.2811560  0.22526661  0.3645603  0.4394974
+##   2 -0.06644652 -0.1146010 -0.1782749 -0.10375422  0.1044858  0.3693483
+##   3  0.44996033  0.7175510  0.1103186 -0.04507883 -0.1916658 -0.4001812
+##   4  0.02035402 -0.1436573 -0.6251118 -0.96547795 -0.9841578 -1.2174893
+##   5  0.03732215  0.1023001 -0.2146545  0.04534000  0.4212300  0.3804252
+##   6  0.49509662  0.8218728  0.3410494  0.33635853  0.2732435  0.9247872</code></pre>
+<pre class="r"><code># Add using broadcasted addition, making sure to be careful about parenthesis!
+s_t &lt;- s_0 * exp(((r - 1/2 * sigma^2) * time_steps) %+% (sigma * W))
+
+s_t &lt;- cbind(s_0, s_t, deparse.level = 0)
+head(s_t)</code></pre>
+<pre><code>##   [,1]      [,2]      [,3]      [,4]      [,5]      [,6]      [,7]
+## 1  100  95.92209 114.16839 107.31161 105.75330 109.53595 111.60722
+## 2  100  98.28292  97.04695  95.44803  97.24258 102.50728 109.62854
+## 3  100 112.11600 119.98823 102.73710  98.70849  95.05115  90.09528
+## 4  100 100.48258  96.33055  85.16909  78.05933  77.65918  73.14576
+## 5  100 100.91830 102.56581  94.56668 101.01083 111.13033 109.93864
+## 6  100 113.41388 123.22299 108.96314 108.79196 107.01479 126.30943</code></pre>
+<p>So much better! I have used this a few times in the past month or so. Credit to <a href="https://twitter.com/alexpghayes">Alex Hayes</a> for teaching me a bit about why broadcasting is awesome. I created the base for <code>%+%</code> in response to his comments <a href="https://gist.github.com/alexpghayes/286c2ff2eced494cf96763f19ff408ec">here</a>.</p>
+</div>
+
+    </section>
+
+    <hr>
+
+    <footer class="post-footer">
+        <section class="f-1">
+            <section class="share">
+                <span>Share:
+                <a class="icon-twitter" href="http://twitter.com/share?text=Financial%20Numerical%20Methods%20-%20Part%201%3a%20Vectorized%20Stock%20Price%20Simulation&url=%2fpost%2f2017-08-26-numerical-methods-for-finance-part-1%2ffin-num-methods-1%2f"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=%2fpost%2f2017-08-26-numerical-methods-for-finance-part-1%2ffin-num-methods-1%2f"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="fa fa-facebook"></i>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=%2fpost%2f2017-08-26-numerical-methods-for-finance-part-1%2ffin-num-methods-1%2f"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+                </span>
+            </section>
+
+            
+        </section>
+                
+        <section id="comments">
+            <div id="disqus_thread" class="post-comments"></div>
+            <script type="text/javascript">
+              if (window.location.hostname != "localhost") {
+                var disqus_shortname = 'datainsights';
+                (function() {
+                  var dsq = document.createElement('script');
+                  dsq.type = 'text/javascript';
+                  dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              }
+            </script>
+            <noscript>
+              Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+            </noscript>
+        </section>
+                
+    </footer>
+</article>
+	</div>
+</main>
+    <footer id="site-footer">
+        <div class="container">
+          
+          
+            <a href="https://www.twitter.com/dvaughan32" title="Twitter" target="_blank"><span class="tooltip"><i class="fa fa-twitter"></i></span></a>
+          
+          
+            <a href="https://www.github.com/DavisVaughan" title="GitHub" target="_blank"><span class="tooltip"><i class="fa fa-github"></i></span></a>
+          
+          <a href="/index.xml" title="Get the RSS feed"><span class="tooltip"><i class="fa fa-rss"></i></span></a>
+          <section>&copy; <a href="/"></a> 2017 | All rights reserved</section>
+          <section>Theme by <a href="http://www.jrdnbwmn.com">Jordan Bowman</a>. Generated with <a href="http://gohugo.io/">Hugo</a>.</section>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/fittext.js"></script>
+    <script type="text/javascript">
+      $(".heading").fitText();
+    </script>
+    
+    <script src="/js/math-code.js"></script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    });
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+
+    <script>
+        var _gaq=[['_setAccount','UA-99003915-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
+
+
+</body>
+</html>
