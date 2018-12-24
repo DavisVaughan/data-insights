@@ -69,8 +69,7 @@ using `huxtable`. Notice the math symbols in the first column, the fact that
 the standard errors are closer to the row above them due to smaller margins, and
 the bolding of certain cells. 
 
-<center><img src="./img/huxtable-example.png" width="750"/></center>
-<br></br>
+![](./img/huxtable-example.png)
 
 The `tibble` used to create the core table looked like this:
 
@@ -134,8 +133,9 @@ You even get to view your table in the console without knitting the document to
 check that you put lines / bolding / even coloring in the right place. This
 saves more time than you might think!
 
-<center><img src="./img/huxtable-console.png" width="500"/></center>
-<br></br>
+<center>
+![](./img/huxtable-console.png)
+</center>
 
 I find the pipeable syntax very intuitive, and the family of `set_*()` functions
 allow for endless combinations. I didn't even venture into the world of 
@@ -253,6 +253,7 @@ blogdown::shortcode("tweet", "939607571673075712")
 ```
 </center>
 
+<center>
 <blockquote class="twitter-video" data-lang="en"><p lang="en" dir="ltr">&quot;Even dreams may come true ...&quot; <a href="https://t.co/yeHJ6Haj2n">pic.twitter.com/yeHJ6Haj2n</a></p>&mdash; Davis Vaughan (@dvaughan32) <a href="https://twitter.com/dvaughan32/status/939619565738364929?ref_src=twsrc%5Etfw">December 9, 2017</a></blockquote>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
+</center>
