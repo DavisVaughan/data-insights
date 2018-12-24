@@ -11,3 +11,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     
     twitter_name = "dvaughan32"
     github = "DavisVaughan"
+    
+[permalinks]
+    post = "/:year/:month/:day/:slug/"
