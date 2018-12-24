@@ -334,7 +334,7 @@ x1</code></pre>
 <p>Nice! That’s what I want. One thing to note is that order of operations don’t work quite as you’d expect because of the precedence of the special <code>%+%</code> operator in relation to <code>+</code> and <code>*</code>, so you have to be really explicit.</p>
 <pre class="r"><code># This tries to do addition first
 x1 * 2 %+% x2</code></pre>
-<pre><code>## Error: is.matrix(e1) is not TRUE</code></pre>
+<pre><code>## Error in 2 %+% x2: is.matrix(e1) is not TRUE</code></pre>
 <pre class="r"><code># Explicit parenthesis
 (x1 * 2) %+% x2</code></pre>
 <pre><code>##      [,1] [,2]

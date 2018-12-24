@@ -144,7 +144,7 @@ blog_data &lt;- blog_data %&gt;%
 ##  8 Roger Oberg        2017-08-10
 ##  9 Jeff Allen         2017-08-03
 ## 10 Javier Luraschi    2017-07-31
-## # ... with 243 more rows</code></pre>
+## # … with 243 more rows</code></pre>
 <pre class="r"><code>select(blog_data, title)</code></pre>
 <pre><code>## # A tibble: 253 x 1
 ##    title                                                                   
@@ -159,7 +159,7 @@ blog_data &lt;- blog_data %&gt;%
 ##  8 Building tidy tools workshop                                            
 ##  9 RStudio Connect v1.5.4 - Now Supporting Plumber!                        
 ## 10 sparklyr 0.6                                                            
-## # ... with 243 more rows</code></pre>
+## # … with 243 more rows</code></pre>
 </div>
 <div id="categories-and-tags" class="section level3">
 <h3>Categories and tags</h3>
@@ -207,7 +207,7 @@ blog_data &lt;- blog_data %&gt;%
 ##  8 &lt;chr [3]&gt;  &lt;chr [8]&gt;
 ##  9 &lt;chr [3]&gt;  &lt;chr [2]&gt;
 ## 10 &lt;chr [1]&gt;  &lt;chr [3]&gt;
-## # ... with 243 more rows</code></pre>
+## # … with 243 more rows</code></pre>
 <pre class="r"><code>blog_data %&gt;%
   filter(title == &quot;Building tidy tools workshop&quot;) %&gt;%
   pull(categories)</code></pre>
@@ -246,7 +246,7 @@ blog_data &lt;- blog_data %&gt;%
 ##  8 Have you embraced the tidyverse? Do you now want to expand it to meet y…
 ##  9 We’re thrilled to announce support for hosting Plumber APIs in RStudio …
 ## 10 We’re excited to announce a new release of the sparklyr package, availa…
-## # ... with 243 more rows</code></pre>
+## # … with 243 more rows</code></pre>
 </div>
 <div id="who-writes-the-most-posts" class="section level3">
 <h3>Who writes the most posts?</h3>
@@ -288,7 +288,7 @@ select(tokenized_blog, short_title, word)</code></pre>
 ##  8 Newer to R? rst to       
 ##  9 Newer to R? rst learn    
 ## 10 Newer to R? rst any      
-## # ... with 85,751 more rows</code></pre>
+## # … with 85,751 more rows</code></pre>
 </div>
 <div id="remove-stop-words" class="section level3">
 <h3>Remove stop words</h3>
@@ -311,7 +311,7 @@ select(tokenized_blog, short_title, word)</code></pre>
 ##  8 Newer to R? rst improve  
 ##  9 Newer to R? rst language 
 ## 10 Newer to R? rst rare     
-## # ... with 40,305 more rows</code></pre>
+## # … with 40,305 more rows</code></pre>
 </div>
 <div id="top-15-words-overall" class="section level3">
 <h3>Top 15 words overall</h3>
@@ -399,12 +399,11 @@ test_prop</code></pre>
 ## 0.4886364 0.1030303</code></pre>
 <p>We could also tidy this up with <code>broom</code> if we were inclined to.</p>
 <pre class="r"><code>broom::tidy(test_prop)</code></pre>
-<pre><code>##   estimate1 estimate2 statistic      p.value parameter  conf.low conf.high
-## 1 0.4886364 0.1030303  45.06267 9.541448e-12         1 0.2809899         1
-##                                                                 method
-## 1 2-sample test for equality of proportions with continuity correction
-##   alternative
-## 1     greater</code></pre>
+<pre><code>## # A tibble: 1 x 9
+##   estimate1 estimate2 statistic  p.value parameter conf.low conf.high
+##       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1     0.489     0.103      45.1 9.54e-12         1    0.281         1
+## # … with 2 more variables: method &lt;chr&gt;, alternative &lt;chr&gt;</code></pre>
 </div>
 <div id="test-conclusion" class="section level3">
 <h3>Test conclusion</h3>

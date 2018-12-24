@@ -29,7 +29,7 @@ Copulas for Finance: A Reading Guide and Some Applications - A much more intense
       
       <guid>/post/tidying-excel-cash-flow-spreadsheets-in-r/</guid>
       <description>If you love using Excel, and it fits your needs, then by all means do your thing. However, there is also interest out there for moving Excel analyses into R. If you are one of those people, and your Excel data is “messy,” then this post is for you. We will be using the unpivotr package (GitHub) to tidy up some Excel cash flow spreadsheets.
-The problem Often, cash flow spreadsheets contain valuable info about a company’s performance, but they generally come in a non-tidy format.</description>
+Note: A few functions in the unpivotr package that are used here have been deprecated.</description>
     </item>
     
     <item>

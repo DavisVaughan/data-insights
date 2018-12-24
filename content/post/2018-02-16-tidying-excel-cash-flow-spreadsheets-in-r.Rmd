@@ -11,6 +11,13 @@ out there for moving Excel analyses into R. If you are one of those people,
 and your Excel data is "messy," then this post is for you. We will be using
 the [`unpivotr`](https://cran.r-project.org/web/packages/unpivotr/index.html) package ([GitHub](https://github.com/nacnudus/unpivotr)) to tidy up some Excel cash flow spreadsheets.
 
+_Note:_ A few functions in the `unpivotr` package that are used here have been deprecated. This post runs with `unpivotr` 0.3.1, but I recommend learning about the newest version if you have an interest in the package.
+
+```{r, eval = FALSE}
+devtools::install_version("unpivotr", "0.3.1")
+```
+
+
 ### The problem
 
 Often, cash flow spreadsheets contain valuable info about a company's performance,
