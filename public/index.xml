@@ -6,10 +6,21 @@
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 06 Mar 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 14 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>A (Minor) Quibble with Quosures</title>
+      <link>/post/quibble-with-quosures/</link>
+      <pubDate>Sun, 14 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/quibble-with-quosures/</guid>
+      <description>I love quosures. They help solve an interesting problem with non-standard evaluation in R, and can wrap up an expression into an object that can be evaluated essentially anywhere with no chance of any of its variables being redefined or lost along the way.
+To help demonstrate that point, here’s a silly example. Say you have a function that:
+ Adds 1 to a number Returns that result as a named vector The name comes from the name of the input, captured by NSE using rlang.</description>
+    </item>
     
     <item>
       <title>Copula Resources</title>

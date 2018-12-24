@@ -1,0 +1,172 @@
+---
+title: A (Minor) Quibble with Quosures
+author: Davis Vaughan
+date: '2018-10-14'
+slug: quibble-with-quosures
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+<p>I love quosures. They help solve an interesting problem with non-standard
+evaluation in R, and can wrap up an expression into an object that can be
+evaluated essentially anywhere with no chance of any of its variables being
+redefined or lost along the way.</p>
+<p>To help demonstrate that point, here’s a silly example. Say you have a function that:</p>
+<ul>
+<li>Adds <code>1</code> to a number</li>
+<li>Returns that result as a named vector</li>
+<li>The name comes from the name of the input, captured by NSE using <code>rlang</code>.</li>
+</ul>
+<pre class="r"><code>library(rlang)</code></pre>
+<pre class="r"><code>plus_one &lt;- function(x) {
+  # capture the expression from the user
+  # but dont evaluate it yet!
+  x &lt;- enexpr(x)
+  
+  # turn that expression into a string 
+  # we will use as our name
+  x_nm &lt;- expr_name(x)
+  
+  y &lt;- 1
+  
+  # now evaluate the expression the user gave us
+  # this results in the actual number
+  x_evaled &lt;- eval_tidy(x)
+  
+  res &lt;- x_evaled + y
+  names(res) &lt;- x_nm
+  
+  res
+}</code></pre>
+<pre class="r"><code>val &lt;- 5
+plus_one(val)</code></pre>
+<pre><code>## val 
+##   6</code></pre>
+<p>Okay, looks great. Things seem to be working well. Let’s try with a different
+input.</p>
+<pre class="r"><code>y &lt;- 5
+plus_one(y)</code></pre>
+<pre><code>## y 
+## 2</code></pre>
+<p>Wait, what? You might reasonably be expecting <code>6</code> here. But clearly R doesn’t
+think so. What’s happening?</p>
+<p>Here’s my human readable interpretation of the chain of events:</p>
+<ol style="list-style-type: decimal">
+<li>You assign <code>5</code> to <code>y</code> and pass it to <code>plus_one()</code>.</li>
+<li><code>enexpr()</code> captures an expression of <code>y</code>, but it does not know where
+<code>y</code> came from.</li>
+<li>You assign <code>1</code> to <code>y</code>.</li>
+<li>You try and evaluate the expression, <code>y</code>, with <code>eval_tidy()</code> to get the result.
+Since you didn’t tell <code>eval_tidy()</code> where <code>y</code> came from, it looks for the first one it can
+find. In this case, since there is a <code>y</code> defined inside the function, it uses
+that and returns <code>1</code>.</li>
+<li><code>plus_one()</code> returns <code>1+1</code> and you curse at the screen.</li>
+</ol>
+<p>This is a result of R’s scoping rules. When <code>val</code> was passed in, <code>eval_tidy()</code>
+first looked inside the function for an object called <code>val</code>, couldn’t find it,
+so it looked up one level outside the function to find <code>val</code>. In this case,
+that was the global environment where we had set <code>val</code> to <code>5</code> so that is what
+it used. With <code>y</code>, the same scoping rules apply, but <code>y</code> was found in
+the function first, so R never looked into the global environment like we wanted
+it to.</p>
+<p>Quosures help us solve this problem. They do this by modifying step 2 above to
+be:</p>
+<ol start="2" style="list-style-type: decimal">
+<li><code>enquo()</code> captures an expression of <code>y</code>, and <em>also captures the environment
+that <code>y</code> was defined in, so it knows exactly where to look to find it.</em></li>
+</ol>
+<p>Let’s look at how <code>plus_one()</code> could be better constructed using quosures.</p>
+<pre class="r"><code>plus_one_q &lt;- function(x) {
+  # capture the expression from the user
+  # AND the environment it came from
+  # but dont evaluate it yet!
+  x &lt;- enquo(x)
+  
+  # turn that quosure into a string 
+  # we will use as our name
+  x_nm &lt;- quo_name(x)
+  
+  y &lt;- 1
+  
+  # now evaluate the quosure
+  # this results in the actual number
+  x_evaled &lt;- eval_tidy(x)
+  
+  res &lt;- x_evaled + y
+  names(res) &lt;- x_nm
+  
+  res
+}</code></pre>
+<p>Let’s try it out:</p>
+<pre class="r"><code>y &lt;- 5
+plus_one_q(y)</code></pre>
+<pre><code>## y 
+## 6</code></pre>
+<p>In this case, we get the result we expected because <code>eval_tidy()</code> knew exactly
+where to look to find <code>y</code>. When <code>y</code> was captured, the global environment it
+was defined in was captured as well, and this is where <code>eval_tidy()</code> looked
+first, not inside the <code>plus_one_q()</code> function.</p>
+<div id="the-quibble" class="section level2">
+<h2>The quibble</h2>
+<p>My quibble, is that quosures (understandably) pull along a reference to the full
+environment where their expression is to be evaluated in. This is great because
+the result is fully predictable, <em>but potentially not so great because objects
+not required to evaluate the expression also exist in that environment, which
+can greatly bloat the size of the quosure if you aren’t careful.</em></p>
+<p>Example time!</p>
+<p>What if, rather than evaluate it’s quosure, a function simply captures the
+input and returns the quosure to the user to be used later (this is actually all <code>quo()</code> does).</p>
+<pre class="r"><code>quosurify &lt;- function(x) {
+  enquo(x)
+}
+
+y &lt;- 5
+quosurify(y)</code></pre>
+<pre><code>## &lt;quosure&gt;
+##   expr: ^y
+##   env:  global</code></pre>
+<p>Imagine you’re writing a function that you want to use <code>quosurify()</code> in. For this
+example, that function calculates the mean of <code>n</code> random numbers, and then returns
+the resulting variable as a quosure.</p>
+<pre class="r"><code>rand_mean &lt;- function(n = 1) {
+  
+  rand_nums &lt;- rnorm(n)
+  
+  mn &lt;- mean(rand_nums)
+  
+  quosurify(mn)
+}
+
+set.seed(1234)
+
+val &lt;- rand_mean(5)
+
+# A quosure!
+val </code></pre>
+<pre><code>## &lt;quosure&gt;
+##   expr: ^mn
+##   env:  0x7fe8ead72f70</code></pre>
+<p>We can evaluate this quosure whenever we want to get our result back.</p>
+<pre class="r"><code>eval_tidy(val)</code></pre>
+<pre><code>## [1] -0.3523537</code></pre>
+<p>If you were wondering, the underlying object is still an untouched quosure,
+meaning we can evaluate it over and over without changing anything.</p>
+<pre class="r"><code>val</code></pre>
+<pre><code>## &lt;quosure&gt;
+##   expr: ^mn
+##   env:  0x7fe8ead72f70</code></pre>
+<ul>
+<li>show how the under</li>
+</ul>
+<pre class="r"><code>str(val)</code></pre>
+<pre><code>##  language ~mn
+##  - attr(*, &quot;.Environment&quot;)=&lt;environment: 0x7fe8ead72f70&gt;</code></pre>
+<pre class="r"><code>quo_get_env(val)</code></pre>
+<pre><code>## &lt;environment: 0x7fe8ead72f70&gt;</code></pre>
+<pre class="r"><code>quo_get_expr(val)</code></pre>
+<pre><code>## mn</code></pre>
+<pre class="r"><code>names(quo_get_env(val))</code></pre>
+<pre><code>## [1] &quot;mn&quot;        &quot;rand_nums&quot; &quot;n&quot;</code></pre>
+</div>

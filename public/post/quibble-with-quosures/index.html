@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" prefix="og: http://ogp.me/ns#" xmlns:og="http://ogp.me/ns#"><!--<![endif]-->
+
+    <head>
+                <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="author" content="">
+  
+	
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:creator" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:domain" content="/">
+	
+        <meta property="og:site_name" content="Data Insights">
+        <meta property="og:title" content="Data Insights">
+        <meta property="og:url" content="/post/quibble-with-quosures/">
+        <meta property="og:description" content="">
+    
+        <meta property="og:type" content="article" />
+        <meta property="og:article:author" content="" />
+        <meta property="og:article:published_time" content="2018-10-14T00:00:00Z" />
+    
+        <meta name="generator" content="Hugo 0.49.2" />
+        <title>A (Minor) Quibble with Quosures &middot; Data Insights</title>
+        <link rel="canonical" href="/" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="">
+        <link rel="stylesheet" type="text/css" href="/css/main.css"/>
+        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300|Montserrat:700|Kaushan+Script" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <link rel="stylesheet" href="/css/monokai-sublime.css">
+        <script src="/js/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+
+<body>
+<!--[if lt IE 7]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chrome/‎">install Google Chrome</a> to experience this site.</p><![endif]-->
+
+    <header id="site-header">
+        <div class="container">
+            <a href="/" alt="Data Insights"><h3>Data Insights</h3></a>
+            <p class="blog-description">
+              <a href = "/post/">Home</a>
+              |
+              <a href = "/about/">About</a>
+              |
+              <a href = "/archive/">Archive</a>
+              |
+              <a href = "/resume/davis-vaughan-resume.pdf">Resume</a>
+            </p>
+        </div>
+    </header>
+<main class="content" role="main">
+	<div class="container">
+		<article class="post">
+	<header class="post-header">
+        <h3 class="p-post-title">A (Minor) Quibble with Quosures</h3>
+    </header>
+
+    <section class="post-content">
+        <p>I love quosures. They help solve an interesting problem with non-standard
+evaluation in R, and can wrap up an expression into an object that can be
+evaluated essentially anywhere with no chance of any of its variables being
+redefined or lost along the way.</p>
+<p>To help demonstrate that point, here’s a silly example. Say you have a function that:</p>
+<ul>
+<li>Adds <code>1</code> to a number</li>
+<li>Returns that result as a named vector</li>
+<li>The name comes from the name of the input, captured by NSE using <code>rlang</code>.</li>
+</ul>
+<pre class="r"><code>library(rlang)</code></pre>
+<pre class="r"><code>plus_one &lt;- function(x) {
+  # capture the expression from the user
+  # but dont evaluate it yet!
+  x &lt;- enexpr(x)
+  
+  # turn that expression into a string 
+  # we will use as our name
+  x_nm &lt;- expr_name(x)
+  
+  y &lt;- 1
+  
+  # now evaluate the expression the user gave us
+  # this results in the actual number
+  x_evaled &lt;- eval_tidy(x)
+  
+  res &lt;- x_evaled + y
+  names(res) &lt;- x_nm
+  
+  res
+}</code></pre>
+<pre class="r"><code>val &lt;- 5
+plus_one(val)</code></pre>
+<pre><code>## val 
+##   6</code></pre>
+<p>Okay, looks great. Things seem to be working well. Let’s try with a different
+input.</p>
+<pre class="r"><code>y &lt;- 5
+plus_one(y)</code></pre>
+<pre><code>## y 
+## 2</code></pre>
+<p>Wait, what? You might reasonably be expecting <code>6</code> here. But clearly R doesn’t
+think so. What’s happening?</p>
+<p>Here’s my human readable interpretation of the chain of events:</p>
+<ol style="list-style-type: decimal">
+<li>You assign <code>5</code> to <code>y</code> and pass it to <code>plus_one()</code>.</li>
+<li><code>enexpr()</code> captures an expression of <code>y</code>, but it does not know where
+<code>y</code> came from.</li>
+<li>You assign <code>1</code> to <code>y</code>.</li>
+<li>You try and evaluate the expression, <code>y</code>, with <code>eval_tidy()</code> to get the result.
+Since you didn’t tell <code>eval_tidy()</code> where <code>y</code> came from, it looks for the first one it can
+find. In this case, since there is a <code>y</code> defined inside the function, it uses
+that and returns <code>1</code>.</li>
+<li><code>plus_one()</code> returns <code>1+1</code> and you curse at the screen.</li>
+</ol>
+<p>This is a result of R’s scoping rules. When <code>val</code> was passed in, <code>eval_tidy()</code>
+first looked inside the function for an object called <code>val</code>, couldn’t find it,
+so it looked up one level outside the function to find <code>val</code>. In this case,
+that was the global environment where we had set <code>val</code> to <code>5</code> so that is what
+it used. With <code>y</code>, the same scoping rules apply, but <code>y</code> was found in
+the function first, so R never looked into the global environment like we wanted
+it to.</p>
+<p>Quosures help us solve this problem. They do this by modifying step 2 above to
+be:</p>
+<ol start="2" style="list-style-type: decimal">
+<li><code>enquo()</code> captures an expression of <code>y</code>, and <em>also captures the environment
+that <code>y</code> was defined in, so it knows exactly where to look to find it.</em></li>
+</ol>
+<p>Let’s look at how <code>plus_one()</code> could be better constructed using quosures.</p>
+<pre class="r"><code>plus_one_q &lt;- function(x) {
+  # capture the expression from the user
+  # AND the environment it came from
+  # but dont evaluate it yet!
+  x &lt;- enquo(x)
+  
+  # turn that quosure into a string 
+  # we will use as our name
+  x_nm &lt;- quo_name(x)
+  
+  y &lt;- 1
+  
+  # now evaluate the quosure
+  # this results in the actual number
+  x_evaled &lt;- eval_tidy(x)
+  
+  res &lt;- x_evaled + y
+  names(res) &lt;- x_nm
+  
+  res
+}</code></pre>
+<p>Let’s try it out:</p>
+<pre class="r"><code>y &lt;- 5
+plus_one_q(y)</code></pre>
+<pre><code>## y 
+## 6</code></pre>
+<p>In this case, we get the result we expected because <code>eval_tidy()</code> knew exactly
+where to look to find <code>y</code>. When <code>y</code> was captured, the global environment it
+was defined in was captured as well, and this is where <code>eval_tidy()</code> looked
+first, not inside the <code>plus_one_q()</code> function.</p>
+<div id="the-quibble" class="section level2">
+<h2>The quibble</h2>
+<p>My quibble, is that quosures (understandably) pull along a reference to the full
+environment where their expression is to be evaluated in. This is great because
+the result is fully predictable, <em>but potentially not so great because objects
+not required to evaluate the expression also exist in that environment, which
+can greatly bloat the size of the quosure if you aren’t careful.</em></p>
+<p>Example time!</p>
+<p>What if, rather than evaluate it’s quosure, a function simply captures the
+input and returns the quosure to the user to be used later (this is actually all <code>quo()</code> does).</p>
+<pre class="r"><code>quosurify &lt;- function(x) {
+  enquo(x)
+}
+
+y &lt;- 5
+quosurify(y)</code></pre>
+<pre><code>## &lt;quosure&gt;
+##   expr: ^y
+##   env:  global</code></pre>
+<p>Imagine you’re writing a function that you want to use <code>quosurify()</code> in. For this
+example, that function calculates the mean of <code>n</code> random numbers, and then returns
+the resulting variable as a quosure.</p>
+<pre class="r"><code>rand_mean &lt;- function(n = 1) {
+  
+  rand_nums &lt;- rnorm(n)
+  
+  mn &lt;- mean(rand_nums)
+  
+  quosurify(mn)
+}
+
+set.seed(1234)
+
+val &lt;- rand_mean(5)
+
+# A quosure!
+val </code></pre>
+<pre><code>## &lt;quosure&gt;
+##   expr: ^mn
+##   env:  0x7fe8ead72f70</code></pre>
+<p>We can evaluate this quosure whenever we want to get our result back.</p>
+<pre class="r"><code>eval_tidy(val)</code></pre>
+<pre><code>## [1] -0.3523537</code></pre>
+<p>If you were wondering, the underlying object is still an untouched quosure,
+meaning we can evaluate it over and over without changing anything.</p>
+<pre class="r"><code>val</code></pre>
+<pre><code>## &lt;quosure&gt;
+##   expr: ^mn
+##   env:  0x7fe8ead72f70</code></pre>
+<ul>
+<li>show how the under</li>
+</ul>
+<pre class="r"><code>str(val)</code></pre>
+<pre><code>##  language ~mn
+##  - attr(*, &quot;.Environment&quot;)=&lt;environment: 0x7fe8ead72f70&gt;</code></pre>
+<pre class="r"><code>quo_get_env(val)</code></pre>
+<pre><code>## &lt;environment: 0x7fe8ead72f70&gt;</code></pre>
+<pre class="r"><code>quo_get_expr(val)</code></pre>
+<pre><code>## mn</code></pre>
+<pre class="r"><code>names(quo_get_env(val))</code></pre>
+<pre><code>## [1] &quot;mn&quot;        &quot;rand_nums&quot; &quot;n&quot;</code></pre>
+</div>
+
+    </section>
+
+    <hr>
+
+    <footer class="post-footer">
+        <section class="f-1">
+            <section class="share">
+                <span>Share:
+                <a class="icon-twitter" href="http://twitter.com/share?text=A%20%28Minor%29%20Quibble%20with%20Quosures&url=%2fpost%2fquibble-with-quosures%2f"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=%2fpost%2fquibble-with-quosures%2f"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="fa fa-facebook"></i>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=%2fpost%2fquibble-with-quosures%2f"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+                </span>
+            </section>
+
+            
+        </section>
+                
+        <section id="comments">
+            <div id="disqus_thread" class="post-comments"></div>
+            <script type="text/javascript">
+              if (window.location.hostname != "localhost") {
+                var disqus_shortname = 'datainsights';
+                (function() {
+                  var dsq = document.createElement('script');
+                  dsq.type = 'text/javascript';
+                  dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              }
+            </script>
+            <noscript>
+              Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+            </noscript>
+        </section>
+                
+    </footer>
+</article>
+	</div>
+</main>
+    <footer id="site-footer">
+        <div class="container">
+          
+          
+            <a href="https://www.twitter.com/dvaughan32" title="Twitter" target="_blank"><span class="tooltip"><i class="fa fa-twitter"></i></span></a>
+          
+          
+            <a href="https://www.github.com/DavisVaughan" title="GitHub" target="_blank"><span class="tooltip"><i class="fa fa-github"></i></span></a>
+          
+          <a href="/index.xml" title="Get the RSS feed"><span class="tooltip"><i class="fa fa-rss"></i></span></a>
+          <section>&copy; <a href="/"></a> 2017 | All rights reserved</section>
+          <section>Theme by <a href="http://www.jrdnbwmn.com">Jordan Bowman</a>. Generated with <a href="http://gohugo.io/">Hugo</a>.</section>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/fittext.js"></script>
+    <script type="text/javascript">
+      $(".heading").fitText();
+    </script>
+    
+    <script src="/js/math-code.js"></script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    });
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+
+    <script>
+        var _gaq=[['_setAccount','UA-99003915-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
+
+
+</body>
+</html>

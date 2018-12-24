@@ -1,0 +1,194 @@
+---
+title: A (Minor) Quibble with Quosures
+author: Davis Vaughan
+date: '2018-10-14'
+slug: quibble-with-quosures
+editor_options: 
+  chunk_output_type: console
+---
+
+I love quosures. They help solve an interesting problem with non-standard
+evaluation in R, and can wrap up an expression into an object that can be
+evaluated essentially anywhere with no chance of any of its variables being
+redefined or lost along the way.
+
+To help demonstrate that point, here's a silly example. Say you have a function that:
+
+* Adds `1` to a number
+* Returns that result as a named vector
+* The name comes from the name of the input, captured by NSE using `rlang`.
+
+```{r}
+library(rlang)
+```
+
+```{r}
+plus_one <- function(x) {
+  # capture the expression from the user
+  # but dont evaluate it yet!
+  x <- enexpr(x)
+  
+  # turn that expression into a string 
+  # we will use as our name
+  x_nm <- expr_name(x)
+  
+  y <- 1
+  
+  # now evaluate the expression the user gave us
+  # this results in the actual number
+  x_evaled <- eval_tidy(x)
+  
+  res <- x_evaled + y
+  names(res) <- x_nm
+  
+  res
+}
+```
+
+```{r}
+val <- 5
+plus_one(val)
+```
+
+Okay, looks great. Things seem to be working well. Let's try with a different
+input.
+
+```{r}
+y <- 5
+plus_one(y)
+```
+
+Wait, what? You might reasonably be expecting `6` here. But clearly R doesn't
+think so. What's happening?
+
+Here's my human readable interpretation of the chain of events:
+
+1) You assign `5` to `y` and pass it to `plus_one()`.
+2) `enexpr()` captures an expression of `y`, but it does not know where
+`y` came from.
+3) You assign `1` to `y`.
+4) You try and evaluate the expression, `y`, with `eval_tidy()` to get the result.
+Since you didn't tell `eval_tidy()` where `y` came from, it looks for the first one it can 
+find. In this case, since there is a `y` defined inside the function, it uses
+that and returns `1`.
+5) `plus_one()` returns `1+1` and you curse at the screen.
+
+This is a result of R's scoping rules. When `val` was passed in, `eval_tidy()`
+first looked inside the function for an object called `val`, couldn't find it,
+so it looked up one level outside the function to find `val`. In this case,
+that was the global environment where we had set `val` to `5` so that is what
+it used. With `y`, the same scoping rules apply, but `y` was found in
+the function first, so R never looked into the global environment like we wanted
+it to.
+
+Quosures help us solve this problem. They do this by modifying step 2 above to
+be:
+
+2) `enquo()` captures an expression of `y`, and _also captures the environment
+that `y` was defined in, so it knows exactly where to look to find it._
+
+Let's look at how `plus_one()` could be better constructed using quosures.
+
+```{r}
+plus_one_q <- function(x) {
+  # capture the expression from the user
+  # AND the environment it came from
+  # but dont evaluate it yet!
+  x <- enquo(x)
+  
+  # turn that quosure into a string 
+  # we will use as our name
+  x_nm <- quo_name(x)
+  
+  y <- 1
+  
+  # now evaluate the quosure
+  # this results in the actual number
+  x_evaled <- eval_tidy(x)
+  
+  res <- x_evaled + y
+  names(res) <- x_nm
+  
+  res
+}
+```
+
+Let's try it out:
+
+```{r}
+y <- 5
+plus_one_q(y)
+```
+
+In this case, we get the result we expected because `eval_tidy()` knew exactly
+where to look to find `y`. When `y` was captured, the global environment it
+was defined in was captured as well, and this is where `eval_tidy()` looked
+first, not inside the `plus_one_q()` function.
+
+## The quibble
+
+My quibble, is that quosures (understandably) pull along a reference to the full
+environment where their expression is to be evaluated in. This is great because
+the result is fully predictable, _but potentially not so great because objects
+not required to evaluate the expression also exist in that environment, which
+can greatly bloat the size of the quosure if you aren't careful._
+
+Example time!
+
+What if, rather than evaluate it's quosure, a function simply captures the
+input and returns the quosure to the user to be used later (this is actually all `quo()` does).
+
+```{r}
+quosurify <- function(x) {
+  enquo(x)
+}
+
+y <- 5
+quosurify(y)
+```
+
+Imagine you're writing a function that you want to use `quosurify()` in. For this
+example, that function calculates the mean of `n` random numbers, and then returns
+the resulting variable as a quosure.
+
+```{r}
+rand_mean <- function(n = 1) {
+  
+  rand_nums <- rnorm(n)
+  
+  mn <- mean(rand_nums)
+  
+  quosurify(mn)
+}
+
+set.seed(1234)
+
+val <- rand_mean(5)
+
+# A quosure!
+val 
+```
+
+We can evaluate this quosure whenever we want to get our result back.
+
+```{r}
+eval_tidy(val)
+```
+
+If you were wondering, the underlying object is still an untouched quosure, 
+meaning we can evaluate it over and over without changing anything.
+
+```{r}
+val
+```
+
+- show how the under
+
+```{r}
+str(val)
+quo_get_env(val)
+quo_get_expr(val)
+names(quo_get_env(val))
+```
+
+
