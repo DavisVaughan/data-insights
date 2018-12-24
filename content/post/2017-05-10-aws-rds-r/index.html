@@ -46,6 +46,9 @@ library(dplyr)
 <li><p><code>drv</code> - The driver I used is from the <code>RMySQL</code> package, an implementation of the general interface provided by <code>DBI</code>. I’ll leave it to <a href="https://github.com/rstats-db/DBI">the experts</a> to explain all of this.</p></li>
 <li><p><code>username</code> / <code>password</code> - You’ll have to have created a user and password on AWS first, but then you can use them here.</p></li>
 <li><p><code>host</code> The host name is the Endpoint of your RDS server, without the port on the end. I’ve attached a screenshot to show where to find this. Basically, on the RDS Dashboard Instances page, hit the drop down arrow beside “MySQL” to show the Endpoint.</p></li>
+</ul>
+<p><img src="img/2017-05-10-aws-dashboard.png" /></p>
+<ul>
 <li><p><code>port</code> - The rest of the Endpoint shows the port that you’ll need to access your RDS instance through. That goes here.</p></li>
 <li><p><code>dbname</code> - Finally, you’ll need the DB Name you used when setting up the instance. This can be found by clicking Instance Actions -&gt; See Details, and then under Configuration Details you’ll find DB Name.</p></li>
 </ul>

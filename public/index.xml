@@ -72,10 +72,10 @@ I did the analysis in R, but I wanted to take it a step further.</description>
     
     <item>
       <title>Amazon RDS &#43; R</title>
-      <link>/post/rds-and-r/</link>
+      <link>/post/2017-05-10-aws-rds-r/rds-and-r/</link>
       <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
       
-      <guid>/post/rds-and-r/</guid>
+      <guid>/post/2017-05-10-aws-rds-r/rds-and-r/</guid>
       <description>Warning The code and advice in this post is still valid, but I have shut down the AWS database that this post pulled from, so it no longer runs. Additionally, the output is no longer shown.
  Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
 For those of you who don’t know, RDS is an easy way to create a database in the cloud.</description>

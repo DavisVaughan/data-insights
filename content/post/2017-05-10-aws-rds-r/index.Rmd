@@ -60,9 +60,7 @@ Let's go through the arguments to `dbConnect()`, the function from `DBI` that we
 
 * `host` The host name is the Endpoint of your RDS server, without the port on the end. I've attached a screenshot to show where to find this. Basically, on the RDS Dashboard Instances page, hit the drop down arrow beside "MySQL" to show the Endpoint.
 
-```{r, echo=FALSE}
-knitr::include_graphics("/img/aws-rds-r/2017-05-10-aws-dashboard.png")
-```
+![](./img/2017-05-10-aws-dashboard.png)
 
 * `port` - The rest of the Endpoint shows the port that you'll need to access your RDS instance through. That goes here.
 
@@ -79,7 +77,7 @@ slice(aapl, 1:10)
 ``` 
 
 ```{r, echo=FALSE}
-aapl <- readr::read_rds("data/aws-rds-r/aapl.rds")
+aapl <- readr::read_rds("data/aapl.rds")
 
 slice(aapl, 1:10)
 ```
