@@ -76,8 +76,9 @@ I did the analysis in R, but I wanted to take it a step further.</description>
       <pubDate>Wed, 10 May 2017 00:00:00 +0000</pubDate>
       
       <guid>/post/rds-and-r/</guid>
-      <description>Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
-For those of you who don’t know, RDS is an easy way to create a database in the cloud. In this post, I won’t be showing you how to setup an RDS instance, but I will show you how to connect to it if you have one running.</description>
+      <description>Warning The code and advice in this post is still valid, but I have shut down the AWS database that this post pulled from, so it no longer runs. Additionally, the output is no longer shown.
+ Intro Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.
+For those of you who don’t know, RDS is an easy way to create a database in the cloud.</description>
     </item>
     
   </channel>

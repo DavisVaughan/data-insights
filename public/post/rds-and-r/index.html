@@ -67,7 +67,11 @@
     </header>
 
     <section class="post-content">
-        <div id="intro" class="section level3">
+        <div id="warning" class="section level3">
+<h3>Warning</h3>
+<p>The code and advice in this post is still valid, but I have shut down the AWS database that this post pulled from, so it no longer runs. Additionally, the output is no longer shown.</p>
+</div>
+<div id="intro" class="section level3">
 <h3>Intro</h3>
 <p>Welcome to my first post! To start things off at Data Insights, I’m going to show you how to connect to an AWS RDS instance from R.</p>
 <p>For those of you who don’t know, RDS is an easy way to create a database in the cloud. In this post, I won’t be showing you how to setup an RDS instance, but I will show you how to connect to it if you have one running.</p>
@@ -99,14 +103,11 @@ library(dplyr)
                 dbname   = &quot;firstdb&quot;)</code></pre>
 <p>Let’s go through the arguments to <code>dbConnect()</code>, the function from <code>DBI</code> that we used to connect.</p>
 <ul>
-<li><code>drv</code> - The driver I used is from the <code>RMySQL</code> package, an implementation of the general interface provided by <code>DBI</code>. I’ll leave it to <a href="https://github.com/rstats-db/DBI">the experts</a> to explain all of this.</li>
-<li><code>username</code> / <code>password</code> - You’ll have to have created a user and password on AWS first, but then you can use them here.</li>
-<li><code>host</code> - The host name is the Endpoint of your RDS server, without the port on the end. I’ve attached a screenshot to show where to find this. Basically, on the RDS Dashboard Instances page, hit the drop down arrow beside “MySQL” to show the Endpoint.</li>
-</ul>
-<p><img src="/img/aws-rds-r/2017-05-10-aws-dashboard.png" /><!-- --></p>
-<ul>
-<li><code>port</code> - The rest of the Endpoint shows the port that you’ll need to access your RDS instance through. That goes here.</li>
-<li><code>dbname</code> - Finally, you’ll need the DB Name you used when setting up the instance. This can be found by clicking Instance Actions -&gt; See Details, and then under Configuration Details you’ll find DB Name.</li>
+<li><p><code>drv</code> - The driver I used is from the <code>RMySQL</code> package, an implementation of the general interface provided by <code>DBI</code>. I’ll leave it to <a href="https://github.com/rstats-db/DBI">the experts</a> to explain all of this.</p></li>
+<li><p><code>username</code> / <code>password</code> - You’ll have to have created a user and password on AWS first, but then you can use them here.</p></li>
+<li><p><code>host</code> The host name is the Endpoint of your RDS server, without the port on the end. I’ve attached a screenshot to show where to find this. Basically, on the RDS Dashboard Instances page, hit the drop down arrow beside “MySQL” to show the Endpoint.</p></li>
+<li><p><code>port</code> - The rest of the Endpoint shows the port that you’ll need to access your RDS instance through. That goes here.</p></li>
+<li><p><code>dbname</code> - Finally, you’ll need the DB Name you used when setting up the instance. This can be found by clicking Instance Actions -&gt; See Details, and then under Configuration Details you’ll find DB Name.</p></li>
 </ul>
 </div>
 <div id="step-2-the-one-where-you-take-it-for-a-test-spin" class="section level3">
@@ -115,19 +116,6 @@ library(dplyr)
 <pre class="r"><code>aapl &lt;- tq_get(&quot;AAPL&quot;)
 
 slice(aapl, 1:10)</code></pre>
-<pre><code>## # A tibble: 10 x 7
-##    date        open  high   low close    volume adjusted
-##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 2007-01-03  13.7  13.7  13.0  12.0 309579900     10.8
-##  2 2007-01-04  13.3  13.6  13.3  12.2 211815100     11.0
-##  3 2007-01-05  13.6  13.7  13.4  12.2 208685400     10.9
-##  4 2007-01-08  13.6  13.7  13.5  12.2 199276700     11.0
-##  5 2007-01-09  13.7  14.8  13.5  13.2 837324600     11.9
-##  6 2007-01-10  15.0  15.5  14.8  13.9 738220000     12.5
-##  7 2007-01-11  15.2  15.4  15.1  13.7 360063200     12.3
-##  8 2007-01-12  15.0  15.1  14.8  13.5 328172600     12.2
-##  9 2007-01-16  15.2  15.4  15.2  13.9 311019100     12.5
-## 10 2007-01-17  15.5  15.5  15.1  13.6 411565000     12.2</code></pre>
 <p>To write the tibble (data frame) to the database, we will use another function called <code>dbWriteTable()</code>. It’s pretty straightforward. “name” is the name of the table you are creating, and “value” is the data frame you want to write.</p>
 <pre class="r"><code>dbWriteTable(cn, name = &quot;apple&quot;, value = aapl)</code></pre>
 <p>Now the fun part! Let’s use a SQL query to pull it back down with <code>dbGetQuery()</code>. This function is a combination of <code>dbSendQuery()</code>, which returns a result set for your query, and <code>dbFetch()</code> which returns the rows from that result set.</p>
@@ -137,19 +125,6 @@ slice(aapl, 1:10)</code></pre>
 # dbReadTable(cn, &quot;apple&quot;)
 
 slice(apple_from_db, 1:10)</code></pre>
-<pre><code>## # A tibble: 10 x 8
-##    row_names date        open  high   low close    volume adjusted
-##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 1         2007-01-03  86.3  86.6  81.9  83.8 309579900     10.9
-##  2 2         2007-01-04  84.1  85.9  83.8  85.7 211815100     11.1
-##  3 3         2007-01-05  85.8  86.2  84.4  85.0 208685400     11.1
-##  4 4         2007-01-08  86.0  86.5  85.3  85.5 199276700     11.1
-##  5 5         2007-01-09  86.5  93.0  85.2  92.6 837324600     12.0
-##  6 6         2007-01-10  94.7  97.8  93.5  97.0 738220000     12.6
-##  7 7         2007-01-11  95.9  96.8  95.1  95.8 360063200     12.5
-##  8 8         2007-01-12  94.6  95.1  93.2  94.6 328172600     12.3
-##  9 9         2007-01-16  95.7  97.3  95.5  97.1 311019100     12.6
-## 10 10        2007-01-17  97.6  97.6  94.8  94.9 411565000     12.4</code></pre>
 <p>There are a huge number of functions from <code>DBI</code> that you can use to communicate with databases. Maybe I will cover more in a separate post, but for now, let’s move on to <code>dplyr</code>.</p>
 </div>
 <div id="step-3-the-one-with-the-pliers" class="section level3">
@@ -169,40 +144,8 @@ apple_table &lt;- tbl(cn, &quot;apple&quot;)
 
 # By default the first 1000 rows are displayed
 apple_table</code></pre>
-<pre><code>## # Source:   table&lt;apple&gt; [?? x 8]
-## # Database: mysql 5.6.27-log
-## #   [user1@davisdbinstance.crarljboc8to.us-west-2.rds.amazonaws.com:/firstdb]
-##    row_names date        open  high   low close    volume adjusted
-##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 1         2007-01-03  86.3  86.6  81.9  83.8 309579900     10.9
-##  2 2         2007-01-04  84.1  85.9  83.8  85.7 211815100     11.1
-##  3 3         2007-01-05  85.8  86.2  84.4  85.0 208685400     11.1
-##  4 4         2007-01-08  86.0  86.5  85.3  85.5 199276700     11.1
-##  5 5         2007-01-09  86.5  93.0  85.2  92.6 837324600     12.0
-##  6 6         2007-01-10  94.7  97.8  93.5  97.0 738220000     12.6
-##  7 7         2007-01-11  95.9  96.8  95.1  95.8 360063200     12.5
-##  8 8         2007-01-12  94.6  95.1  93.2  94.6 328172600     12.3
-##  9 9         2007-01-16  95.7  97.3  95.5  97.1 311019100     12.6
-## 10 10        2007-01-17  97.6  97.6  94.8  94.9 411565000     12.4
-## # ... with more rows</code></pre>
 <p>The best part is that we can use almost any dplyr command with this! It queries the database, and does not do the manipulation in R. All of the familiar syntax of dplyr, but with databases. Let’s use <code>filter()</code> to get all of the rows after January 1, 2009.</p>
 <pre class="r"><code>filter(apple_table, date &gt; &quot;2009-01-01&quot;)</code></pre>
-<pre><code>## # Source:   lazy query [?? x 8]
-## # Database: mysql 5.6.27-log
-## #   [user1@davisdbinstance.crarljboc8to.us-west-2.rds.amazonaws.com:/firstdb]
-##    row_names date        open  high   low close    volume adjusted
-##    &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 505       2009-01-02  85.9  91.0  85.2  90.8 186503800     11.8
-##  2 506       2009-01-05  93.2  96.2  92.7  94.6 295402100     12.3
-##  3 507       2009-01-06  96.0  97.2  92.4  93.0 322327600     12.1
-##  4 508       2009-01-07  91.8  92.5  90.3  91.0 188262200     11.8
-##  5 509       2009-01-08  90.4  93.2  90.0  92.7 168375200     12.1
-##  6 510       2009-01-09  93.2  93.4  90.1  90.6 136711400     11.8
-##  7 511       2009-01-12  90.5  91.0  87.6  88.7 154429100     11.5
-##  8 512       2009-01-13  88.2  89.7  86.4  87.7 199599400     11.4
-##  9 513       2009-01-14  86.2  87.3  84.7  85.3 255416000     11.1
-## 10 514       2009-01-15  80.6  84.1  80.1  83.4 457908500     10.8
-## # ... with more rows</code></pre>
 <p>To do any serious manipulation outside of <code>dplyr</code>, you’ll likely have pull the data into memory to be able to use it with other R functions. Here, I’ll use the <code>dplyr</code> equivalent to <code>dbWriteTable()</code> to add the stock prices for IBM to the database.</p>
 <pre class="r"><code>ibm &lt;- tq_get(&quot;IBM&quot;)
 
@@ -223,23 +166,8 @@ real_tibble &lt;- real_tibble %&gt;%
             period     = &quot;daily&quot;)
 
 real_tibble</code></pre>
-<pre><code>## # A tibble: 2,542 x 8
-##    date        open  high   low close   volume adjusted daily.returns
-##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;
-##  1 2007-01-03  97.2  98.4  96.3  97.3  9196800     78.4       0      
-##  2 2007-01-04  97.2  98.8  96.9  98.3 10524500     79.2       0.0107 
-##  3 2007-01-05  97.6  97.9  96.9  97.4  7221300     78.5      -0.00905
-##  4 2007-01-08  98.5  99.5  98.3  98.9 10340000     79.7       0.0152 
-##  5 2007-01-09  99.1 100.   99.1 100.  11108200     80.6       0.0118 
-##  6 2007-01-10  98.5  99.1  97.9  98.9  8744800     79.7      -0.0118 
-##  7 2007-01-11  99    99.9  98.5  98.7  8000700     79.5      -0.00243
-##  8 2007-01-12  99.0  99.7  98.5  99.3  6636500     80.0       0.00699
-##  9 2007-01-16  99.4 101.   99.3 101.   9602200     81.2       0.0149 
-## 10 2007-01-17 101.  101.   99.9 100.   8200700     80.6      -0.00793
-## # ... with 2,532 more rows</code></pre>
 <p>Always disconnect when you’re finished!</p>
 <pre class="r"><code>dbDisconnect(cn)</code></pre>
-<pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="last-words" class="section level3">
 <h3>Last words</h3>

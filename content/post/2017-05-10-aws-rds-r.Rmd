@@ -6,8 +6,12 @@ slug: 'rds-and-r'
 ---
 
 ```{r setup, include=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
+
+### Warning
+
+The code and advice in this post is still valid, but I have shut down the AWS database that this post pulled from, so it no longer runs. Additionally, the output is no longer shown.
 
 ### Intro
 
@@ -51,14 +55,17 @@ cn <- dbConnect(drv      = RMySQL::MySQL(),
 Let's go through the arguments to `dbConnect()`, the function from `DBI` that we used to connect.
 
 * `drv` - The driver I used is from the `RMySQL` package, an implementation of the general interface provided by `DBI`. I'll leave it to [the experts](https://github.com/rstats-db/DBI) to explain all of this.
+
 * `username` / `password` - You'll have to have created a user and password on AWS first, but then you can use them here.
-* `host` - The host name is the Endpoint of your RDS server, without the port on the end. I've attached a screenshot to show where to find this. Basically, on the RDS Dashboard Instances page, hit the drop down arrow beside "MySQL" to show the Endpoint.
+
+* `host` The host name is the Endpoint of your RDS server, without the port on the end. I've attached a screenshot to show where to find this. Basically, on the RDS Dashboard Instances page, hit the drop down arrow beside "MySQL" to show the Endpoint.
 
 ```{r, echo=FALSE}
 knitr::include_graphics("/img/aws-rds-r/2017-05-10-aws-dashboard.png")
 ```
 
 * `port` - The rest of the Endpoint shows the port that you'll need to access your RDS instance through. That goes here.
+
 * `dbname` - Finally, you'll need the DB Name you used when setting up the instance. This can be found by clicking Instance Actions -> See Details, and then under Configuration Details you'll find DB Name.
 
 ### Step 2: The one where you take it for a test spin
