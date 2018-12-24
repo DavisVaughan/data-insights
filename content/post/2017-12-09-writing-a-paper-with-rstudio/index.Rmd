@@ -136,6 +136,7 @@ saves more time than you might think!
 <center>
 ![](./img/huxtable-console.png)
 </center>
+<br></br>
 
 I find the pipeable syntax very intuitive, and the family of `set_*()` functions
 allow for endless combinations. I didn't even venture into the world of 
