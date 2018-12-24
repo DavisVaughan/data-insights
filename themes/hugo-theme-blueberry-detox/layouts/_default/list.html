@@ -13,7 +13,7 @@
 	<div class="container">
 	{{ range .Paginator.Pages }}
 	  {{/* Preventing the About and Archive from showing up on the home page */}}
-	  {{if and (ne .Title "About Me") (ne .Title "Archive")}}
+	  {{if ne .Title "About Me"}}
 	    {{ .Render "li" }}
 	  {{end}}
 	{{ end }}
