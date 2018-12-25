@@ -10,11 +10,20 @@ slug: "fin-num-methods-1"
 <div id="why-am-i-posting-about-this" class="section level3">
 <h3>Why am I posting about this?</h3>
 <p>School has started up, and I’m in a class called <em>Financial Computing</em>. I thought it might be interesting to share some of my assignments and explain what I learn along the way. Most of the posts won’t be describing the <a href="https://www.quantstart.com/articles/Introduction-to-Stochastic-Calculus">Stochastic Calculus</a> involved in each assignment, but will instead focus on the details of the implementation in R. I don’t claim to have the best way for any of these assignments, but perhaps you can learn something!</p>
+<p><span class="marginnote">
+Pro Tip: be sure to enter <code>http://127.0.0.1:1410</code>
+as your <code>Callback URL</code>. If you get lost, there is a
+great tutorial on this process <a href="https://mkearney.github.io/rtweet/articles/auth.html">here</a>
+</span></p>
 </div>
 <div id="what-are-we-doing-today" class="section level3">
 <h3>What are we doing today?</h3>
 <p>In this post, I’ll work through simulating paths of a stock that follows the log normal distribution used in the <a href="https://www.coursera.org/learn/financial-engineering-1/lecture/pPqjt/the-black-scholes-model">Black Scholes model</a>. Importantly, I’ll explain my thought process as I tried to optimize the implementation from loops to vectors.</p>
 <p>As an added bonus, at the very bottom is some extra content on a basic function that I have created to replicate the concept of <em>broadcasting</em> from Python. Someone could (should?) probably create an entire package out of this idea.</p>
+<p><span class="marginnote">
+For example, a really long margin note is here and im not quite sure how it is going to look when all is said and done.
+<img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+</span></p>
 </div>
 <div id="the-model" class="section level3">
 <h3>The Model</h3>
@@ -187,7 +196,7 @@ tibble::tibble(s_T = s_t[,6]) %&gt;%
   ggplot(mapping = aes(x=s_T)) +
   geom_histogram(bins = 500) + 
   labs(x = TeX(&#39;S_T&#39;), y = NULL, title = TeX(&#39;Log-normal Distribution of S_T&#39;) )</code></pre>
-<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-9-1.png" width="792" /></p>
+<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-10-1.png" width="792" /></p>
 <p>We could also look at the 6-step path of 100 of our simulations.</p>
 <pre class="r"><code>as_tibble(s_t) %&gt;%
   rownames_to_column(var = &quot;iteration&quot;) %&gt;%
@@ -199,7 +208,7 @@ tibble::tibble(s_T = s_t[,6]) %&gt;%
   ggplot(aes(x = time_step, y = stock_price, group = iteration)) +
   geom_line() +
   labs(x = &quot;Time&quot;, y = &quot;Stock Price&quot;, title = &quot;100 Simulated Paths&quot;)</code></pre>
-<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-10-1.png" width="792" /></p>
+<p><img src="/post/2017-08-26-numerical-methods-for-finance-part-1/index_files/figure-html/unnamed-chunk-11-1.png" width="792" /></p>
 </div>
 <div id="conclusion-extra-content" class="section level3">
 <h3>Conclusion + Extra Content</h3>
