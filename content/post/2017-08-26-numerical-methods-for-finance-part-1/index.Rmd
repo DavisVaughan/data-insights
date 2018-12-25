@@ -9,24 +9,11 @@ slug: "fin-num-methods-1"
 
 School has started up, and I'm in a class called _Financial Computing_. I thought it might be interesting to share some of my assignments and explain what I learn along the way. Most of the posts won't be describing the [Stochastic Calculus](https://www.quantstart.com/articles/Introduction-to-Stochastic-Calculus) involved in each assignment, but will instead focus on the details of the implementation in R. I don't claim to have the best way for any of these assignments, but perhaps you can learn something!
 
-<span class="marginnote">
-Pro Tip: be sure to enter `http://127.0.0.1:1410` 
-as your `Callback URL`. If you get lost, there is a 
-great tutorial on this process [here](https://mkearney.github.io/rtweet/articles/auth.html)
-</span>
-
 ### What are we doing today?
 
 In this post, I'll work through simulating paths of a stock that follows the log normal distribution used in the [Black Scholes model](https://www.coursera.org/learn/financial-engineering-1/lecture/pPqjt/the-black-scholes-model). Importantly, I'll explain my thought process as I tried to optimize the implementation from loops to vectors.
 
 As an added bonus, at the very bottom is some extra content on a basic function that I have created to replicate the concept of _broadcasting_ from Python. Someone could (should?) probably create an entire package out of this idea.
-
-<span class="marginnote">
-For example, a really long margin note is here and im not quite sure how it is going to look when all is said and done.
-```{r, echo=FALSE}
-ggplot2::qplot(mpg, wt, data = mtcars)
-```
-</span>
 
 ### The Model
 
