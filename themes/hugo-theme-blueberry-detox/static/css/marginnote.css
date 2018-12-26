@@ -1,0 +1,62 @@
+/* Make most non header elements 85% width so we leave some margin room */
+/* It also adds a cool indented look under the header */
+pre, p, footer, table, li { 
+  width: 85%; 
+}
+
+/* Full width page - marginnote css */
+.sidenote, .marginnote { 
+  float: right;
+  clear: right;
+  /* To shift the code over into the margin */
+  margin-right: -50%;
+  /* The allowed width in the margin */
+  width: 30%;
+  margin-top: 0;
+  margin-bottom: 0;
+  /* Should be a small size than the main text */
+  font-size: 0.9rem;
+  line-height: 1.3;
+  vertical-align: baseline;
+  position: relative; 
+}
+
+/* This is for paged_df class items. Otherwise they are too close to the text
+   Important is required otherwise they are overshadowed by paged df css. */
+.pagedtable-wrapper {
+  margin-top: 40px;
+  margin-bottom: 40px !important;
+}
+
+/* As we shrink the screen, dynamically move the margin into a bordered box
+   in the middle of the page. */
+/* Medium screens */
+@media all and (max-width: 1350px) {
+  .marginnote {
+    display: block;
+    float: left;
+    
+    /* Adds a neat left indented look */
+    left: 1rem;
+    
+    clear: both;
+    width: 95%;
+    
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    margin-left: 0;
+    
+    vertical-align: baseline;
+    position: relative;
+    font-style: italic;
+    
+    /* Create a top/bottom border line */
+    border-top: 1px double;
+    border-bottom: 1px double;
+    
+    /* Add a huge right margin so that text following this doesnt try and
+       shove itself into the margin to the right of the marginnote (like headers) */
+    margin-right: 1000px;
+    padding: 4px;
+  }
+}
