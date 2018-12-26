@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Introduction
 
+![](https://img.shields.io/badge/post--status-maturing-blue.svg)
+
 This is a quick rough draft of a response to [this](https://intobioinformatics.wordpress.com/2018/12/25/optimism-corrected-bootstrapping-a-problematic-method/) blog post, which I believe resulted in a faulty conclusion regarding the _optimism corrected bootstrap_ procedure. 
 
 I believe their error stems mainly from the use of a _training_ data ROC AUC score, rather than _test_ data ROC AUC score. This comes from using `train()$results` rather than `train()$resample`.
