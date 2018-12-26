@@ -6,10 +6,21 @@
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 06 Mar 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 25 Dec 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>A Response To &#34;Optimism corrected bootstrapping a problematic method&#34;</title>
+      <link>/2018/12/25/response-to-optimism/</link>
+      <pubDate>Tue, 25 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/12/25/response-to-optimism/</guid>
+      <description>Introduction This is a quick rough draft of a response to this blog post, which I believe resulted in a faulty conclusion regarding the optimism corrected bootstrap procedure.
+I believe their error stems mainly from the use of a training data ROC AUC score, rather than test data ROC AUC score. This comes from using train()$results rather than train()$resample.
+Over the next few days, I will continue to refine this post, but I wanted to put this rough version up quickly to dispel any ideas that it was caret or the optimism corrected bootstrap that was the issue.</description>
+    </item>
     
     <item>
       <title>Copula Resources</title>
