@@ -66,7 +66,12 @@
     </header>
 
     <section class="post-content">
-        <div id="introduction" class="section level3">
+        <div id="update-2018-12-29" class="section level3">
+<h3>Update 2018-12-29</h3>
+<p>After further reading into the guts of caret, I think my conclusions below are inaccurate, and the <code>train()$results</code> is fine to use. That being said, I would encourage you to look to Frank Harrell’s <a href="http://hbiostat.org/doc/simval.html">Comparison of Strategies</a> post that does a good job exploring various validation methods. One of the main takeaways is that the optimism bootstrap is fine when there are few predictors (or many predictors but with a <em>very</em> large data set, probably ~10x the number of predictors at least based on a few simulations of my own). However, when there are a sizable number of predictors in a small-ish data set (say, 60 predictors with 500 observations), the optimism bootstrap can be less competitive than a repeated cross validation method.</p>
+<p>There is clearly more room for improvement in understanding the exact weaknesses of these methods.</p>
+</div>
+<div id="introduction" class="section level3">
 <h3>Introduction</h3>
 <p><img src="https://img.shields.io/badge/post--status-maturing-blue.svg" /></p>
 <p>This is a quick rough draft of a response to <a href="https://intobioinformatics.wordpress.com/2018/12/25/optimism-corrected-bootstrapping-a-problematic-method/">this</a> blog post, which I believe resulted in a faulty conclusion regarding the <em>optimism corrected bootstrap</em> procedure.</p>
