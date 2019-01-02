@@ -1,6 +1,6 @@
 /* Make most non header elements 85% width so we leave some margin room */
 /* It also adds a cool indented look under the header */
-pre, p, footer, table, li { 
+pre, p, table, li { 
   width: 85%; 
 }
 
