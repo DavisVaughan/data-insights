@@ -452,3 +452,5 @@ If you want to learn more about R's C interface, there are a few resources out t
 - Advanced R's old [section on C](http://adv-r.had.co.nz/C-interface.html)
 
 - The massive but thorough [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html). I would focus on section 5.9 on [Handling R objects in C](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Handling-R-objects-in-C).
+
+- The full `addr` package is [on GitHub](https://github.com/DavisVaughan/addr). The commit history attempts to follow this post.
