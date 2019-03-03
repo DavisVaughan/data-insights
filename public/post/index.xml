@@ -17,8 +17,7 @@
       <pubDate>Sat, 02 Mar 2019 00:00:00 +0000</pubDate>
       
       <guid>/2019/03/02/now-you-c-me/</guid>
-      <description>Introduction This post is designed to help you get up and running with an R package that uses C code, teaching the absolute minimum required to get going. Over the past few days, I learned a lot about working with packages that call C. It’s not quite as pleasant as working with C++ and Rcpp, but as you start to figure it out, it really feels like a superpower.
-That said, it’s a steep learning curve.</description>
+      <description>Introduction This post is designed to help you get up and running with an R package that uses C code, teaching the absolute minimum required to get going. Over the past few days, I learned a lot about working with packages that call C. It’s not quite as pleasant as working with C++ and Rcpp, but as you start to figure it out, it really feels like a superpower. Superpower or not, as Jim Hester says, if you have the choice it is much easier to use Rcpp, and my advice would also be to start there.</description>
     </item>
     
     <item>
