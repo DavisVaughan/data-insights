@@ -220,6 +220,10 @@ We don’t have to protect and unprotect the <em>arguments</em> to the function,
 </div>
 <div id="registration" class="section level3">
 <h3>Registration</h3>
+<p><em>Update) I have since learned that this registration section can be generated automatically! I highly recommend still reading this post in order to understand what the registration piece does, but check out the Automatic Registration section at the end of the post to learn how to do it automatically.</em>
+<span class="marginnote">
+Thanks, <a href="https://twitter.com/hadleywickham/status/1102200089773256704">Hadley &amp; Jim</a> and <a href="https://twitter.com/strboul/status/1102207504405139456">Metin</a>.
+</span></p>
 <p>Great, so we have a C function that can add 1. Can we call this from R yet? Almost, but still no. If you run a <code>devtools::load_all()</code>, then you <em>should</em> see the code compile. For me that looks like this, but I’ve manually trimmed it so you aren’t overloaded with output:</p>
 <pre><code>Loading addr
 Re-compiling addr
@@ -358,6 +362,75 @@ add_one &lt;- function(a) {
 <li><p>The massive but thorough <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html">Writing R Extensions</a>. I would focus on section 5.9 on <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Handling-R-objects-in-C">Handling R objects in C</a>.</p></li>
 <li><p>The full <code>addr</code> package is <a href="https://github.com/DavisVaughan/addr">on GitHub</a>. The commit history attempts to follow this post.</p></li>
 </ul>
+</div>
+<div id="automatic-registration" class="section level3">
+<h3>Automatic Registration</h3>
+<p>As mentioned in the <em>Registration</em> section, you don’t actually have to create the <code>init.c</code> file “by hand,” which is great because it’s the thing I forget to do most. I’ve left this section until the end, rather than replacing the current <em>Registration</em> section, because I think the order of how you link things up makes more sense when done the manual way (expose to R with the <code>init.c</code> file, then <code>.Call()</code> it). So if you saw that note in <em>Registration</em> and instantly skipped to here, I’d advice going back and reading the rest of that section and the rest of the blog post first. As you get more familiar with working in C, you can use the methods described here.</p>
+<p>To work with automatic registration, follow the blog post like usual, but skip the <em>Registration</em> and <em>.Call it!</em> sections and go straight to the <em>Now What?</em> section. Generate the <code>add.R</code> file that looks like this:</p>
+<pre class="r"><code>#&#39; Add 1 to a single numeric
+#&#39;
+#&#39; `add_one()` adds 1 to a single numeric value.
+#&#39;
+#&#39; @param a A single numeric value.
+#&#39;
+#&#39; @examples
+#&#39;
+#&#39; add_one(2)
+#&#39;
+#&#39; @export
+add_one &lt;- function(a) {
+
+  ok &lt;- is.numeric(a) &amp; length(a) == 1L
+
+  if (!ok) {
+    stop(&quot;`a` must be a single numeric value.&quot;, call. = FALSE)
+  }
+
+  .Call(addr_add_one, a)
+}</code></pre>
+<p>At this point you should have an <code>add.R</code> file, <em>but no <code>init.c</code> file</em>. Try running:</p>
+<pre class="r"><code>devtools::load_all()</code></pre>
+<p>You should have access to <code>add_one()</code>, but if you call it, you get…</p>
+<pre class="r"><code>add_one(1)
+# Error in add_one(1) : object &#39;addr_add_one&#39; not found</code></pre>
+<p>This makes sense, because we have no <code>init.c</code> file, so the C function was not exposed to the R side.</p>
+<p>At this point, we can generate the <code>init.c</code> file automatically using <code>pkgbuild::compile_dll()</code>. The key is to run it with <code>register_routines = TRUE</code>, which will take care of automatically setting up <code>init.c</code>. You may also have to run it with <code>force = TRUE</code>. If you have previously compiled all of the C code already and nothing has changed, it won’t try and do it again (this is generally a good thing!), and the function will exit early. But we want to trigger the recompilation to make it generate the <code>init.c</code> file for us, so we should force it.</p>
+<pre class="r"><code>pkgbuild::compile_dll(force = TRUE, register_routines = TRUE)</code></pre>
+<pre><code>Re-compiling addr
+─  installing *source* package ‘addr’ ...
+   ** libs
+   clang &lt;trimmed&gt;  -c init.c -o init.o
+   clang &lt;trimmed&gt; -o addr.so add.o init.o
+   installing to /private/var/&lt;trimmed&gt;/addr/libs
+─  DONE (addr)</code></pre>
+<p>This output looks similar to what was generated with <code>devtools::load_all()</code>, and that’s because this function is called from it. But this time, you can see that it compiled an <code>init.c</code> file as well, one that it created for us! Let’s take a look at <code>init.c</code>:</p>
+<pre><code>#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;
+#include &lt;stdlib.h&gt; // for NULL
+#include &lt;R_ext/Rdynload.h&gt;
+
+
+/* Section generated by pkgbuild, do not edit */
+/* .Call calls */
+extern SEXP addr_add_one(SEXP);
+
+static const R_CallMethodDef CallEntries[] = {
+    {&quot;addr_add_one&quot;, (DL_FUNC) &amp;addr_add_one, 1},
+    {NULL, NULL, 0}
+};
+/* End section generated by pkgbuild */
+
+void R_init_addr(DllInfo *dll)
+{
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}</code></pre>
+<p>Awesome, so this entire file was created automatically, and looks essentially the same as the one that we made manually. Now that we have all the pieces, call <code>devtools::load_all()</code> one more time, which will sync everything up. Then you should be able to do:</p>
+<pre class="r"><code>add_one(1)
+# [1] 2</code></pre>
+<p>You’ll also want to call <code>devtools::document()</code> again as well to add <code>export(add_one)</code> to the <code>NAMESPACE</code> file if you haven’t already.</p>
+<p>The reason we have to create <code>add_one()</code> first, before calling <code>pkgbuild::compile_dll()</code>, is because of the way the information is found to generate the <code>init.c</code> file. It looks into your <code>.R</code> files, and scans for any calls to <code>.Call()</code>. The information there, along with the name of your package, is enough to completely generate the <code>init.c</code> file! Internally, <code>compile_dll()</code> calls <code>tools::package_native_routine_registration_skeleton()</code> (yes, this is a mouthful), which is what generates the skeleton for <code>init.c</code>, using the information it located. <code>compile_dll()</code> performs a few extra steps on top of that to clean up.</p>
+<p>If you add another C based function to your package, just call <code>compile_dll(register_routines = TRUE)</code> again, and it will update the information in the <code>init.c</code> file.</p>
 </div>
 
     </section>
