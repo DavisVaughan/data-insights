@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" prefix="og: http://ogp.me/ns#" xmlns:og="http://ogp.me/ns#"><!--<![endif]-->
+
+    <head>
+                <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="author" content="">
+  
+	
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:creator" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:domain" content="/">
+	
+        <meta property="og:site_name" content="Data Insights">
+        <meta property="og:title" content="Data Insights">
+        <meta property="og:url" content="/2019/03/02/now-you-c-me/">
+        <meta property="og:description" content="">
+    
+        <meta property="og:type" content="article" />
+        <meta property="og:article:author" content="" />
+        <meta property="og:article:published_time" content="2019-03-02T00:00:00Z" />
+    
+        <meta name="generator" content="Hugo 0.49.2" />
+        <title>Now You C Me &middot; Data Insights</title>
+        <link rel="canonical" href="/" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="">
+        <link rel="stylesheet" type="text/css" href="/css/main.css"/>
+        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300|Montserrat:700|Charm|Roboto|Fira+Mono" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <link rel="stylesheet" href="/css/monokai-sublime.css">
+        <link rel="stylesheet" href="/css/marginnote.css">
+        <script src="/js/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+
+<body>
+<!--[if lt IE 7]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chrome/‎">install Google Chrome</a> to experience this site.</p><![endif]-->
+
+    <header id="site-header">
+        <div class="container">
+            <a href="/" alt="Data Insights"><h3>Data Insights</h3></a>
+            <p class="blog-description">
+              <a href = "/">Home</a>
+              |
+              <a href = "/about/">About</a>
+              |
+              <a href = "/resume/davis-vaughan-resume.pdf">Resume</a>
+            </p>
+        </div>
+    </header>
+<main class="content" role="main">
+	<div class="container">
+		<article class="post">
+	<header class="post-header">
+        <h3 class="p-post-title">Now You C Me</h3>
+    </header>
+
+    <section class="post-content">
+        <div id="introduction" class="section level3">
+<h3>Introduction</h3>
+<p>This post is designed to help you get up and running with an R package that uses C code, teaching the absolute minimum required to get going. Over the past few days, I learned a lot about working with packages that call C. It’s not quite as pleasant as working with C++ and <a href="https://github.com/RcppCore/Rcpp">Rcpp</a>, but as you start to figure it out, it really feels like a superpower.</p>
+<p>That said, it’s a steep learning curve. Yes, <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html">Writing R Extensions</a> has much of what you need to know, but I’m not big on the whole <a href="https://en.wikipedia.org/wiki/RTFM">RTFM</a> idea, and I think posts that actually get you up and running so you can start exploring on your own are valuable.</p>
+</div>
+<div id="package" class="section level3">
+<h3>Package</h3>
+<p>So let’s go. I’m going to create a C function that takes one numeric argument of length 1, and adds 1 to it. Then, I’ll show how to call it from R so users of the package can actually interface with it. Exciting.</p>
+<p>We need the structure for a package, so let’s use some <a href="https://github.com/r-lib/usethis"><code>usethis</code></a> helpers to get started. We’ll call the package <code>addr</code>, and you should replace <code>path</code> with the path to the location you want the package created at.</p>
+<pre class="r"><code>usethis::create_package(path = &quot;~/path/to/addr&quot;)</code></pre>
+<p>If you work with RStudio, this should open a new RStudio instance with the <code>addr</code> package opened up. Switch over to that.</p>
+</div>
+<div id="optional-git" class="section level3">
+<h3>Optional git</h3>
+<p>If you are so inclined and have everything hooked up (you’ve used git before on your computer), you can set up git and GitHub for this repo. I’ll do it so you can see the final product, along with all of the commits along the way. You can find my end result <a href="https://github.com/DavisVaughan/addr">here</a>.</p>
+<pre class="r"><code># This will restart RStudio
+usethis::use_git()
+
+# Then call this to use github
+# for this package
+usethis::use_github()</code></pre>
+</div>
+<div id="roxygen2" class="section level3">
+<h3>roxygen2</h3>
+<p>Some of the <code>usethis</code> functions we are going to call require <code>roxygen2</code> to be used for creating documentation (and it makes our lives a heck of a lot easier). Let’s set that up next. The easiest way is to just call:</p>
+<pre class="r"><code>devtools::document()</code></pre>
+<p>Alternatively, on a Mac I can call CMD+Shift+D. This should just add some information about roxygen2 to the <code>DESCRIPTION</code> file.</p>
+<p>The other thing we will want to do is create a “package doc” <code>.R</code> file. Other <code>usethis</code> functions called later will use this file to store useful information automatically. Basically, this is just a <code>.R</code> file named <code>addr-package.R</code>.</p>
+<pre class="r"><code>usethis::use_package_doc()</code></pre>
+<p>The contents of this look like:</p>
+<pre><code>#&#39; @keywords internal
+&quot;_PACKAGE&quot;
+
+# The following block is used by usethis to automatically manage
+# roxygen namespace tags. Modify with care!
+## usethis namespace: start
+## usethis namespace: end
+NULL</code></pre>
+<p>The <code>usethis</code> information is going to be inserted between the <code>usethis namespace: start</code> and <code>usethis namespace: end</code> lines as we go along.</p>
+</div>
+<div id="can-you-c" class="section level3">
+<h3>Can you C?</h3>
+<p>Let’s work on our first C function. Assuming you are in RStudio and in the current <code>addr</code> project, let’s create our first C file. There’s a <code>usethis</code> helper for that too.</p>
+<pre class="r"><code>usethis::use_c(&quot;add&quot;)</code></pre>
+<p>Wow. That did a lot more than just create a C file. I get something like this:</p>
+<pre><code>✔ Creating &#39;src/&#39;
+✔ Adding &#39;*.o&#39;, &#39;*.so&#39;, &#39;*.dll&#39; to &#39;src/.gitignore&#39;
+✔ Adding &#39;@useDynLib addr, .registration = TRUE&#39; to &#39;R/addr-package.R&#39;
+● Run `devtools::document()` to update &#39;NAMESPACE&#39;
+✔ Writing &#39;src/add.c&#39;
+● Modify &#39;src/add.c&#39;</code></pre>
+<p>So what happened here?</p>
+<ol style="list-style-type: decimal">
+<li><p>A new directory was created, <code>src/</code>. This is where all of your C files go.</p></li>
+<li><p>Multiple types of files were added to a <code>.gitignore</code> in <code>src/</code>. This is very helpful, as these 3 types of files, <code>.o</code>, <code>.so</code> and <code>.dll</code> are ones that would be created by our package when the C code is compiled, or “built” if you are familiar with R packages. In the same way that we wouldn’t commit a built R package to github, we don’t commit these files either.</p></li>
+<li><p>Some information was added to <code>addr-package.R</code>, and we get a suggestion to <code>document()</code>.</p></li>
+<li><p>A new file, <code>src/add.c</code> was added, and then it opened in RStudio. Great! We will work on this file in a moment.</p></li>
+</ol>
+<p>What’s this information that got added to <code>addr-package.R</code>? If we open up <code>addr-package.R</code> right now, we will see:</p>
+<pre><code>## usethis namespace: start
+#&#39; @useDynLib addr, .registration = TRUE
+## usethis namespace: end
+NULL</code></pre>
+<p>The second line here is a roxygen comment added by <code>use_c()</code>, and it is an important one! Basically, it is the way we eventually tell R that we should be looking for any C routines (functions) that we have “registered” (i.e. exposed to the R side), so we can actually call them from R.</p>
+<p>Really, this information needs to be in the package NAMESPACE file, which contains the information on what functions are imported to and exported from your package, along with information about external code like this. That’s why a suggestion to document popped up, as roxygen2 will take care of that for you:</p>
+<pre class="r"><code>devtools::document()</code></pre>
+<p>Check out the <code>NAMESPACE</code> file and you should see:</p>
+<pre class="r"><code>useDynLib(addr, .registration = TRUE)</code></pre>
+<p><span class="marginnote">
+If you got an error while documenting that looked like <code>getDLLRegisteredRoutines.DLLInfo()</code>, don’t be alarmed. We just don’t have any C code for it to load.
+</span></p>
+</div>
+<div id="addr_add_one" class="section level3">
+<h3>addr_add_one()</h3>
+<p>Now we are ready to work on our C function. Open up that <code>add.c</code> file if it isn’t open already. You should see this at the top:</p>
+<pre><code>#define R_NO_REMAP
+#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;</code></pre>
+<p>The second two <code>#include</code> lines give us access to the C-level R API. If you aren’t familiar with includes or header files, for now think of them as calling <code>library()</code> on a package to get access to its functions for your own use.</p>
+<p>The first line, <code>#define R_NO_REMAP</code>, purposefully comes before the other two, and prevents a “re-mapping” of the API functions from a standardized name of <code>Rf_&lt;fn&gt;</code> to just <code>&lt;fn&gt;</code>. I think it’s pretty good practice to prevent this remapping, as it makes it clear to us what functions are from the R API (and it works really well for finding new functions with auto-complete!).</p>
+<p>OKAY, now let’s write some C code. Go ahead and add these lines to the file:</p>
+<pre><code>#define R_NO_REMAP
+#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;
+
+SEXP addr_add_one(SEXP a) {
+
+  SEXP out = PROTECT(Rf_allocVector(REALSXP, 1));
+
+  REAL(out)[0] = Rf_asReal(a) + 1;
+
+  UNPROTECT(1);
+
+  return out;
+}</code></pre>
+<p>…okay. This looks foreign. So many questions, I know, I had them too. I’ll tackle as many as I can think of. First, a broad overview of what this code does:</p>
+<ul>
+<li>Take in a single argument, <code>a</code>.</li>
+<li>Create an object that we will assign the result to, <code>out</code>. This is a numeric vector of length 1. We also protect that object from the garbage collector.</li>
+<li>Add 1 to <code>a</code> and assign it to <code>out</code>.</li>
+<li>Unprotect our result, <code>out</code>, as we are about to return it.</li>
+<li>Return the result.</li>
+</ul>
+<div id="what-is-a-sexp" class="section level4">
+<h4>What is a SEXP?</h4>
+<p>Good question. It’s called an S-Expression, don’t ask me how to pronounce the shorthand notation, and I think it originated in the functional language, Lisp.</p>
+<p>Just think of a SEXP as a container that is able to represent <em>any</em> kind of R object, but at the C level. This means that an R list can be a SEXP, so can a matrix, so can a single logical value.</p>
+</div>
+<div id="why-are-there-so-many-explicit-types" class="section level4">
+<h4>Why are there so many explicit types?</h4>
+<p>Meaning, why is the argument <code>SEXP a</code> and not just <code>a</code>? Why is the return value, <code>out</code>, created as <code>SEXP out =</code> not just <code>out =</code>?</p>
+<p>C is a strongly typed language, unlike R. Whereas in R we have the flexibility to create variables of any type without specifying the type in advance, in C we have to specify the type of every single variable ahead of time. This comes with the benefit of speed, and is one of the reasons C is so much faster than R.</p>
+</div>
+<div id="allocation-and-protection" class="section level4">
+<h4>Allocation and protection</h4>
+<p>In C, creating new R objects is a bit more complicated than what you’d do at the R level. We know that we are going to take in a numeric vector of length 1, <code>a</code>, and we want to add 1 to it and return that result, which is also a numeric vector of length 1. So we need a place to put that result.</p>
+<p>To do so, we have to create a new numeric vector of length 1 at the C level. The easiest way to do this is using a function from the R API, <code>Rf_allocVector()</code>. It takes in two arguments, a <code>SEXPTYPE</code> (the type of the SEXP to make) and a <code>R_xlen_t</code> (the length of the SEXP) and returns a SEXP of the type and length requested.</p>
+<p>There are 7 <code>SEXPTYPE</code>s you can use, and you can find information about them at Hadley’s <a href="https://github.com/hadley/r-internals/blob/master/vectors.md">R Internals</a> documentation repo. We used the type for a “real” (numeric) vector, <code>REALSXP</code>. We also specified the length to be 1.</p>
+<p>Great, so we used <code>Rf_allocVector(REALSXP, 1)</code> to create a numeric vector of length 1. All good? Not quite. We also have to <em>protect</em> that numeric vector. From what? Well, if we don’t protect it by wrapping it in <code>PROTECT()</code> immediately, then when R’s garbage collector runs (which I think of as happening randomly), then that object gets cleaned up and removed 😢. If not managed correctly, this can cause great heartache.</p>
+<p>As if it wasn’t difficult enough, we also have to manage <em>unprotecting</em> all of these objects. We do that here by calling <code>UNPROTECT(1)</code> at the end of the function, right before we return our result. <code>UNPROTECT()</code> takes an integer value of the number of things to unprotect, so if you had created 3 new objects, you could call <code>UNPROTECT(3)</code> instead.</p>
+<p><span class="marginnote">
+We don’t have to protect and unprotect the <em>arguments</em> to the function, as R knows to protect these automatically.
+</span></p>
+</div>
+<div id="autocomplete" class="section level4">
+<h4>Autocomplete ❤️</h4>
+<p>You might be wondering, “How did he know about <code>Rf_allocVector()</code>?” Or, “How do I find more of these neat C level API functions?” Great question! Luckily, RStudio’s autocomplete has your back. By typing <code>Rf_</code> and pressing tab, we get the following pop up that we can scroll through.</p>
+<p><img src="img/autocomplete.png" /></p>
+<p>Using this, we can find new functions to <del>research</del> google and learn about.</p>
+<p>Similarly, how did I know what type <code>Rf_allocVector()</code> took and returned? Well…</p>
+<p><img src="img/types-alloc.png" /></p>
+<p>The popup we get from RStudio tells us not only the name of the C function, but also the types of the arguments and return value!</p>
+<p>In a moment, we will use <code>Rf_asReal()</code>.</p>
+<p><img src="img/types.png" /></p>
+</div>
+<div id="addition" class="section level4">
+<h4>Addition</h4>
+<p>Okay, so about the actual addition line…</p>
+<pre><code>REAL(out)[0] = Rf_asReal(a) + 1;</code></pre>
+<p>That seems like a lot of work to add 1.</p>
+<p><code>Rf_asReal()</code> takes a SEXP, and returns a single <code>double</code> value corresponding to the first element in the SEXP. A <code>double</code> is the C type that is somewhat equivalent to an R numeric. So this converts our numeric vector of length 1, <code>a</code>, into an object that can be manipulated at the C level with C operations like addition.</p>
+<p>Next, we add 1 to that <code>double</code> that <code>Rf_asReal()</code> gives us. After that, we have to put it somewhere. If you thought we could just do <code>out = Rf_asReal(a) + 1</code>, well, haven’t you learned by now that it isn’t ever that simple?</p>
+<p><code>out</code> is a SEXP, and we can’t assign a <code>double</code> straight to a SEXP. What we actually need is a way to access the <code>double</code> <em>underlying</em> the <code>out</code> SEXP we created. That is what <code>REAL(out)</code> gets us. Technically, it gives us a <code>double*</code> (a double pointer) that points to the actual double array that <code>out</code> abstracts away into an R numeric vector. Jargon aside, it gives us something that we can kind of treat like an R vector, where we can index into it with <code>[]</code> and assign values to those slots.</p>
+<p>One more note is that C is 0-index based, while R is 1-index based, so rather than doing <code>REAL(out)[1]</code> to access the first position, we really do <code>REAL(out)[0]</code>.</p>
+<p>Alright, so <code>REAL(out)</code> gave us access to the <code>double*</code>, and <code>REAL(out)[0]</code> gave us access to the actual <code>double</code> at the 1st position in the vector. This is a <code>double</code>, so we can assign our result to this.</p>
+</div>
+<div id="return" class="section level4">
+<h4>Return</h4>
+<p>Finally, after calling <code>UNPROTECT(1)</code> as described above, we return <code>out</code> with <code>return out</code>. Unlike R, you actually have to specify the <code>return</code> in C (it’s generally optional in R).</p>
+<p>Note that in the function signature, we specified <code>SEXP addr_add_one(...)</code>. The <code>SEXP</code> at the beginning there was our way of telling C that we are going to be returning a SEXP object.</p>
+</div>
+</div>
+<div id="registration" class="section level3">
+<h3>Registration</h3>
+<p>Great, so we have a C function that can add 1. Can we call this from R yet? Almost, but still no. If you run a <code>devtools::load_all()</code>, then you <em>should</em> see the code compile. For me that looks like this, but I’ve manually trimmed it so you aren’t overloaded with output:</p>
+<pre><code>Loading addr
+Re-compiling addr
+─  installing *source* package ‘addr’ ...
+   ** libs
+   clang &lt;trimmed&gt;  -c add.c -o add.o
+   clang -dynamiclib &lt;trimmed&gt; -o addr.so add.o
+   installing to /private/var/&lt;trimmed&gt;/addr/libs
+─  DONE (addr)</code></pre>
+<p>This is telling us that the:</p>
+<ul>
+<li><code>add.c</code> was compiled into an “object” file, <code>add.o</code>.</li>
+<li>That one object file was used to make an <code>addr.so</code> “shared object”. You can maybe think of this kind of like a “built” R package.</li>
+</ul>
+<p>Nevertheless, if you try and do <code>addr::</code> after running <code>load_all()</code>, you will be disappointed, and you won’t see <code>addr_add_one</code> anywhere! This is because we still have to <em>register the routine</em>, aka expose these functions to the R side. This is related to that <code>@useDynLib</code> roxygen2 tag we added at the beginning. That tells R to <em>look</em> for the C functions, but we still have to actually expose them too. Let’s do that.</p>
+<p>Create a new file, <code>init.c</code>. This is the standard name for the file where this “routine registration” happens:</p>
+<pre><code>usethis::use_c(&quot;init&quot;)</code></pre>
+<p>Add the following to what is already there:</p>
+<pre><code>#define R_NO_REMAP
+#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;
+#include &lt;stdlib.h&gt; // for NULL
+#include &lt;R_ext/Rdynload.h&gt;
+
+/* .Call calls */
+extern SEXP addr_add_one(SEXP);
+
+static const R_CallMethodDef CallEntries[] = {
+  {&quot;addr_add_one&quot;, (DL_FUNC) &amp;addr_add_one, 1},
+  {NULL, NULL, 0}
+};
+
+void R_init_addr(DllInfo *dll) {
+  R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+}</code></pre>
+<p>This is the how C level functions are registered as something that can be called from the R side. Ugly, right? I won’t go into much detail here (I don’t know everything about it myself anyways), and you’ll generally only ever change 3 things. First, take a look at the section starting with “.Call calls”.</p>
+<pre><code>/* .Call calls */
+extern SEXP addr_add_one(SEXP);</code></pre>
+<p>Here, we have to list all of our C level functions that we want to expose to the R side, along with their full function signature (the argument types and return type), and we have to prefix it with <code>extern</code>. Our function takes 1 SEXP, <code>a</code>, as an argument, so we only have 1 SEXP specified here. If your function has 2 arguments, you would do <code>extern SEXP my_fun(SEXP, SEXP)</code>. Generally the only things you will pass back and forth between R and C will be SEXP objects. If you have another function to export, you just add another <code>extern</code> call below this one.</p>
+<p>Next, we have to construct an “array of call method definitions”, named <code>CallEntries</code>.</p>
+<pre><code>static const R_CallMethodDef CallEntries[] = {
+  {&quot;addr_add_one&quot;, (DL_FUNC) &amp;addr_add_one, 1},
+  {NULL, NULL, 0}
+};</code></pre>
+<p>In this, you’ll specify the address of the function you specified above (that’s what <code>&amp;addr_add_one</code> does), and from what I understand you convert it into a dynamically loadable function. Basically, you’ll add one line per function you are exporting, and it is of the form:</p>
+<pre><code>{&quot;&lt;function-name&gt;&quot;, (DL_FUNC) &amp;&lt;function-name&gt;, num_args}</code></pre>
+<p>If you have a second function to export, add another line after the first one, but before the <code>{NULL, NULL, 0}</code>.</p>
+<p>Lastly, there is a function that R will automatically call for you that actually does the registration of these functions. R looks for a C function called <code>R_init_&lt;pkg&gt;()</code> to call to register these routines. So the only thing you’d ever change here is to change <code>&lt;pkg&gt;</code> to your current package name.</p>
+<pre><code>void R_init_addr(DllInfo *dll) {
+  R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+}</code></pre>
+<p>Note how we pass the <code>CallEntries</code> into <code>R_registerRoutines()</code>. This seems to be passing along all of the information required about how to create the entry points into the C code that we will call from the R side.</p>
+</div>
+<div id="call-it" class="section level3">
+<h3>.Call() it!</h3>
+<p>Try running <code>devtools::load_all()</code> one more time. You should now have access to <code>addr::addr_add_one</code>. It’s not a function, so don’t try and call it with <code>addr_add_one()</code>. Let’s print it out.</p>
+<pre><code>addr::addr_add_one</code></pre>
+<pre><code>$name
+[1] &quot;addr_add_one&quot;
+
+$address
+&lt;pointer: 0x7fea6b4da160&gt;
+attr(,&quot;class&quot;)
+[1] &quot;RegisteredNativeSymbol&quot;
+
+$dll
+DLL name: addr
+Filename: /Users/davis/Desktop/r/projects/data-insights-package/addr/src/addr.so
+Dynamic lookup: FALSE
+
+$numParameters
+[1] 1
+
+attr(,&quot;class&quot;)
+[1] &quot;CallRoutine&quot;      &quot;NativeSymbolInfo&quot;</code></pre>
+<p>So this is really just a list of class <code>&quot;CallRoutine&quot;</code> holding information about where to find the actual C function we need.</p>
+<p>Since you can’t call this like a function, how do you use it? The magic is with the function <code>.Call()</code>, which serves as the function that let’s us call this <code>addr_add_one</code> entry point along with any arguments that we might need to pass through. Try the following:</p>
+<pre class="r"><code>.Call(addr_add_one, 2)
+# [1] 3</code></pre>
+<p>Woah! So that just called our C function to add 1 to 2, so we get 3.</p>
+</div>
+<div id="now-what" class="section level3">
+<h3>Now what?</h3>
+<p>Well, we need a better way to expose this to our users. The best way is to create a function that wraps this that we can export and document. Also, <em>we did no error checking</em> at the C level, so if we pass any bad or unexpected inputs in to this <code>.Call()</code>, it could actually crash R completely. Not just error, <em>crash</em>. This isn’t the worst thing in the world, and it’s a pretty normal part of the development process of connecting R and C (I do it <em>all</em> the time), but it isn’t fun for the user. To fix that, we will also add some error checking to our function.</p>
+<p>Create a file named <code>add.R</code>.</p>
+<pre class="r"><code>usethis::use_r(&quot;add&quot;)</code></pre>
+<p>Now add the following:</p>
+<pre class="r"><code>#&#39; Add 1 to a single numeric
+#&#39;
+#&#39; `add_one()` adds 1 to a single numeric value.
+#&#39;
+#&#39; @param a A single numeric value.
+#&#39;
+#&#39; @examples
+#&#39;
+#&#39; add_one(2)
+#&#39;
+#&#39; @export
+add_one &lt;- function(a) {
+
+  ok &lt;- is.numeric(a) &amp; length(a) == 1L
+
+  if (!ok) {
+    stop(&quot;`a` must be a single numeric value.&quot;, call. = FALSE)
+  }
+
+  .Call(addr_add_one, a)
+}</code></pre>
+<p>At this point, call <code>load_all()</code> again and you should have access to <code>add_one()</code>.</p>
+<pre class="r"><code>add_one(2)
+# [1] 3</code></pre>
+<pre class="r"><code>add_one(c(1, 2))
+# Error: `a` must be a single numeric value.</code></pre>
+<p>Awesome! Since we have added the <code>@export</code> tag, to actually export this function we just need to call:</p>
+<pre class="r"><code>devtools::document()</code></pre>
+<p>which will create a <code>.Rd</code> help page for the file, and will add <code>export(add_one)</code> to the <code>NAMESPACE</code> file.</p>
+</div>
+<div id="cran-check" class="section level3">
+<h3>CRAN Check!</h3>
+<p>The only thing left is to see if it passes a cran check! Plot twist, it won’t quite yet. We need to add a license first.</p>
+<pre class="r"><code>usethis::use_mit_license(name = &quot;Davis Vaughan&quot;)</code></pre>
+<p>Okay, now try it:</p>
+<pre class="r"><code>devtools::check()
+
+# 0 errors ✔ | 0 warnings ✔ | 0 notes ✔</code></pre>
+<p>😎</p>
+</div>
+<div id="resources" class="section level3">
+<h3>Resources</h3>
+<p>If you want to learn more about R’s C interface, there are a few resources out there for you!</p>
+<ul>
+<li><p>Hadley’s <a href="https://github.com/hadley/r-internals">R Internals documentation</a></p></li>
+<li><p>Advanced R’s old <a href="http://adv-r.had.co.nz/C-interface.html">section on C</a></p></li>
+<li><p>The massive but thorough <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html">Writing R Extensions</a>. I would focus on section 5.9 on <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Handling-R-objects-in-C">Handling R objects in C</a>.</p></li>
+</ul>
+</div>
+
+    </section>
+
+    <hr>
+
+    <footer class="post-footer">
+        <section class="f-1">
+            <section class="share">
+                <span>Share:
+                <a class="icon-twitter" href="http://twitter.com/share?text=Now%20You%20C%20Me&url=%2f2019%2f03%2f02%2fnow-you-c-me%2f"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=%2f2019%2f03%2f02%2fnow-you-c-me%2f"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="fa fa-facebook"></i>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=%2f2019%2f03%2f02%2fnow-you-c-me%2f"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+                </span>
+            </section>
+
+            
+        </section>
+                
+        <section id="comments">
+            <div id="disqus_thread" class="post-comments"></div>
+            <script type="text/javascript">
+              if (window.location.hostname != "localhost") {
+                var disqus_shortname = 'datainsights';
+                (function() {
+                  var dsq = document.createElement('script');
+                  dsq.type = 'text/javascript';
+                  dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              }
+            </script>
+            <noscript>
+              Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+            </noscript>
+        </section>
+                
+    </footer>
+</article>
+	</div>
+</main>
+    <footer id="site-footer">
+        <div class="container">
+          
+          
+            <a href="https://www.twitter.com/dvaughan32" title="Twitter" target="_blank"><span class="tooltip"><i class="fa fa-twitter"></i></span></a>
+          
+          
+            <a href="https://www.github.com/DavisVaughan" title="GitHub" target="_blank"><span class="tooltip"><i class="fa fa-github"></i></span></a>
+          
+          <a href="/index.xml" title="Get the RSS feed"><span class="tooltip"><i class="fa fa-rss"></i></span></a>
+          <section>&copy; <a href="/"></a> 2017 | All rights reserved</section>
+          <section>Theme by <a href="http://www.jrdnbwmn.com">Jordan Bowman</a>. Generated with <a href="http://gohugo.io/">Hugo</a>.</section>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/fittext.js"></script>
+    <script type="text/javascript">
+      $(".heading").fitText();
+    </script>
+    
+    <script src="/js/math-code.js"></script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    });
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+
+    <script>
+        var _gaq=[['_setAccount','UA-99003915-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
+
+
+</body>
+</html>
