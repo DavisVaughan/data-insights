@@ -192,7 +192,6 @@ There are 7 `SEXPTYPE`s you can use, and you can find information about them at 
 Great, so we used `Rf_allocVector(REALSXP, 1)` to create a numeric vector of length 1. All good? Not quite. We also have to _protect_ that numeric vector. From what? Well, if we don't protect it by wrapping it in `PROTECT()` immediately, then when R's garbage collector runs (which I think of as happening randomly), then that object gets cleaned up and removed `r emo::ji("cry")`. If not managed correctly, this can cause great heartache.
 
 As if it wasn't difficult enough, we also have to manage _unprotecting_ all of these objects. We do that here by calling `UNPROTECT(1)` at the end of the function, right before we return our result. `UNPROTECT()` takes an integer value of the number of things to unprotect, so if you had created 3 new objects, you could call `UNPROTECT(3)` instead.
-
 <span class="marginnote">
 We don't have to protect and unprotect the _arguments_ to the function, as R knows to protect these automatically.
 </span>
