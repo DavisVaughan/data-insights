@@ -180,7 +180,7 @@ SEXP addr_add_one(SEXP a) {
 <div id="why-are-there-so-many-explicit-types" class="section level4">
 <h4>Why are there so many explicit types?</h4>
 <p>Meaning, why is the argument <code>SEXP a</code> and not just <code>a</code>? Why is the return value, <code>out</code>, created as <code>SEXP out =</code> not just <code>out =</code>?</p>
-<p>C is a strongly typed language, unlike R. Whereas in R we have the flexibility to create variables of any type without specifying the type in advance, in C we have to specify the type of every single variable ahead of time. This comes with the benefit of speed, and is one of the reasons C is so much faster than R.</p>
+<p>C is a statically typed language, unlike R. Whereas in R we have the flexibility to create variables of any type without specifying the type in advance, in C we have to specify the type of every single variable ahead of time. This comes with the benefit of speed, and is one of the reasons C is so much faster than R.</p>
 </div>
 <div id="allocation-and-protection" class="section level4">
 <h4>Allocation and protection</h4>

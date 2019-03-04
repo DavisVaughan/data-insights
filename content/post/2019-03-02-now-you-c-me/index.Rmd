@@ -182,7 +182,7 @@ Just think of a SEXP as a container that is able to represent _any_ kind of R ob
 
 Meaning, why is the argument `SEXP a` and not just `a`? Why is the return value, `out`, created as `SEXP out = ` not just `out =`? 
 
-C is a strongly typed language, unlike R. Whereas in R we have the flexibility to create variables of any type without specifying the type in advance, in C we have to specify the type of every single variable ahead of time. This comes with the benefit of speed, and is one of the reasons C is so much faster than R.
+C is a statically typed language, unlike R. Whereas in R we have the flexibility to create variables of any type without specifying the type in advance, in C we have to specify the type of every single variable ahead of time. This comes with the benefit of speed, and is one of the reasons C is so much faster than R.
 
 #### Allocation and protection
 
