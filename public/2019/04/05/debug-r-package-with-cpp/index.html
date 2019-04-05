@@ -685,6 +685,15 @@ because of the assignment we did there on line 9!</p>
 <li>Remember to use <code>Rf_PrintValue()</code> on SEXP objects to get a pretty view of what the R object actually looks like, and <code>Rf_PrintValue(x.data)</code> to print Rcpp objects.</li>
 </ul>
 </div>
+<div id="resources" class="section level3">
+<h3>Resources</h3>
+<p>Here are some extra resources I found really useful as I was figuring all this out:</p>
+<ul>
+<li>The <a href="http://r-pkgs.had.co.nz/src.html#src-debugging">R Packages</a> section on debugging compiled code.</li>
+<li>Section <a href="https://colinfay.me/writing-r-extensions/debugging.html">4.4.2 Inspecting R objects when debugging</a> from R Core’s Writing R Extensions (bookdown-ified by Colin Fay) is quite useful. It is where I learned about <code>Rf_PrintValue()</code>. See also <code>R_inspect()</code>, and <code>Rf_PrintValue(x-&gt;attrib)</code> to view attributes of a SEXP.</li>
+<li>Kevin Ushey has a great <a href="http://kevinushey.github.io/blog/2015/04/13/debugging-with-lldb/">blog post</a> with some more pointers on using <code>lldb</code> with Rcpp functions created on the fly.</li>
+</ul>
+</div>
 
     </section>
 

@@ -1009,3 +1009,11 @@ This has been a _very_ long winded post. But hopefully it can serve as a referen
   - Debug!
 - Remember to use `-g -O0` when compiling.
 - Remember to use `Rf_PrintValue()` on SEXP objects to get a pretty view of what the R object actually looks like, and `Rf_PrintValue(x.data)` to print Rcpp objects.
+
+### Resources
+
+Here are some extra resources I found really useful as I was figuring all this out:
+
+- The [R Packages](http://r-pkgs.had.co.nz/src.html#src-debugging) section on debugging compiled code.
+- Section [4.4.2 Inspecting R objects when debugging](https://colinfay.me/writing-r-extensions/debugging.html) from R Core's Writing R Extensions (bookdown-ified by Colin Fay) is quite useful. It is where I learned about `Rf_PrintValue()`. See also `R_inspect()`, and `Rf_PrintValue(x->attrib)` to view attributes of a SEXP.
+- Kevin Ushey has a great [blog post](http://kevinushey.github.io/blog/2015/04/13/debugging-with-lldb/) with some more pointers on using `lldb` with Rcpp functions created on the fly. 
