@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" prefix="og: http://ogp.me/ns#" xmlns:og="http://ogp.me/ns#"><!--<![endif]-->
+
+    <head>
+                <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="author" content="">
+  
+	
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:creator" content="@https://twitter.com/dvaughan32">
+        <meta name="twitter:domain" content="/">
+	
+        <meta property="og:site_name" content="Data Insights">
+        <meta property="og:title" content="Data Insights">
+        <meta property="og:url" content="/2019/04/05/debug-r-package-with-cpp/">
+        <meta property="og:description" content="">
+    
+        <meta property="og:type" content="article" />
+        <meta property="og:article:author" content="" />
+        <meta property="og:article:published_time" content="2019-04-05T00:00:00Z" />
+    
+        <meta name="generator" content="Hugo 0.49.2" />
+        <title>Debugging an R Package with C&#43;&#43; &middot; Data Insights</title>
+        <link rel="canonical" href="/" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="">
+        <link rel="stylesheet" type="text/css" href="/css/main.css"/>
+        <link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300|Montserrat:700|Charm|Roboto|Fira+Mono" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+        <link rel="stylesheet" href="/css/monokai-sublime.css">
+        <link rel="stylesheet" href="/css/marginnote.css">
+        <script src="/js/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+
+<body>
+<!--[if lt IE 7]><p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chrome/‎">install Google Chrome</a> to experience this site.</p><![endif]-->
+
+    <header id="site-header">
+        <div class="container">
+            <a href="/" alt="Data Insights"><h3>Data Insights</h3></a>
+            <p class="blog-description">
+              <a href = "/">Home</a>
+              |
+              <a href = "/about/">About</a>
+              |
+              <a href = "/resume/davis-vaughan-resume.pdf">Resume</a>
+            </p>
+        </div>
+    </header>
+<main class="content" role="main">
+	<div class="container">
+		<article class="post">
+	<header class="post-header">
+        <h3 class="p-post-title">Debugging an R Package with C&#43;&#43;</h3>
+    </header>
+
+    <section class="post-content">
+        <div id="introduction" class="section level3">
+<h3>Introduction</h3>
+<p>This post is dedicated to teaching you how to debug an R package that has C++ code in it. I had no clue how to do this in a formal way, and honestly this post is for future me. This post is long, because this stuff is finicky, and I wanted to document things as explictly as possible.</p>
+<p>The method of debugging you will learn here has advantages and drawbacks:</p>
+<style>
+invisi-list {list-style-type: none;}
+</style>
+<ul>
+<invisi-list>
+<li>
+✅ It is great because you can jump right to places where R would generally crash and shut down, and instead have a chance to figure out why things broke.
+</li>
+<li>
+✅ You can print out any R variables at the C++ level.
+</li>
+<li>
+✅ You can step forward through your code, one line at a time, just like how you do from RStudio.
+</li>
+<li>
+✅ You can even step <em>up</em> into the function that called the one you are currently in, which is very valuable if you have a guess as to where something went wrong, and then want to backtrack to where the wrong result came from.
+</li>
+<li>
+✅ You can run arbitrary C++ code interactively while inside a function to help you interrogate objects.
+</li>
+<li>
+❌ It is painful to get going, and requires a decent amount of time investment.
+</li>
+<li>
+❌ Not every C++ expression works as you might expect when running it interactively. For example, you can’t easily use <code>std::cout</code>.
+</li>
+</invisi-list>
+</ul>
+<p>Because this method is a pain to get going, my recommendation would be to start with printing out objects using some combination of:</p>
+<ul>
+<li><code>Rcpp::Rcout &lt;&lt; obj &lt;&lt; std::endl</code> for Rcpp objects.</li>
+<li><code>Rf_PrintValue()</code> for SEXP objects.</li>
+<li><code>R_inspect()</code> for other details about SEXP objects (like attributes).</li>
+</ul>
+<p>If you’ve tried that, and still can’t seem to figure it out, it might be time for a true debugger.</p>
+</div>
+<div id="os" class="section level3">
+<h3>OS</h3>
+<p>I am using a MacOS running Mojave. I am also using R 3.5.1. I will be generally be using the Terminal to run R, rather than run it from RStudio.</p>
+<p>For Windows users, you can probably use the Windows Command Prompt, but you might have to tweak your PATH variable, or explicitly specify the path to R to get it to run. See <a href="https://stackoverflow.com/questions/6940022/running-r-interactively-from-windows-command-prompt">this Stack Overflow post</a> for some potentially helpful info. (I’ll pray for you).</p>
+</div>
+<div id="gdb-and-lldb" class="section level3">
+<h3>gdb and lldb</h3>
+<p>There are two main C++ debuggers out there, as far as I know. <code>gdb</code> works alongside the <code>g++</code> compiler, and <code>lldb</code> works with the <code>clang++</code> compiler. The one that you will use will depend on what compiler you use to compile the C/C++ code in your package with. If you aren’t sure what you are using, I’ll show you an easy way to find out which one you have later on. I compile with <code>clang++</code>, so I’ll be showing <code>lldb</code>.</p>
+<p>There are a number of commands that will be useful. Don’t worry about understanding them all now, this will serve as a nice reference for you later on:</p>
+<ul>
+<li><code>run</code> (or <code>process launch</code>): Run R and drop me at the console.</li>
+<li><code>next</code> (or <code>n</code>): Run the next line of C++ code.</li>
+<li><code>step</code> (or <code>s</code>): Step <em>into</em> a function.</li>
+<li><code>up</code>: Step <em>up</em> into the previous function call.</li>
+<li><code>down</code>: Step <em>down</em> into the next function call.</li>
+<li><code>finish</code>: Run the rest of the code.</li>
+<li><code>frame variable</code>: Print the value of all of the variables in the current frame.</li>
+<li><code>exit</code>: Exists lldb.</li>
+<li><code>breakpoint set --name &lt;function_name&gt;</code>: Set a breakpoint that will be triggered whenever that function is called.</li>
+<li><code>process continue</code>: Jump back into an already running R process you started with <code>run</code>.</li>
+</ul>
+<p>It’s also useful to know that when you are working at the R console in <code>lldb</code>, you can press <code>Ctrl + C</code> to exit the R process (without killing it) and jump back to the lldb console. Pressing <code>CTRL + Z</code> at any point will kill lldb and the attached R process.</p>
+<p>If you use <code>gdb</code>, there is a nice <a href="https://lldb.llvm.org/lldb-gdb.html">command map</a> from gdb &lt;-&gt; lldb that will be useful to you as you follow along.</p>
+<p>The general workflow is going to look like:</p>
+<ul>
+<li>Start the debugger with R attached</li>
+<li>Set a breakpoint</li>
+<li><code>run</code> to start R</li>
+<li>Run some setup R code to activate breakpoints</li>
+<li>Trigger the error</li>
+<li>Debug!</li>
+</ul>
+</div>
+<div id="telling-prompts-apart" class="section level3">
+<h3>Telling prompts apart</h3>
+<p>In my code blocks, I’ll use the following conventions to tell apart the terminal, lldb, and R consoles:</p>
+<ul>
+<li>Terminal: <code>(term) &lt;code&gt;</code></li>
+<li>lldb: <code>(lldb) &lt;code&gt;</code></li>
+<li>R: <code>(R) &lt;code&gt;</code></li>
+</ul>
+</div>
+<div id="example-package" class="section level3">
+<h3>Example package</h3>
+<p>Eventually for these examples we will be using a mini package I created called <code>debugit</code>. It lives on github <a href="https://github.com/DavisVaughan/debugit">here</a>. Hop into RStudio and install it with devtools:</p>
+<pre class="r"><code>devtools::install_github(&quot;DavisVaughan/debugit&quot;)</code></pre>
+<pre class="r"><code>Downloading GitHub repo DavisVaughan/debugit@master
+✔  checking for file ‘&lt;stuff&gt;’ ...
+─  preparing ‘debugit’:
+✔  checking DESCRIPTION meta-information ...
+─  cleaning src
+─  checking for LF line-endings in source and make files and shell scripts
+─  checking for empty or unneeded directories
+─  building ‘debugit_0.0.0.9000.tar.gz’
+   
+* installing *source* package ‘debugit’ ...
+** libs
+clang++  &lt;stuff&gt; -fPIC  -Wall -g -O2  -c RcppExports.cpp -o RcppExports.o
+clang++  &lt;stuff&gt; -fPIC  -Wall -g -O2  -c buggy.cpp -o buggy.o
+clang++  &lt;stuff&gt; -fPIC  -Wall -g -O2  -c stack.cpp -o stack.o
+clang++ -dynamiclib &lt;stuff&gt; -o debugit.so RcppExports.o buggy.o stack.o
+installing to /Library/Frameworks/R.framework/Versions/3.5/Resources/library/debugit/libs
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (debugit)
+Adding ‘debugit_0.0.0.9000.tgz’ to the cache</code></pre>
+<p>Because I don’t hate you, I trimmed some of the output. Do you see the section starting with <code>* installing *source* package ‘debugit’ ...</code>? There are two important things I want you to notice here:</p>
+<ol style="list-style-type: decimal">
+<li><code>clang++</code> is at the front of those 4 lines. That’s our compiler! So we should be using lldb.</li>
+<li>These two “flags” <code>-g -O2</code>. These are important flags that can make you either very happy or very miserable as you try and debug. <code>-g</code> tells the compiler to “compile with debug information”. <code>-O2</code> is the level of “optimization” that the compiler should use. <code>O0</code> is the lowest, and <code>O3</code> is the highest. With a lower level of optimization, more information is left lying around to help us debug. Higher levels of optimization can sometimes result in faster code. <code>O2</code> is what R defaults to when setting flags for your code. Unfortunately, this will come back to haunt us: <em>insert epic foreshadowing omen</em>.</li>
+</ol>
+<p>Now that we know what debugger we should be using, let’s play around with attaching that debugger to R. We will come back to the package after we are more comfortable with lldb.</p>
+</div>
+<div id="starting-r-with-a-debugger" class="section level3">
+<h3>Starting R with a debugger</h3>
+<p>To run R with a debugger, you’ll need to run it from the command line. Open up Terminal. First, just type <code>R</code>:</p>
+<pre class="bash"><code>(term) R</code></pre>
+<pre class="bash"><code>R version 3.5.1 (2018-07-02) -- &quot;Feather Spray&quot;
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type &#39;license()&#39; or &#39;licence()&#39; for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type &#39;contributors()&#39; for more information and
+&#39;citation()&#39; on how to cite R or R packages in publications.
+
+Type &#39;demo()&#39; for some demos, &#39;help()&#39; for on-line help, or
+&#39;help.start()&#39; for an HTML browser interface to help.
+Type &#39;q()&#39; to quit R.
+
+[master]&gt; </code></pre>
+<p><span class="marginnote">
+You can ignore the fact that my R prompt says <code>[master]&gt;</code>. I’ve customized it using Gabor Csardi’s <a href="https://github.com/gaborcsardi/prompt">prompt</a> package! I promise it is the normal R prompt.
+</span></p>
+<p>This started R from Terminal, and let’s you work interactively from the R console. Let’s close it back up. Type <code>q()</code> then <code>n</code> and press Enter. You should end up back at the terminal prompt.</p>
+<pre class="bash"><code>(R) q()
+Save workspace image? [y/n/c]: n</code></pre>
+<p>To start R with a debugger, run:</p>
+<pre class="bash"><code>(term) R -d lldb</code></pre>
+<pre class="bash"><code>(lldb) target create &quot;/Library/Frameworks/R.framework/Resources/bin/exec/R&quot;
+Current executable set to &#39;/Library/Frameworks/R.framework/Resources/bin/exec/R&#39; (x86_64).
+(lldb) </code></pre>
+<p>Well that’s different! It looks like it dropped us into the lldb prompt, and is using R as the “executable”. This means that when we call <code>run</code>, it will run that executable, starting R. Let’s do that. Type <code>run</code> at the <code>lldb</code> prompt and hit enter.</p>
+<pre class="bash"><code>(lldb) run</code></pre>
+<pre class="bash"><code>Process 52472 launched: &#39;/Library/Frameworks/R.framework/Resources/bin/exec/R&#39; (x86_64)
+
+R version 3.5.1 (2018-07-02) -- &quot;Feather Spray&quot;
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type &#39;license()&#39; or &#39;licence()&#39; for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type &#39;contributors()&#39; for more information and
+&#39;citation()&#39; on how to cite R or R packages in publications.
+
+Type &#39;demo()&#39; for some demos, &#39;help()&#39; for on-line help, or
+&#39;help.start()&#39; for an HTML browser interface to help.
+Type &#39;q()&#39; to quit R.
+
+[master]&gt; </code></pre>
+<p><span class="marginnote">
+If you get an error here rather than getting R to start, you might need clang4. Skip down to the <code>clang4 Required</code> section and then come back.
+</span></p>
+<p>So this looks like what happened when we called <code>R</code>, but also has an extra line at the top about “Process launched”. This is now an R process that our debugger is “attached” to. Run the following R code at the R console:</p>
+<pre class="bash"><code>(R) x &lt;- 1 + 1</code></pre>
+<p>Now, rather than running <code>q()</code> to quit, let’s exit the process without quitting and jump back into our debugger. Press <code>CTRL + C</code> and you should see:</p>
+<pre class="bash"><code>Process 53060 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = signal SIGSTOP
+    frame #0: 0x00007fff5af7ae82 libsystem_kernel.dylib`__select + 10
+libsystem_kernel.dylib`__select:
+-&gt;  0x7fff5af7ae82 &lt;+10&gt;: jae    0x7fff5af7ae8c            ; &lt;+20&gt;
+    0x7fff5af7ae84 &lt;+12&gt;: movq   %rax, %rdi
+    0x7fff5af7ae87 &lt;+15&gt;: jmp    0x7fff5af73e31            ; cerror
+    0x7fff5af7ae8c &lt;+20&gt;: retq   
+Target 0: (R) stopped.
+(lldb) </code></pre>
+<p>You may or may not get all that unintelligible garbage about &quot;libsystem_kernel.dylib__select:&quot;. It doesn’t seem to hurt me thought so let’s continue. The main thing is that we got a <code>Target 0: (R) stopped.</code> and we are now back at the <code>(lldb)</code> prompt.</p>
+<p>If you try and call <code>run</code> now you get this because you already have an R process running:</p>
+<pre><code>(lldb) run</code></pre>
+<pre><code>There is a running process, kill it and restart?: [Y/n]</code></pre>
+<p>So let’s jump back into that R process with <code>process continue</code> and the lldb prompt:</p>
+<pre><code>(lldb) process continue</code></pre>
+<pre><code>Process 53060 resuming
+</code></pre>
+<p>I get this message…and then it kind of hangs. I don’t see the R console prompt. For some reason, you have to help it along. Press Enter if nothing shows up.</p>
+<pre><code>Process 53060 resuming
+
+[master]&gt; </code></pre>
+<p>That’s better. Here we can run R commands again in that same process we started in. To prove that it is the same process, print <code>x</code>.</p>
+<pre><code>(R) x</code></pre>
+<pre><code>[1] 2</code></pre>
+<p>Now that you have a bit of the basics down, let’s shut down and start over. Press <code>CTRL + C</code> and then run:</p>
+<pre><code>(lldb) exit</code></pre>
+<p>You should be back at the Terminal prompt.</p>
+</div>
+<div id="clang4" class="section level3">
+<h3>clang4</h3>
+<p><em>Only read this section if you couldn’t get the debugger to start R. Otherwise skip on to the next section.</em></p>
+<p>When trying to run the debugger with <code>R -d lldb</code> and then a call to <code>run</code>, at least on:</p>
+<ul>
+<li>R 3.5.1</li>
+<li>MacOS Mojave</li>
+<li>Compiling with clang</li>
+</ul>
+<p>I immediately hit something like:</p>
+<pre><code>(lldb) run </code></pre>
+<pre><code>Process 74239 launched: 
+&#39;/Library/Frameworks/R.framework/Resources/bin/exec/R&#39; (x86_64) 
+dyld: Library not loaded: /usr/local/clang4/lib/libomp.dylib 
+  Referenced from: /Library/Frameworks/R.framework/Resources/bin/exec/R 
+  Reason: image not found 
+Process 74239 stopped 
+* thread #1, stop reason = signal SIGABRT 
+    frame #0: 0x000000010002c9ee dyld`__abort_with_payload + 10 
+dyld`__abort_with_payload: 
+-&gt;  0x10002c9ee &lt;+10&gt;: jae    0x10002c9f8               ; &lt;+20&gt; 
+    0x10002c9f0 &lt;+12&gt;: movq   %rax, %rdi 
+    0x10002c9f3 &lt;+15&gt;: jmp    0x10002c300               ; cerror_nocancel 
+    0x10002c9f8 &lt;+20&gt;: retq </code></pre>
+<p>I believe this was a bug that was fixed in December 2018. You can read about that <a href="http://r-sig-mac.29524.n8.nabble.com/R-SIG-Mac-CRAN-build-of-R-linking-to-usr-local-clang4-td228.html">here</a>. It’s trying to tell you it can’t find <code>/usr/local/clang4</code>, even though <code>clang6</code> is the recommended clang build nowadays. If you hit this, ensure that you don’t have <code>clang4</code> by opening a Terminal window and running:</p>
+<pre><code>(term) cd /usr/local
+(term) ls</code></pre>
+<p>If you see clang6 there but not clang4, you need to get clang4 to continue. Luckily the research group at AT&amp;T has you covered. Go to <a href="https://r.research.att.com/libs/">this page</a> to see the libraries they provide. One is clang4 (it’s in alphabetical order). At the bottom, they tell you how to install it. If the version you see for clang 4.00 is the same as the one in the code below, you can open up a Terminal window and run this, otherwise, tweak it a bit as needed:</p>
+<pre><code>(term) curl -O http://r.research.att.com/libs/clang-4.0.0-darwin15.6-Release.tar.gz
+(term) sudo tar fvxz clang-4.0.0-darwin15.6-Release.tar.gz -C /</code></pre>
+<p>I <em>think</em> I got an error of some kind from this, but it didn’t seem to affect anything in the end and ran fine. Check <code>/usr/local</code> again and look for clang4.</p>
+<p>Note that it specifies <code>darwin15</code>, and their key specifies that this means you need MacOS El Capitan or higher for this to work.</p>
+</div>
+<div id="the-package" class="section level3">
+<h3>The package</h3>
+<p>Now that we know how to use the debugger, let’s look at this package. Here is some real R code, run in RStudio and not at the command prompt:</p>
+<pre class="r"><code>library(debugit)
+library(rlang)
+
+# What are the names of the functions in the package?
+names(pkg_env(&quot;debugit&quot;))</code></pre>
+<pre><code>## [1] &quot;add_one&quot;   &quot;buggy_fun&quot;</code></pre>
+<p>There are two functions here. <code>add_one()</code> takes a numeric input and supposedly adds 1 to it.</p>
+<pre class="r"><code># Or maybe not...
+add_one(5)</code></pre>
+<pre><code>## [1] 105</code></pre>
+<p><code>buggy_fun()</code> is supposed to create an integer vector holding <code>0</code> and return it to you. Instead, it crashes R so you might not want to run it right away.</p>
+</div>
+<div id="debugging-buggy_fun---round-1" class="section level3">
+<h3>Debugging buggy_fun() - Round 1</h3>
+<p>So at this point, you’ve installed the package, and can use R with a debugger. Now it’s time to learn how to debug a crashing R session. Let’s demonstrate the problem. Start R from the command line:</p>
+<pre class="bash"><code>(term) R</code></pre>
+<p>Now run:</p>
+<pre class="bash"><code>(R) debugit::buggy_fun()</code></pre>
+<pre class="bash"><code> *** caught segfault ***
+address 0x7f84fe68fd40, cause &#39;memory not mapped&#39;
+
+Traceback:
+ 1: buggy_fun_impl()
+ 2: debugit::buggy_fun()
+
+Possible actions:
+1: abort (with core dump, if enabled)
+2: normal R exit
+3: exit R without saving workspace
+4: exit R saving workspace</code></pre>
+<p>R crashes! We get a <code>&quot;memory not mapped&quot;</code> reason for the crash, and a traceback telling us that we called <code>debugit::buggy_fun()</code> and then the error happened in a function called <code>buggy_fun_impl()</code>. This is the C++ function that is causing the issues (technically this is the R function that Rcpp exposed the C++ function of the same name as, but either way you think about it is fine). It looks like this:</p>
+<pre><code>bool buggy_fun_impl() {
+
+  NumericVector x(1);
+
+  int n = INT_MAX;
+
+  x[n] = 0;
+
+  return true;
+}</code></pre>
+<p>It creates <code>x</code>, an Rcpp numeric vector with length 1 (by default filled with the value <code>0</code>). But then tries to assign <code>0</code> to a memory location at <code>INT_MAX</code> (a really big number). Since <code>x</code> doesn’t “own” that memory, we crash. But say we don’t know all that…</p>
+<p>How do we debug this? Well, we at least know we should be looking into <code>buggy_fun_impl()</code>, so lets start there. What we need to do is set a <em>breakpoint</em>. This is a spot in the C++ code that we tell the debugger to stop at, so we can have a look around before everything implodes. You can do that in a few ways with lldb.</p>
+<pre><code># breakpoint on a specific line
+breakpoint set --file &lt;file.cpp&gt; --line &lt;line-number&gt;
+
+# breakpoint on a object/function name
+breakpoint set --name &lt;function_name&gt;
+
+# breakpoint for any errors that are thrown
+breakpoint set -E c++</code></pre>
+<p>The last one is super useful when you have no idea where the error is happening, but usually you have a guess. Let’s try setting it on the name <code>buggy_fun_impl</code>. Back in Terminal…</p>
+<pre><code>(term) R -d lldb</code></pre>
+<pre><code>(lldb) breakpoint set --name buggy_fun_impl</code></pre>
+<pre><code>Breakpoint 1: no locations (pending).
+WARNING:  Unable to resolve breakpoint to any actual locations.</code></pre>
+<p>So we set the breakpoint, but it didn’t actually find anything named <code>&quot;buggy_fun_impl&quot;</code>, so it set the breakpoint to <code>pending</code>. This shouldn’t be too surprising, we haven’t started an R process yet (we haven’t run <code>run</code>), and more importantly <em>we need to load the package that holds the buggy functions</em>. We can confirm that the breakpoint exists with <code>breakpoint list</code>:</p>
+<pre><code>(lldb) breakpoint list</code></pre>
+<pre><code>Current breakpoints:
+1: name = &#39;buggy_fun_impl&#39;, locations = 0 (pending)</code></pre>
+<p>Let’s start our R session and library the package.</p>
+<pre><code>(lldb) run</code></pre>
+<pre><code>(R) library(debugit)</code></pre>
+<pre><code>1 location added to breakpoint 1</code></pre>
+<p>Immediately as we loaded the package the breakpoint was set! Great, now we just trigger the bug.</p>
+<pre><code>(R) buggy_fun()</code></pre>
+<pre><code>Process 57494 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = breakpoint 1.1
+    frame #0: 0x00000001087c45e0 debugit.so`buggy_fun_impl()
+debugit.so`buggy_fun_impl:
+-&gt;  0x1087c45e0 &lt;+0&gt;: pushq  %rbp
+    0x1087c45e1 &lt;+1&gt;: movq   %rsp, %rbp
+    0x1087c45e4 &lt;+4&gt;: pushq  %r15
+    0x1087c45e6 &lt;+6&gt;: pushq  %r14
+Target 0: (R) stopped.</code></pre>
+<p>Uh? Okay well it didn’t crash. And it seems to be pointing us in the right direction:</p>
+<ul>
+<li><code>stop reason = breakpoint 1.1</code> says that it stopped because it hit the breakpoint we requested</li>
+<li><code>debugit.so`buggy_fun_impl()</code> is telling us it stopped at the function we are interested in</li>
+</ul>
+<p>But I promised you line by line debugging power! What is this garbage? Here’s the thing. I don’t know why, but I can’t seem to effectively debug packages that I installed using <code>install.packages()</code> or <code>install_github()</code>. The information is just not there. Instead, you need to have the package locally on your computer (like you are a developer working on it), and you need to use <code>devtools::load_all()</code> rather than <code>library()</code> to load it.</p>
+<p>While this may seem frustrating, this is the probable state that you will be in when you are debugging. You’ll be the maintainer of the package, so you will have it locally and will be used to the <code>load_all()</code> workflow.</p>
+<p>To get out of this, press <code>CTRL + Z</code> to kill <code>lldb</code>.</p>
+</div>
+<div id="debugging-buggy_fun---round-2" class="section level3">
+<h3>Debugging buggy_fun() - Round 2</h3>
+<p>By whatever means necessary, get the files for the <code>debugit</code> package locally on your computer. I think the easiest way is:</p>
+<pre class="r"><code># you may have to set `protocol = &quot;https&quot;` as well depending on how you have
+# git set up
+usethis::create_from_github(&quot;DavisVaughan/debugit&quot;, destdir = &quot;~/path/to/destination&quot;)</code></pre>
+<p>You can also do a standard Fork + Clone github workflow. Or you can download the zip file if you are desparate. Here is the link to the <a href="https://github.com/DavisVaughan/debugit/archive/master.zip">zip</a>.</p>
+<p>I’m going to assume you now have it locally. Jump back in Terminal, and change to the directory where you placed the package. It is important that you start R from here!</p>
+<pre><code>(term) cd ~/path/to/debugit</code></pre>
+<p>You know you are in the right place if you see this:</p>
+<pre><code>(term) ls</code></pre>
+<pre><code>DESCRIPTION LICENSE     LICENSE.md  NAMESPACE   R       debugit.Rproj   man     src</code></pre>
+<p>Start the debugger, set a breakpoint, and jump back into R.</p>
+<pre><code>(term) R -d lldb</code></pre>
+<pre><code>(lldb) breakpoint set --name buggy_fun_impl
+(lldb) run</code></pre>
+<p>Now, run a <code>devtools::load_all()</code>. Because you are in the right working directory, it will automatically find the debugit package and install it. I see:</p>
+<pre><code>(R) devtools::load_all()</code></pre>
+<pre><code>Loading debugit
+Re-compiling debugit
+─  installing *source* package ‘debugit’ ...
+   ** libs
+   clang++  &lt;stuff&gt; -fPIC  -Wall -g -O2  -c RcppExports.cpp -o RcppExports.o
+   clang++  &lt;stuff&gt; -fPIC  -Wall -g -O2  -c buggy.cpp -o buggy.o
+   clang++  &lt;stuff&gt; -fPIC  -Wall -g -O2  -c stack.cpp -o stack.o
+   clang++ -dynamiclib &lt;stuff&gt; -o debugit.so RcppExports.o buggy.o stack.o
+   installing to /private/var/folders/41/qx_9ygp112nfysdfgxcssgwc0000gn/T/Rtmpr8QYTT/devtools_install_e1c251df2215/debugit/libs
+─  DONE (debugit)
+1 location added to breakpoint 1</code></pre>
+<p>It recompiled the package, and then the breakpoint was set! Now trigger the bug.</p>
+<pre><code>(R) buggy_fun()</code></pre>
+<pre><code>Process 57912 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = breakpoint 1.1
+    frame #0: 0x00000001085ecbe4 debugit.so`buggy_fun_impl() at buggy.cpp:7
+   4    // [[Rcpp::export()]]
+   5    bool buggy_fun_impl() {
+   6    
+-&gt; 7      NumericVector x(1);
+   8    
+   9      int n = INT_MAX;
+   10   
+Target 0: (R) stopped.
+(lldb)</code></pre>
+<p>Woah! Now it stopped right where we wanted it to. Just inside the <code>buggy_fun_impl()</code> function. What can we do with this?</p>
+<p>Type <code>next</code> and hit enter to run the current line, this moves us to line 9:</p>
+<pre><code>(lldb) next</code></pre>
+<pre><code>Process 57912 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = step over
+    frame #0: 0x00000001085ecc03 debugit.so`buggy_fun_impl() at buggy.cpp:9
+   6    
+   7      NumericVector x(1);
+   8    
+-&gt; 9      int n = INT_MAX;
+   10   
+   11     x[n] = 0;
+   12   
+Target 0: (R) stopped.</code></pre>
+<p>View the available variables with <code>frame variable</code>. We see <code>x</code>, which is a <code>NumericVector</code> with a more complicated structure, and <code>n</code> which is an <code>int</code>. Looks like <code>INT_MAX = 2147483647</code>.</p>
+<pre><code>(lldb) frame variable</code></pre>
+<pre><code>(Rcpp::NumericVector) x = {
+  Rcpp::PreserveStorage&lt;Rcpp::Vector&lt;14, Rcpp::PreserveStorage&gt; &gt; = (data = 0x00000001095c2b08)
+  cache = {
+    start = 0x00000001095c2b38
+  }
+}
+(int) n = 2147483647</code></pre>
+<p>We can even run arbitrary C++ code with <code>expr</code></p>
+<pre><code>(lldb) expr 1 + 1</code></pre>
+<pre><code>(int) $2 = 2</code></pre>
+<p>If you want to store the result, use the special syntax of <code>$var_name</code> rather than just <code>var_name</code>.</p>
+<pre><code>(lldb) expr int $var = 1 + 1
+(lldb) expr $var</code></pre>
+<pre><code>(int) $var = 2</code></pre>
+<p>Here’s a neat trick, what if I want to print out the value of <code>x</code>? Normally I’d use <code>Rcpp::Rcout &lt;&lt; x &lt;&lt; std::endl</code>, but that doesn’t work. We have to call a function from the R API, <code>Rf_PrintValue()</code>, on the underlying SEXP that <code>x</code> stores. Normally I’d get at that with <code>SEXP(x)</code>, but that doesn’t work either. We <em>really</em> have to be creative. If you look at what printed out for <code>x</code> earlier, you’ll see a <code>data</code> member. That’s the SEXP, and we can call <code>Rf_PrintValue()</code> on that.</p>
+<pre><code>(lldb) expr Rf_PrintValue(x.data)</code></pre>
+<pre><code>[1] 0</code></pre>
+<p>Nice! Now let’s continue until we hit the bug:</p>
+<pre><code>(lldb) next</code></pre>
+<pre><code>Process 57912 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = EXC_BAD_ACCESS (code=1, address=0x5095c2b30)
+    frame #0: 0x00000001085ecc2b debugit.so`buggy_fun_impl() at buggy.cpp:11
+   8    
+   9      int n = INT_MAX;
+   10   
+-&gt; 11     x[n] = 0;
+   12   
+   13     return true;
+   14   }
+Target 0: (R) stopped.</code></pre>
+<p>Ah, looks like that did it. See the <code>stop reason = EXC_BAD_ACCESS</code>? That’s our error saying we are “badly accessing” a location in memory. Importantly, <em>we now know exactly where the problem is</em>. And we have the power to print <code>x</code> and <code>n</code> and see that we are assigning to a location much larger than the size of <code>x</code>. So, with that, we can fix our problem. Press <code>CTRL + Z</code> to exit.</p>
+</div>
+<div id="break-on-any-errors" class="section level3">
+<h3>Break on any errors</h3>
+<p>Just for kicks and giggles, lets try setting the breakpoint a different way. This way says to break any time we hit an error.</p>
+<pre><code>(term) R -d lldb</code></pre>
+<pre><code>(lldb) breakpoint set -E c++
+(lldb) run</code></pre>
+<pre><code>(R) devtools::load_all()
+(R) buggy_fun()</code></pre>
+<pre><code>Process 58089 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = EXC_BAD_ACCESS (code=1, address=0x5012cc530)
+    frame #0: 0x000000010a327c2b debugit.so`buggy_fun_impl() at buggy.cpp:11
+   8    
+   9      int n = INT_MAX;
+   10   
+-&gt; 11     x[n] = 0;
+   12   
+   13     return true;
+   14   }
+Target 0: (R) stopped.</code></pre>
+<p>This immediately takes us to the problem line, where we can now look around like before using <code>expr</code> and <code>frame variable</code>.</p>
+</div>
+<div id="debugging-add_one---round-1" class="section level3">
+<h3>Debugging add_one() - Round 1</h3>
+<p>Now let’s try a different problem. <code>add_one()</code> doesn’t error, but clearly gives the wrong results. We expect the result to be <code>6</code>.</p>
+<pre class="r"><code>debugit::add_one(5)</code></pre>
+<pre><code>## [1] 105</code></pre>
+<p>Now, generally I’d try and use some print statements to figure out WTF is happening here. That’s the quick way to do this and would probably work fine.</p>
+<p>But let’s say you have no idea what is happening, but you think something is going on in the underlying <code>add_one_impl()</code> C++ function that powers <code>add_one()</code>. That looks like this:</p>
+<pre><code>NumericVector add_one_impl(NumericVector x) {
+
+  NumericVector y = get_one();
+
+  NumericVector result = x + y;
+
+  return result;
+}</code></pre>
+<p>Let’s use the same tactic as before to set a breakpoint on <code>add_one_impl</code>.</p>
+<pre><code>(term) R -d lldb</code></pre>
+<pre><code>(lldb) breakpoint set --name add_one_impl
+(lldb) run</code></pre>
+<pre><code>(R) devtools::load_all()
+(R) add_one(5)</code></pre>
+<pre><code>debugit.so was compiled with optimization - stepping may behave oddly; variables may not be available.
+Process 58425 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = breakpoint 1.1
+    frame #0: 0x00000001089d2693 debugit.so`add_one_impl(Rcpp::Vector&lt;14, Rcpp::PreserveStorage&gt;) [inlined] get_one() at stack.cpp:6 [opt]
+   3    
+   4    NumericVector get_one() {
+   5    
+-&gt; 6      NumericVector one(1, 1.0);
+   7    
+   8      // Not 1!
+   9      one[0] = 100;
+Target 0: (R) stopped.</code></pre>
+<p>Agh, what? That’s not right, somehow we ended up in the <code>get_one()</code> function instead. But wait, what is that first line at the top:</p>
+<pre><code>debugit.so was compiled with optimization - stepping may behave oddly; variables may not be available.</code></pre>
+<p>Ah. Remember that bit at the beginning where I mentioned the “flags”? It is coming back to haunt us. R compiled this code with <code>O2</code>, but that stripped out some of the debugging info, so our debugger stopped in the wrong place. We need to recompile with <code>O0</code>. But how do we do that? We have to set <code>O0</code> as one of our <code>CXXFLAGS</code> in a <code>Makevars</code> file. That sounds ridiculous but it isn’t too bad thanks to <code>usethis.</code></p>
+<p>Open RStudio. Run:</p>
+<pre class="r"><code>usethis::edit_r_makevars()</code></pre>
+<p>This should open a file located at <code>~/.R/Makevars</code>. Be careful here! This gets run whenever you install any packages with code that needs to be compiled. Add the following lines:</p>
+<pre><code>CXXFLAGS = -g -O0</code></pre>
+<p>Save and <em>make sure you add a new blank line after</em> the <code>CXXFLAGS</code> line. Now close out of RStudio again.</p>
+</div>
+<div id="debugging-add_one---round-2" class="section level3">
+<h3>Debugging add_one() - Round 2</h3>
+<p>Let’s try this again:</p>
+<pre><code>(term) R -d lldb</code></pre>
+<pre><code>(lldb) breakpoint set --name add_one_impl
+(lldb) run</code></pre>
+<p>At this point, if we run <code>devtools::load_all()</code> it actually won’t do anything, because we already compiled the code once and none of the code actually changed. We really need to force it to compile again by clearing out the old compiled code. You can do that with:</p>
+<pre><code>(R) devtools::clean_dll()</code></pre>
+<p>It will look like nothing happens, but if you run a <code>devtools::load_all()</code> it should compile:</p>
+<pre><code>(R) devtools::load_all()</code></pre>
+<pre><code>Loading debugit
+Re-compiling debugit
+─  installing *source* package ‘debugit’ ...
+   ** libs
+   clang++  &lt;stuff&gt; -g -O0 -c RcppExports.cpp -o RcppExports.o
+   clang++  &lt;stuff&gt; -g -O0 -c buggy.cpp -o buggy.o
+   clang++  &lt;stuff&gt; -g -O0 -c stack.cpp -o stack.o
+   clang++  &lt;stuff&gt; -o debugit.so RcppExports.o buggy.o stack.o
+   installing to &lt;stuff&gt;
+─  DONE (debugit)
+1 location added to breakpoint 1</code></pre>
+<p>Look! Do you see the <code>-g -O0</code> you set? If so, you should be good to go.</p>
+<pre><code>(R) add_one(5)</code></pre>
+<pre><code>Process 58576 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = breakpoint 1.1
+    frame #0: 0x000000010b865ebf debugit.so`add_one_impl(x=Rcpp::NumericVector @ 0x00007ffeefbfd198) at stack.cpp:17
+   14   // [[Rcpp::export()]]
+   15   NumericVector add_one_impl(NumericVector x) {
+   16   
+-&gt; 17     NumericVector y = get_one();
+   18   
+   19     NumericVector result = x + y;
+   20   
+Target 0: (R) stopped.</code></pre>
+<p>Woop! We are now exactly where we wanted, and we don’t get any of those annoying warnings about out package being compiled with optimization. Run <code>next</code> to have the <code>get_one()</code> line run.</p>
+<pre><code>(lldb) next</code></pre>
+<pre><code>Process 58576 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = step over
+    frame #0: 0x000000010b865ed7 debugit.so`add_one_impl(x=Rcpp::NumericVector @ 0x00007ffeefbfd198) at stack.cpp:19
+   16   
+   17     NumericVector y = get_one();
+   18   
+-&gt; 19     NumericVector result = x + y;
+   20   
+   21     return result;
+   22   }
+Target 0: (R) stopped.</code></pre>
+<p>What does <code>y</code> look like?</p>
+<pre><code>(lldb) expr Rf_PrintValue(y.data)</code></pre>
+<pre><code>[1] 100</code></pre>
+<p>That seems wrong. This should just be <code>1</code>. What is happening in <code>get_one()</code>? Let’s run <code>finish</code> to run the rest of the lines and try again:</p>
+<pre><code>(lldb) finish</code></pre>
+<p>Run <code>process continue</code> to dump us back into the R session so we can try again:</p>
+<pre><code>(lldb) process continue</code></pre>
+<pre><code>Process 58576 resuming
+[1] 105
+[master]&gt;</code></pre>
+<p>Oh look, there’s the result of that call we debugged. Let’s go back into the debugger by calling it again.</p>
+<pre><code>(R) add_one(5)</code></pre>
+<pre><code>Process 58576 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = breakpoint 1.1
+    frame #0: 0x000000010b865ebf debugit.so`add_one_impl(x=Rcpp::NumericVector @ 0x00007ffeefbfd198) at stack.cpp:17
+   14   // [[Rcpp::export()]]
+   15   NumericVector add_one_impl(NumericVector x) {
+   16   
+-&gt; 17     NumericVector y = get_one();
+   18   
+   19     NumericVector result = x + y;
+   20   
+Target 0: (R) stopped.</code></pre>
+<p>Now since we know <code>get_one()</code> seems to be the issue, we can <em>step into</em> the function with <code>step</code>:</p>
+<pre><code>(lldb) step</code></pre>
+<pre><code>Process 58576 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = step in
+    frame #0: 0x000000010b865dcb debugit.so`get_one() at stack.cpp:6
+   3    
+   4    NumericVector get_one() {
+   5    
+-&gt; 6      NumericVector one(1, 1.0);
+   7    
+   8      // Not 1!
+   9      one[0] = 100;
+Target 0: (R) stopped.</code></pre>
+<p>Okay, we are inside <code>get_one()</code>. Let’s run this line creating <code>one</code> and take a look at it.</p>
+<pre><code>(lldb) next</code></pre>
+<pre><code>Process 58576 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = step over
+    frame #0: 0x000000010b865dff debugit.so`get_one() at stack.cpp:9
+   6      NumericVector one(1, 1.0);
+   7    
+   8      // Not 1!
+-&gt; 9      one[0] = 100;
+   10   
+   11     return one;
+   12   }
+Target 0: (R) stopped.</code></pre>
+<p>Things look okay now…</p>
+<pre><code>(lldb) expr Rf_PrintValue(one.data)</code></pre>
+<pre><code>[1] 1</code></pre>
+<p>But then you run the next line…</p>
+<pre><code>(lldb) next</code></pre>
+<pre><code>Process 58576 stopped
+* thread #1, queue = &#39;com.apple.main-thread&#39;, stop reason = step over
+    frame #0: 0x000000010b865e21 debugit.so`get_one() at stack.cpp:11
+   8      // Not 1!
+   9      one[0] = 100;
+   10   
+-&gt; 11     return one;
+   12   }
+   13   
+   14   // [[Rcpp::export()]]
+Target 0: (R) stopped.</code></pre>
+<p>And as I am sure you can guess by now, you see that <code>one</code> now holds <code>100</code>
+because of the assignment we did there on line 9!</p>
+<pre><code>(lldb) expr Rf_PrintValue(one.data)</code></pre>
+<pre><code>[1] 100</code></pre>
+<p>Now <em>we know where the problem is</em>, so we can head back into our local copy of the package, fix the issue, and try again. At this point, <code>CTRL + Z</code> to quit.</p>
+<p><em>Don’t forget to go comment out or delete that line in the <code>~/.R/Makevars</code> file!</em></p>
+</div>
+<div id="wrapping-up" class="section level3">
+<h3>Wrapping up</h3>
+<p>This has been a <em>very</em> long winded post. But hopefully it can serve as a reference that anyone can look back on and use to understand how to debug compiled code in an R package. I think the main points are:</p>
+<ul>
+<li>Use the workflow:
+<ul>
+<li><code>R -d lldb</code></li>
+<li>Set a breakpoint</li>
+<li><code>run</code> to start R</li>
+<li><code>devtools::load_all()</code> to activate breakpoint</li>
+<li>Trigger bug</li>
+<li>Debug!</li>
+</ul></li>
+<li>Remember to use <code>-g -O0</code> when compiling.</li>
+<li>Remember to use <code>Rf_PrintValue()</code> on SEXP objects to get a pretty view of what the R object actually looks like, and <code>Rf_PrintValue(x.data)</code> to print Rcpp objects.</li>
+</ul>
+</div>
+
+    </section>
+
+    <hr>
+
+    <footer class="post-footer">
+        <section class="f-1">
+            <section class="share">
+                <span>Share:
+                <a class="icon-twitter" href="http://twitter.com/share?text=Debugging%20an%20R%20Package%20with%20C%2b%2b&url=%2f2019%2f04%2f05%2fdebug-r-package-with-cpp%2f"
+                    onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=%2f2019%2f04%2f05%2fdebug-r-package-with-cpp%2f"
+                    onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="fa fa-facebook"></i>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=%2f2019%2f04%2f05%2fdebug-r-package-with-cpp%2f"
+                   onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+                </span>
+            </section>
+
+            
+        </section>
+                
+        <section id="comments">
+            <div id="disqus_thread" class="post-comments"></div>
+            <script type="text/javascript">
+              if (window.location.hostname != "localhost") {
+                var disqus_shortname = 'datainsights';
+                (function() {
+                  var dsq = document.createElement('script');
+                  dsq.type = 'text/javascript';
+                  dsq.async = true;
+                  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              }
+            </script>
+            <noscript>
+              Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+            </noscript>
+        </section>
+                
+    </footer>
+</article>
+	</div>
+</main>
+    <footer id="site-footer">
+        <div class="container">
+          
+          
+            <a href="https://www.twitter.com/dvaughan32" title="Twitter" target="_blank"><span class="tooltip"><i class="fa fa-twitter"></i></span></a>
+          
+          
+            <a href="https://www.github.com/DavisVaughan" title="GitHub" target="_blank"><span class="tooltip"><i class="fa fa-github"></i></span></a>
+          
+          <a href="/index.xml" title="Get the RSS feed"><span class="tooltip"><i class="fa fa-rss"></i></span></a>
+          <section>&copy; <a href="/"></a> 2017 | All rights reserved</section>
+          <section>Theme by <a href="http://www.jrdnbwmn.com">Jordan Bowman</a>. Generated with <a href="http://gohugo.io/">Hugo</a>.</section>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/fittext.js"></script>
+    <script type="text/javascript">
+      $(".heading").fitText();
+    </script>
+    
+    <script src="/js/math-code.js"></script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+    });
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+
+    <script>
+        var _gaq=[['_setAccount','UA-99003915-1'],['_trackPageview']];
+        (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
+    </script>
+
+
+</body>
+</html>
