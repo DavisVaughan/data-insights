@@ -1,0 +1,293 @@
+---
+title: Persistant R Objects in C
+author: Davis Vaughan
+date: '2019-08-13'
+slug: persistant-r-objects-in-c
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+<div id="introduction" class="section level3">
+<h3>Introduction</h3>
+<p>This is another entry in my series of R + C based posts (you can see a full lists of posts <a href="https://blog.davisvaughan.com/">here</a>). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By “persistant”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You’ll be able to call it from other C files, and can even return the object to the R side.
+<span class="marginnote">
+Most of these ideas are not my own. They are adaptations of ideas used by <a href="https://twitter.com/_lionelhenry">Lionel Henry</a> in <a href="https://github.com/r-lib/vctrs"><code>vctrs</code></a> and <a href="https://github.com/r-lib/rlang"><code>rlang</code></a>.
+</span></p>
+<p>Why is this useful? I can think of two reasons.</p>
+<ul>
+<li>The first is performance. You might have a simple R object (for instance, an integer vector holding <code>1</code>) that generally takes a small amount of time to create, but is generated and destroyed thousands of time across your C code base. To save a bit of time, you might want to make this a persistant, unchangeable, global variable.</li>
+<li>The other is just for readability. Rather than having to deal with <code>PROTECT()</code>ing and <code>UNPROTECT()</code>ing common variables like <code>int_one</code> in the partial example below:</li>
+</ul>
+<pre class="cpp"><code>SEXP int_one = PROTECT(Rf_ScalarInteger(1));
+
+// Create an R list of length 1, put `int_one` in it
+SEXP result = PROTECT(Rf_allocVector(VECSXP, 1));
+SET_VECTOR_ELT(result, 0, int_one);
+
+UNPROTECT(2); // unprotect `int_one` and `result`
+return result;</code></pre>
+<p>You can instead declare <code>int_one</code> as a global variable with a more permanant meaningful name, like <code>shared_integer_one</code>, and use it without worrying about protection:</p>
+<pre class="cpp"><code>SEXP result = PROTECT(Rf_allocVector(VECSXP, 1));
+
+// can use `shared_integer_one` without creating a new one
+SET_VECTOR_ELT(result, 0, shared_integer_one);
+
+UNPROTECT(1); // only have to care about `result` protection
+return result;</code></pre>
+<p>When you have a large C based R package, these kinds of things really pay off in terms of increasing readability and cohesiveness of your package, especially if the global variable takes a few lines of C code to create each time.</p>
+<p>The rest of this post will focus on creating a package that constructs some of these global variables. Specifically, we will look at creating a shared empty integer and a shared character vector, and then we will see how to return them back to the R side. One thing to keep in mind is that these kinds of things take a lot of setup on the C side for the first object, but adding subsequent objects is much simpler.</p>
+<p>If you haven’t read <a href="https://blog.davisvaughan.com/2019/03/02/now-you-c-me/">Now You C Me</a>, and you aren’t too familiar with working on an R package with C code in it, you might want to go check out that post before continuing. It will teach you the basics of working with an R package containing C code.</p>
+<p>The final product is an R package called <a href="https://github.com/DavisVaughan/cshared">cshared</a>. It contains one R function, <code>get_shared_objects()</code>. I’ll discuss the bits and pieces of the package throughout the post, but that will be the ultimate reference for the end result.</p>
+</div>
+<div id="setup" class="section level3">
+<h3>Setup</h3>
+<p>First, some setup. We’ll leverage <code>{usethis}</code> and <code>{devtools}</code> to get our new package up and running. I’m assuming you are working in RStudio for this. The <a href="https://blog.davisvaughan.com/2019/03/02/now-you-c-me/">Now You C Me</a> post describes these steps in much greater detail.</p>
+<pre class="r"><code># Create a new R package, cshared
+usethis::create_package(&quot;~/path/to/location/for/the/package/cshared&quot;)
+
+# Use roxygen2
+usethis::use_roxygen_md()
+
+# As prompted by use_roxygen_md()
+devtools::document()
+
+# Set up `cshared-package.R`, which also gives usethis a place to add extra
+# roxygen namespace tags, which is used by `use_c()` later on.
+usethis::use_package_doc()
+
+# Create a `src/shared.c` file, and add the all important registration info
+# to `cshared-package.R`
+usethis::use_c(&quot;shared&quot;) 
+
+# Initialize the C DLL, otherwise document() will complain
+devtools::load_all(&quot;.&quot;)
+
+# As prompted by use_c()
+devtools::document()</code></pre>
+</div>
+<div id="header-files" class="section level3">
+<h3>Header Files</h3>
+<p>At this point you should be in an R package, and if you’ve opened <code>shared.c</code> you should see this staring at you:</p>
+<pre class="cpp"><code>#define R_NO_REMAP
+#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;</code></pre>
+<p>I actually like to move these defines / includes into a package API header file that I can <code>#include</code> in all of my <code>.c</code> files, so personally I’m going to create a <code>cshared.h</code> file next, and move this over there. There’s not a shortcut for this, so in RStudio do <code>File -&gt; New File -&gt; C++ File</code> then save it as <code>cshared.h</code> in the <code>src/</code> folder. Copy those three lines to that file, and remove them from <code>shared.c</code>, replacing them with the following single include statement, which will have the same effect:</p>
+<pre class="cpp"><code>#include &quot;cshared.h&quot;</code></pre>
+<p>To prevent <code>cshared.h</code> from accidentally being included twice in the same file, we should also add some header include guards:</p>
+<pre class="cpp"><code>#ifndef CSHARED_H
+#define CSHARED_H
+
+#define R_NO_REMAP
+#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;
+
+#endif</code></pre>
+</div>
+<div id="c---r" class="section level3">
+<h3>C -&gt; R</h3>
+<p>Okay, now we have the basic structure set up, so let’s wire up a C function to be callable from the R side. For now, it will create a list containing an empty integer vector and a character vector holding <code>&quot;tidyverse&quot;</code>, and return it to the R side. Later it will return the same list but holding the shared versions of these objects. Change <code>shared.c</code> to look like this:</p>
+<pre class="cpp"><code>#include &quot;cshared.h&quot;
+
+SEXP cshared_get_shared_objects() {
+  // An empty integer vector
+  SEXP empty_int = PROTECT(Rf_allocVector(INTSXP, 0));
+
+  // Character vector of size 1, containing &quot;hello world&quot;
+  SEXP tidyverse = PROTECT(Rf_allocVector(STRSXP, 1));
+  SET_STRING_ELT(tidyverse, 0, Rf_mkChar(&quot;tidyverse&quot;));
+
+  // Initialize the output list, then insert our objects into it
+  SEXP out = PROTECT(Rf_allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(out, 0, empty_int);
+  SET_VECTOR_ELT(out, 1, tidyverse);
+
+  // Must unprotect 3 PROTECT() calls before exiting!
+  UNPROTECT(3);
+  return out;
+}</code></pre>
+<p>To call this from R, we need an <code>init.c</code> file that registers the C callable to the R side. We’ve done something like this in the other blog post, so create <code>init.c</code> and fill it with:</p>
+<pre class="cpp"><code>#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;
+#include &lt;stdlib.h&gt; // for NULL
+#include &lt;R_ext/Rdynload.h&gt;
+
+/* .Call calls */
+extern SEXP cshared_get_shared_objects();
+
+static const R_CallMethodDef CallEntries[] = {
+  {&quot;cshared_get_shared_objects&quot;, (DL_FUNC) &amp;cshared_get_shared_objects, 0},
+  {NULL, NULL, 0}
+};
+
+void R_init_cshared(DllInfo *dll)
+{
+  R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+}</code></pre>
+<p>Over on the R side, we now need an R function that calls this <code>cshared_get_shared_objects</code> callable. Call <code>usethis::use_r(&quot;shared&quot;)</code> and fill the resulting R file with:</p>
+<pre class="r"><code>#&#39; Get the shared objects
+#&#39;
+#&#39; @examples
+#&#39;
+#&#39; get_shared_objects()
+#&#39;
+#&#39; @export
+get_shared_objects &lt;- function() {
+  .Call(cshared_get_shared_objects)
+}</code></pre>
+<p>Lastly, run <code>devtools::load_all()</code> and <code>devtools::document()</code> to recompile the package and ensure that the shiny new <code>get_shared_objects()</code> is exported.</p>
+<p>You should now be able to call:</p>
+<pre class="r"><code>get_shared_objects()
+#&gt; [[1]]
+#&gt; integer(0)
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] &quot;tidyverse&quot;</code></pre>
+</div>
+<div id="lets-share" class="section level3">
+<h3>Let’s Share</h3>
+<p>The next step is to replace our <code>empty_int</code> and <code>tidyverse</code> C variables with <em>shared</em> global variables that were created at package load time. This will clean up our code a bit, and make the <code>cshared_get_shared_object()</code> function a bit easier to read. But accomplishing this requires some thought! What we want is a way to initialize some C SEXP objects <em>when the R package is loaded</em>. Generally, when we want to perform any action when a package is loaded we use the <code>.onLoad()</code> hook (see <code>?.onLoad</code> for more). To make it actually initialize our C variables, we will have to have <code>.onLoad()</code> use <code>.Call()</code> to call a C function that does the initialization.</p>
+<p>The general outline we are going to follow is:</p>
+<ul>
+<li>Create a C global variable, initialized to <code>NULL</code>.</li>
+<li>Create a C initialization function where we modify that global variable and set it to its actual value.</li>
+<li>Register this initialization function as being callable from R like we did with <code>cshared_get_shared_objects()</code>.</li>
+<li>Call it from <code>.onLoad()</code>.</li>
+</ul>
+<p>We will start with <code>empty_int</code>, and then add <code>tidyverse</code>. I find that it is useful to store these global variables in a <code>utils.c</code> file, with a companion <code>utils.h</code> file that holds the definitions, allowing you to share them with other <code>.c</code> files. So, to start, create <code>utils.h</code> and place the following in it:</p>
+<pre class="cpp"><code>#ifndef CSHARED_UTILS_H
+#define CSHARED_UTILS_H
+
+#include &quot;cshared.h&quot;
+
+SEXP cshared_shared_empty_int;
+
+#endif</code></pre>
+<p>All this holds is the “definition” of the global object <code>cshared_shared_empty_int</code>. By “definition” I just mean that we don’t actually initialize the thing here, we just say “hey, there is this thing called ‘cshared_shared_empty_int’, it is going to be a SEXP, and somewhere else it is going to be initialized, but if you <code>#include &quot;utils.h&quot;</code> you can use this thing”.</p>
+<p>Now create <code>utils.c</code>, where we will actually initialize the object:</p>
+<pre class="cpp"><code>#include &quot;cshared.h&quot;
+#include &quot;utils.h&quot;
+
+SEXP cshared_shared_empty_int = NULL;
+
+SEXP cshared_init_utils() {
+  cshared_shared_empty_int = Rf_allocVector(INTSXP, 0);
+  R_PreserveObject(cshared_shared_empty_int);
+  MARK_NOT_MUTABLE(cshared_shared_empty_int);
+  
+  Rprintf(&quot;Initialized!&quot;);
+  
+  return R_NilValue;
+}</code></pre>
+<p>Here, <code>SEXP cshared_shared_empty_int = NULL;</code> declares it as a global variable, but just sets it to <code>NULL</code>. We can’t set it directly to an empty integer vector because that isn’t a “compile time value”, it is a “run time value”, meaning it can’t be known before the program starts.</p>
+<p><code>cshared_init_utils()</code> is the initialization function that we are eventually going to call from R in <code>.onLoad()</code>. It does the following:</p>
+<ul>
+<li>Updates <code>cshared_shared_empty_int</code> to actually hold an empty integer vector.</li>
+<li>Calls <code>R_PreserveObject()</code> on it to ensure it isn’t garbage collected.</li>
+<li>Calls <code>MARK_NOT_MUTABLE()</code> on it to ensure it can’t be overwritten accidentally throughout the life of the R session.</li>
+</ul>
+<p>I’ve also added a print statement to prove that every time the package is loaded, this code is run.</p>
+<p>Now we have to register it to the R side, so modify <code>init.c</code> to export <code>cshared_init_utils()</code>. That looks like:</p>
+<pre class="cpp"><code>#include &lt;R.h&gt;
+#include &lt;Rinternals.h&gt;
+#include &lt;stdlib.h&gt; // for NULL
+#include &lt;R_ext/Rdynload.h&gt;
+
+/* .Call calls */
+extern SEXP cshared_get_shared_objects();
+extern void cshared_init_utils();
+
+static const R_CallMethodDef CallEntries[] = {
+  {&quot;cshared_get_shared_objects&quot;, (DL_FUNC) &amp;cshared_get_shared_objects, 0},
+  {&quot;cshared_init_utils&quot;, (DL_FUNC) &amp;cshared_init_utils, 0},
+  {NULL, NULL, 0}
+};
+
+void R_init_cshared(DllInfo *dll)
+{
+  R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+}</code></pre>
+<p>If we <code>devtools::load_all()</code> now, we should have access to the <code>cshared_init_utils</code> routine object. This is what we need to <code>.Call()</code> from <code>.onLoad()</code>. I generally put my <code>.onLoad()</code> in <code>zzz.R</code>, as it is an auxillary function. It should be pretty simple:</p>
+<pre class="r"><code>.onLoad &lt;- function(libname, pkgname) {
+  .Call(cshared_init_utils)
+}</code></pre>
+<p>If we <code>devtools::load_all()</code> again, this will trigger <code>.onLoad()</code>, and you should see…</p>
+<pre class="r"><code>devtools::load_all()
+#&gt; Loading cshared
+#&gt; Initialized!</code></pre>
+<p>Great! So now we know that code is being run. At this point, go back and remove the <code>Rprintf()</code> line from <code>cshared_init_utils()</code>.</p>
+<p>Head back to <code>shared.c</code>. At the top, just under <code>#include cshared.h</code>, add <code>#include utils.h</code> which will give you access to <code>cshared_shared_empty_int</code>. Now update <code>cshared_get_shared_objects()</code> to use it. The function is becoming a bit easier to read!</p>
+<pre class="cpp"><code>#include &quot;cshared.h&quot;
+#include &quot;utils.h&quot; // To access `cshared_shared_empty_int`
+
+SEXP cshared_get_shared_objects() {
+  // Character vector of size 1, containing &quot;hello world&quot;
+  SEXP tidyverse = PROTECT(Rf_allocVector(STRSXP, 1));
+  SET_STRING_ELT(tidyverse, 0, Rf_mkChar(&quot;tidyverse&quot;));
+
+  SEXP out = PROTECT(Rf_allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(out, 0, cshared_shared_empty_int); // &lt;- using it here!
+  SET_VECTOR_ELT(out, 1, tidyverse);
+
+  UNPROTECT(2);
+  return out;
+}</code></pre>
+<p>Again, run <code>devtools::load_all()</code> and call <code>get_shared_objects()</code>. It should work as before, but this time it is returning a list holding the shared integer vector along with the tidyverse string!</p>
+</div>
+<div id="the-tidyverse-string" class="section level3">
+<h3>The tidyverse string</h3>
+<p>The final step is to make the tidyverse string global and shared. Now that we have the infrastructure set up, this is much more straightforward. Update <code>utils.h</code> with a <code>strings_tidyverse</code> variable:</p>
+<pre class="cpp"><code>#ifndef CSHARED_UTILS_H
+#define CSHARED_UTILS_H
+
+#include &quot;cshared.h&quot;
+
+SEXP cshared_shared_empty_int;
+
+SEXP strings_tidyverse;
+
+#endif</code></pre>
+<p>Update <code>utils.c</code> with:</p>
+<pre class="cpp"><code>#include &quot;cshared.h&quot;
+#include &quot;utils.h&quot;
+
+SEXP cshared_shared_empty_int = NULL;
+
+// This is new
+SEXP strings_tidyverse = NULL;
+
+SEXP cshared_init_utils() {
+  cshared_shared_empty_int = Rf_allocVector(INTSXP, 0);
+  R_PreserveObject(cshared_shared_empty_int);
+  MARK_NOT_MUTABLE(cshared_shared_empty_int);
+
+  // This is new
+  strings_tidyverse = Rf_allocVector(STRSXP, 1);
+  R_PreserveObject(strings_tidyverse);
+  SET_STRING_ELT(strings_tidyverse, 0, Rf_mkChar(&quot;tidyverse&quot;));
+  MARK_NOT_MUTABLE(strings_tidyverse);
+
+  return R_NilValue;
+}</code></pre>
+<p>This does much of the same as what we did with <code>cshared_shared_empty_int</code>. It creates a character vector of size 1 to overwrite the <code>NULL</code> global variable, preserves it, sets the first element value to <code>&quot;tidyverse&quot;</code>, then marks it as immutable.</p>
+<p>Finally we can go back to <code>shared.c</code> and use <code>strings_tidyverse</code>.</p>
+<pre class="cpp"><code>#include &quot;cshared.h&quot;
+#include &quot;utils.h&quot; // To access `cshared_shared_empty_int` and `strings_tidyverse`
+
+SEXP cshared_get_shared_objects() {
+  SEXP out = PROTECT(Rf_allocVector(VECSXP, 2));
+  SET_VECTOR_ELT(out, 0, cshared_shared_empty_int);
+  SET_VECTOR_ELT(out, 1, strings_tidyverse);
+
+  UNPROTECT(1);
+  return out;
+}</code></pre>
+<p>One thing that I hope is clear is how much more focused <code>cshared_get_shared_objects()</code> is. It’s much easier to see what the purpose of the function is when you don’t have to worry about creating these common shared objects. Additionally, you only have to <code>UNPROTECT()</code> 1 value, <code>out</code>, which makes things slightly easier to keep track of. I also appreciate the fact that we can give our global objects evocative names like <code>strings_tidyverse</code>. If I had another string object I wanted to make into a global variable, I could call it <code>strings_dplyr</code>. When I come across other C code that uses this variable, I immediately know what its value is because of this consistent naming convention.</p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>These global variables are a neat trick for making code clearer, more internally consistent, and occasionally a bit faster. Additionally, being able to call arbitrary C code on R package load is a useful tool in more ways than just global variable initialization (which we didn’t get to explore in this post). In a later post, I hope to show how to use this trick to initialize a variable holding a call object that let’s you efficiently call an R function from C.</p>
+</div>

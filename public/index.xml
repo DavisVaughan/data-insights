@@ -6,10 +6,19 @@
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 05 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 13 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Persistant R Objects in C</title>
+      <link>/2019/08/13/persistant-r-objects-in-c/</link>
+      <pubDate>Tue, 13 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/08/13/persistant-r-objects-in-c/</guid>
+      <description>Introduction This is another entry in my series of R + C based posts (you can see a full lists of posts here). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By “persistant”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session.</description>
+    </item>
     
     <item>
       <title>Debugging an R Package with C&#43;&#43;</title>
