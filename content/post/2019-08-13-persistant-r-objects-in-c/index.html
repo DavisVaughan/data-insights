@@ -11,13 +11,13 @@ editor_options:
 
 <div id="introduction" class="section level3">
 <h3>Introduction</h3>
-<p>This is another entry in my series of R + C based posts (you can see a full lists of posts <a href="https://blog.davisvaughan.com/">here</a>). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By “persistant”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You’ll be able to call it from other C files, and can even return the object to the R side.
+<p>This is another entry in my series of R + C based posts (you can see a full list <a href="https://blog.davisvaughan.com/">here</a>). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By “persistant”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You’ll be able to call it from other C files, and can even return the object to the R side. The other “trick” that will be used is a way to run arbitrary C code on R package load, using <code>.onLoad()</code> + <code>.Call()</code>. This is actually much more generic than what we will use it for in this article, so it is worth paying attention to in case you have other uses for it.
 <span class="marginnote">
 Most of these ideas are not my own. They are adaptations of ideas used by <a href="https://twitter.com/_lionelhenry">Lionel Henry</a> in <a href="https://github.com/r-lib/vctrs"><code>vctrs</code></a> and <a href="https://github.com/r-lib/rlang"><code>rlang</code></a>.
 </span></p>
-<p>Why is this useful? I can think of two reasons.</p>
+<p>Why are persistent R objects callable from C useful? I can think of two reasons.</p>
 <ul>
-<li>The first is performance. You might have a simple R object (for instance, an integer vector holding <code>1</code>) that generally takes a small amount of time to create, but is generated and destroyed thousands of time across your C code base. To save a bit of time, you might want to make this a persistant, unchangeable, global variable.</li>
+<li>The first is performance. You might have a simple R object (for instance, an integer vector holding <code>1</code>) that generally takes a small amount of time to create, but is generated and destroyed thousands of time across your C code base. To save a <em>little</em> bit of time, you might want to make this a persistant, unchangeable, global variable.</li>
 <li>The other is just for readability. Rather than having to deal with <code>PROTECT()</code>ing and <code>UNPROTECT()</code>ing common variables like <code>int_one</code> in the partial example below:</li>
 </ul>
 <pre class="cpp"><code>SEXP int_one = PROTECT(Rf_ScalarInteger(1));
@@ -28,15 +28,15 @@ SET_VECTOR_ELT(result, 0, int_one);
 
 UNPROTECT(2); // unprotect `int_one` and `result`
 return result;</code></pre>
-<p>You can instead declare <code>int_one</code> as a global variable with a more permanant meaningful name, like <code>shared_integer_one</code>, and use it without worrying about protection:</p>
+<p>You can instead declare <code>int_one</code> as a global variable with a more permanant meaningful name, like <code>shared_int_one</code>, and use it without worrying about protection:</p>
 <pre class="cpp"><code>SEXP result = PROTECT(Rf_allocVector(VECSXP, 1));
 
-// can use `shared_integer_one` without creating a new one
-SET_VECTOR_ELT(result, 0, shared_integer_one);
+// can use `shared_int_one` without creating a new one
+SET_VECTOR_ELT(result, 0, shared_int_one);
 
 UNPROTECT(1); // only have to care about `result` protection
 return result;</code></pre>
-<p>When you have a large C based R package, these kinds of things really pay off in terms of increasing readability and cohesiveness of your package, especially if the global variable takes a few lines of C code to create each time.</p>
+<p>When you have a large C based R package, these kinds of things really pay off in terms of increasing readability and cohesiveness of your package, especially if the global variable takes a few lines of C code to create each time. Additionally, if naming conventions for these kinds of variables are used consistently, you’ll immediately be able to recognize what <code>shared_empty_dbl</code> is without having to look it up in the code base. This makes reading over C code a more pleasant experience.</p>
 <p>The rest of this post will focus on creating a package that constructs some of these global variables. Specifically, we will look at creating a shared empty integer and a shared character vector, and then we will see how to return them back to the R side. One thing to keep in mind is that these kinds of things take a lot of setup on the C side for the first object, but adding subsequent objects is much simpler.</p>
 <p>If you haven’t read <a href="https://blog.davisvaughan.com/2019/03/02/now-you-c-me/">Now You C Me</a>, and you aren’t too familiar with working on an R package with C code in it, you might want to go check out that post before continuing. It will teach you the basics of working with an R package containing C code.</p>
 <p>The final product is an R package called <a href="https://github.com/DavisVaughan/cshared">cshared</a>. It contains one R function, <code>get_shared_objects()</code>. I’ll discuss the bits and pieces of the package throughout the post, but that will be the ultimate reference for the end result.</p>
@@ -87,7 +87,7 @@ devtools::document()</code></pre>
 </div>
 <div id="c---r" class="section level3">
 <h3>C -&gt; R</h3>
-<p>Okay, now we have the basic structure set up, so let’s wire up a C function to be callable from the R side. For now, it will create a list containing an empty integer vector and a character vector holding <code>&quot;tidyverse&quot;</code>, and return it to the R side. Later it will return the same list but holding the shared versions of these objects. Change <code>shared.c</code> to look like this:</p>
+<p>Okay, now we have the basic structure set up, so let’s wire up a C function to be callable from the R side. For now, it will create a list containing an empty integer vector and a character vector holding <code>&quot;tidyverse&quot;</code>, and return it to the R side. Later it will return the same list but holding the shared versions of these objects. Add the following function to <code>shared.c</code>:</p>
 <pre class="cpp"><code>#include &quot;cshared.h&quot;
 
 SEXP cshared_get_shared_objects() {
