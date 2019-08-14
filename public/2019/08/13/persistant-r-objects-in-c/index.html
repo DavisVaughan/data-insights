@@ -67,7 +67,7 @@
     <section class="post-content">
         <div id="introduction" class="section level3">
 <h3>Introduction</h3>
-<p>This is another entry in my series of R + C based posts (you can see a full list <a href="https://blog.davisvaughan.com/">here</a>). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By “persistant”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You’ll be able to call it from other C files, and can even return the object to the R side. The other “trick” that will be used is a way to run arbitrary C code on R package load, using <code>.onLoad()</code> + <code>.Call()</code>. This is actually much more generic than what we will use it for in this article, so it is worth paying attention to in case you have other uses for it.
+<p>This is another entry in my series of R + C based posts (you can see a full list <a href="https://blog.davisvaughan.com/">here</a>). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By “persistant”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You’ll be able to call it from other C files, and can even return the object to the R side. The other “trick” that will be used is a way to run arbitrary C code on R package load, using <code>.onLoad()</code> + <code>.Call()</code>. This is actually much more generic than what we will use it for in this article, so it is worth paying attention to in case you have other uses for it. Along the way, I’ll also use C header files to share C functions/objects between files, and discuss a bit about how I set up my R packages that use C code.
 <span class="marginnote">
 Most of these ideas are not my own. They are adaptations of ideas used by <a href="https://twitter.com/_lionelhenry">Lionel Henry</a> in <a href="https://github.com/r-lib/vctrs"><code>vctrs</code></a> and <a href="https://github.com/r-lib/rlang"><code>rlang</code></a>.
 </span></p>
@@ -163,7 +163,7 @@ SEXP cshared_get_shared_objects() {
   UNPROTECT(3);
   return out;
 }</code></pre>
-<p>To call this from R, we need an <code>init.c</code> file that registers the C callable to the R side. We’ve done something like this in the other blog post, so create <code>init.c</code> and fill it with:</p>
+<p>To call this from R, we need an <code>init.c</code> file that registers the C routine to the R side. We’ve done something like this in the other blog post, so create <code>init.c</code> and fill it with:</p>
 <pre class="cpp"><code>#include &lt;R.h&gt;
 #include &lt;Rinternals.h&gt;
 #include &lt;stdlib.h&gt; // for NULL
@@ -177,12 +177,11 @@ static const R_CallMethodDef CallEntries[] = {
   {NULL, NULL, 0}
 };
 
-void R_init_cshared(DllInfo *dll)
-{
+void R_init_cshared(DllInfo *dll) {
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
 }</code></pre>
-<p>Over on the R side, we now need an R function that calls this <code>cshared_get_shared_objects</code> callable. Call <code>usethis::use_r(&quot;shared&quot;)</code> and fill the resulting R file with:</p>
+<p>Over on the R side, we now need an R function that calls this <code>cshared_get_shared_objects</code> routine. Call <code>usethis::use_r(&quot;shared&quot;)</code> and fill the resulting R file with:</p>
 <pre class="r"><code>#&#39; Get the shared objects
 #&#39;
 #&#39; @examples
@@ -204,12 +203,12 @@ get_shared_objects &lt;- function() {
 </div>
 <div id="lets-share" class="section level3">
 <h3>Let’s Share</h3>
-<p>The next step is to replace our <code>empty_int</code> and <code>tidyverse</code> C variables with <em>shared</em> global variables that were created at package load time. This will clean up our code a bit, and make the <code>cshared_get_shared_object()</code> function a bit easier to read. But accomplishing this requires some thought! What we want is a way to initialize some C SEXP objects <em>when the R package is loaded</em>. Generally, when we want to perform any action when a package is loaded we use the <code>.onLoad()</code> hook (see <code>?.onLoad</code> for more). To make it actually initialize our C variables, we will have to have <code>.onLoad()</code> use <code>.Call()</code> to call a C function that does the initialization.</p>
+<p>The next step is to replace our <code>empty_int</code> and <code>tidyverse</code> C variables with <em>shared</em> global variables that were created at package load time. This will clean up our code a bit, and make <code>cshared_get_shared_object()</code> a bit easier to read. But accomplishing this requires some thought! What we want is a way to initialize some C SEXP objects <em>when the R package is loaded</em>. Generally, when we want to perform any action when a package is loaded we use the <code>.onLoad()</code> hook (see <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/ns-hooks.html"><code>?.onLoad</code></a> for more). To make it actually initialize our C variables, we will use <code>.Call()</code> from inside <code>.onLoad()</code> to call a C function that does the initialization.</p>
 <p>The general outline we are going to follow is:</p>
 <ul>
 <li>Create a C global variable, initialized to <code>NULL</code>.</li>
 <li>Create a C initialization function where we modify that global variable and set it to its actual value.</li>
-<li>Register this initialization function as being callable from R like we did with <code>cshared_get_shared_objects()</code>.</li>
+<li>Register this initialization function as a routine callable from R like we did with <code>cshared_get_shared_objects()</code>.</li>
 <li>Call it from <code>.onLoad()</code>.</li>
 </ul>
 <p>We will start with <code>empty_int</code>, and then add <code>tidyverse</code>. I find that it is useful to store these global variables in a <code>utils.c</code> file, with a companion <code>utils.h</code> file that holds the definitions, allowing you to share them with other <code>.c</code> files. So, to start, create <code>utils.h</code> and place the following in it:</p>
@@ -261,8 +260,7 @@ static const R_CallMethodDef CallEntries[] = {
   {NULL, NULL, 0}
 };
 
-void R_init_cshared(DllInfo *dll)
-{
+void R_init_cshared(DllInfo *dll) {
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
 }</code></pre>
@@ -275,7 +273,7 @@ void R_init_cshared(DllInfo *dll)
 #&gt; Loading cshared
 #&gt; Initialized!</code></pre>
 <p>Great! So now we know that code is being run. At this point, go back and remove the <code>Rprintf()</code> line from <code>cshared_init_utils()</code>.</p>
-<p>Head back to <code>shared.c</code>. At the top, just under <code>#include cshared.h</code>, add <code>#include utils.h</code> which will give you access to <code>cshared_shared_empty_int</code>. Now update <code>cshared_get_shared_objects()</code> to use it. The function is becoming a bit easier to read!</p>
+<p>Head back to <code>shared.c</code>. At the top, just under <code>#include &quot;cshared.h&quot;</code>, add <code>#include &quot;utils.h&quot;</code> which will give you access to <code>cshared_shared_empty_int</code>. Now update <code>cshared_get_shared_objects()</code> to use it. The function is becoming a bit easier to read!</p>
 <pre class="cpp"><code>#include &quot;cshared.h&quot;
 #include &quot;utils.h&quot; // To access `cshared_shared_empty_int`
 
