@@ -1,0 +1,4 @@
+/* HLJS comments are a _really_ light grey. This makes them a soft purple. */
+.hljs-comment { 
+  color: #5E446C; 
+}
