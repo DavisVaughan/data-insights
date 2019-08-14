@@ -34,7 +34,7 @@ UNPROTECT(2); // unprotect `int_one` and `result`
 return result;
 ```
 
-You can instead declare `int_one` as a global variable with a more permanant meaningful name, like `shared_int_one`, and use it without worrying about protection:
+You can instead declare `int_one` as a global variable with a more permanent meaningful name, like `shared_int_one`, and use it without worrying about protection:
 
 ```{Rcpp}
 SEXP result = PROTECT(Rf_allocVector(VECSXP, 1));
@@ -267,7 +267,7 @@ void R_init_cshared(DllInfo *dll) {
 }
 ```
 
-If we `devtools::load_all()` now, we should have access to the `cshared_init_utils` routine object. This is what we need to `.Call()` from `.onLoad()`. I generally put my `.onLoad()` in `zzz.R`, as it is an auxillary function. It should be pretty simple:
+If we `devtools::load_all()` now, we should have access to the `cshared_init_utils` routine object. This is what we need to `.Call()` from `.onLoad()`. I generally put my `.onLoad()` in `zzz.R`, as it is an auxiliary function. It should be pretty simple:
 
 ```{r}
 .onLoad <- function(libname, pkgname) {

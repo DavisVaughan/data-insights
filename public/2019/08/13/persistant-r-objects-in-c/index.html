@@ -84,7 +84,7 @@ SET_VECTOR_ELT(result, 0, int_one);
 
 UNPROTECT(2); // unprotect `int_one` and `result`
 return result;</code></pre>
-<p>You can instead declare <code>int_one</code> as a global variable with a more permanant meaningful name, like <code>shared_int_one</code>, and use it without worrying about protection:</p>
+<p>You can instead declare <code>int_one</code> as a global variable with a more permanent meaningful name, like <code>shared_int_one</code>, and use it without worrying about protection:</p>
 <pre class="cpp"><code>SEXP result = PROTECT(Rf_allocVector(VECSXP, 1));
 
 // can use `shared_int_one` without creating a new one
@@ -264,7 +264,7 @@ void R_init_cshared(DllInfo *dll) {
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
 }</code></pre>
-<p>If we <code>devtools::load_all()</code> now, we should have access to the <code>cshared_init_utils</code> routine object. This is what we need to <code>.Call()</code> from <code>.onLoad()</code>. I generally put my <code>.onLoad()</code> in <code>zzz.R</code>, as it is an auxillary function. It should be pretty simple:</p>
+<p>If we <code>devtools::load_all()</code> now, we should have access to the <code>cshared_init_utils</code> routine object. This is what we need to <code>.Call()</code> from <code>.onLoad()</code>. I generally put my <code>.onLoad()</code> in <code>zzz.R</code>, as it is an auxiliary function. It should be pretty simple:</p>
 <pre class="r"><code>.onLoad &lt;- function(libname, pkgname) {
   .Call(cshared_init_utils)
 }</code></pre>
