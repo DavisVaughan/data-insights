@@ -1,5 +1,5 @@
 ---
-title: Persistant R Objects in C
+title: Persistent R Objects in C
 author: Davis Vaughan
 date: '2019-08-13'
 slug: persistant-r-objects-in-c
@@ -13,14 +13,14 @@ knitr::opts_chunk$set(eval = FALSE)
 
 ### Introduction
 
-This is another entry in my series of R + C based posts (you can see a full list [here](https://blog.davisvaughan.com/)). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistant way. By "persistant", I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You'll be able to call it from other C files, and can even return the object to the R side. The other "trick" that will be used is a way to run arbitrary C code on R package load, using `.onLoad()` + `.Call()`. This is actually much more generic than what we will use it for in this article, so it is worth paying attention to in case you have other uses for it. Along the way, I'll also use C header files to share C functions/objects between files, and discuss a bit about how I set up my R packages that use C code. 
+This is another entry in my series of R + C based posts (you can see a full list [here](https://blog.davisvaughan.com/)). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistent way. By "persistent", I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You'll be able to call it from other C files, and can even return the object to the R side. The other "trick" that will be used is a way to run arbitrary C code on R package load, using `.onLoad()` + `.Call()`. This is actually much more generic than what we will use it for in this article, so it is worth paying attention to in case you have other uses for it. Along the way, I'll also use C header files to share C functions/objects between files, and discuss a bit about how I set up my R packages that use C code. 
 <span class="marginnote">
 Most of these ideas are not my own. They are adaptations of ideas used by [Lionel Henry](https://twitter.com/_lionelhenry) in [`vctrs`](https://github.com/r-lib/vctrs) and [`rlang`](https://github.com/r-lib/rlang).
 </span>
 
 Why are persistent R objects callable from C useful? I can think of two reasons. 
 
-- The first is performance. You might have a simple R object (for instance, an integer vector holding `1`) that generally takes a small amount of time to create, but is generated and destroyed thousands of time across your C code base. To save a _little_ bit of time, you might want to make this a persistant, unchangeable, global variable.
+- The first is performance. You might have a simple R object (for instance, an integer vector holding `1`) that generally takes a small amount of time to create, but is generated and destroyed thousands of time across your C code base. To save a _little_ bit of time, you might want to make this a persistent, unchangeable, global variable.
 - The other is just for readability. Rather than having to deal with `PROTECT()`ing and `UNPROTECT()`ing common variables like `int_one` in the partial example below:
 
 ```{Rcpp}
