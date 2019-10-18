@@ -29,7 +29,7 @@
         <meta property="og:article:author" content="" />
         <meta property="og:article:published_time" content="2019-08-13T00:00:00Z" />
     
-        <meta name="generator" content="Hugo 0.49.2" />
+        <meta name="generator" content="Hugo 0.58.3" />
         <title>Persistent R Objects in C &middot; Data Insights</title>
         <link rel="canonical" href="/" />
         <link rel="alternate" type="application/rss+xml" title="RSS" href="">
@@ -63,7 +63,10 @@
     </header>
 
     <section class="post-content">
-        <div id="introduction" class="section level3">
+        
+
+
+<div id="introduction" class="section level3">
 <h3>Introduction</h3>
 <p>This is another entry in my series of R + C based posts (you can see a full list <a href="https://blog.davisvaughan.com/">here</a>). This article focuses on a somewhat esoteric skill: constructing a global R object at the C level in a persistent way. By “persistent”, I mean that this object will only be created once (at package load time), and will be reusable throughout the life of the R session. You’ll be able to call it from other C files, and can even return the object to the R side. The other “trick” that will be used is a way to run arbitrary C code on R package load, using <code>.onLoad()</code> + <code>.Call()</code>. This is actually much more generic than what we will use it for in this article, so it is worth paying attention to in case you have other uses for it. Along the way, I’ll also use C header files to share C functions/objects between files, and discuss a bit about how I set up my R packages that use C code.
 <span class="marginnote">
