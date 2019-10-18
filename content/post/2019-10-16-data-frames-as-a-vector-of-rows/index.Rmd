@@ -436,7 +436,7 @@ vec_unique(df_packed)
 unique(df_packed)
 ```
 
-As packed data frames become more prevelant in the tidyverse, it will be nice to have tools that handle them consistently.
+As packed data frames become more prevalent in the tidyverse, it will be nice to have tools that handle them consistently.
 <span class="marginnote">
 For example, there is already `tidyr::pack()` and `tidyr::unpack()`, which helps power `tidyr::unnest()`.
 </span>
