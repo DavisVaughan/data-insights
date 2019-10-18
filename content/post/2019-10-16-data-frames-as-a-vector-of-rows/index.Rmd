@@ -69,10 +69,12 @@ length(c(x, y)) == length(x) + length(y)
 </center>
 
 ```{r}
+length(df) + length(df)
+
 length(c(df, df)) == length(df) + length(df)
 ```
 
-Is there any other type of output that makes sense? If we think of a data frame as a vector of columns, then no, because it makes sense to end up with something of length 4 after combining. However, I'd argue that if we flip our understanding of data frames from a vector of columns to a vector of rows, then another solution comes forward which offers a different result that I have begun to find pretty attractive.
+Is there any other type of output that makes sense? If we think of a data frame as a vector of columns, then no, because it makes sense to end up with something of length 6 after combining. However, I'd argue that if we flip our understanding of data frames from a vector of columns to a vector of rows, then another solution comes forward which offers a different result that I have begun to find pretty attractive.
 
 ### `vec_size()`
 <span class="marginnote">
