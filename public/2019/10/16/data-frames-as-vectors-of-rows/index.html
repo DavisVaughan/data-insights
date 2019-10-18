@@ -289,7 +289,7 @@ needles</code></pre>
 <p>If we instead treat both <code>needles</code> and <code>haystack</code> as vectors of rows, what we are really trying to do is find one set of rows inside another set of rows. In vctrs, we’ve created <code>vec_match()</code> for this.</p>
 <pre class="r"><code>vec_match(needles, haystack)</code></pre>
 <pre><code>## [1]  3 NA</code></pre>
-<p>Again, it’s not that anything R is doing is <em>wrong</em>, or even that this is “better”. This just answers a different question by looking at a data frame from a different angle.
+<p>Again, it’s not that anything R is doing is <em>wrong</em>, or even that this is “better”. This just answers a different question by looking at a data frame from a different angle. Additionally, we don’t actually lose anything in vctrs by thinking about data frames in this way. If we want the <code>match()</code> behavior, we can just <code>unclass()</code> our data frames to turn them into explicit lists, and then <code>vec_match()</code> works exactly the same.
 <span class="marginnote">
 Even though <code>c()</code> and <code>match()</code> treat data frames as vectors of columns, not all R functions do. At the end of the post I discuss how <code>split()</code> and <code>unique()</code> actually treat them as vectors of rows, and what the vctrs equivalents are.
 </span></p>

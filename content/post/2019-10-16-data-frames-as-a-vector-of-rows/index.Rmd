@@ -256,7 +256,7 @@ If we instead treat both `needles` and `haystack` as vectors of rows, what we ar
 vec_match(needles, haystack)
 ```
 
-Again, it's not that anything R is doing is _wrong_, or even that this is "better". This just answers a different question by looking at a data frame from a different angle.
+Again, it's not that anything R is doing is _wrong_, or even that this is "better". This just answers a different question by looking at a data frame from a different angle. Additionally, we don't actually lose anything in vctrs by thinking about data frames in this way. If we want the `match()` behavior, we can just `unclass()` our data frames to turn them into explicit lists, and then `vec_match()` works exactly the same.
 <span class="marginnote">
 Even though `c()` and `match()` treat data frames as vectors of columns, not all R functions do. At the end of the post I discuss how `split()` and `unique()` actually treat them as vectors of rows, and what the vctrs equivalents are.
 </span>
