@@ -184,7 +184,7 @@ So what does `vec_c()` do? For 1d vectors it acts like `c()`, as you might expec
 vec_c(1:2, 3)
 ```
 
-But what about with `vec_c(df, df)`? Based on the fact that `vec_size(df) + vec_size(df) = 8`, at the very least we know it should return something with a size of 8. To accomplish this, rather than coercing to a list and combining the columns together, `vec_c()` instead leaves tham as data frames and _combines the rows_.
+But what about with `vec_c(df, df)`? Based on the fact that `vec_size(df) + vec_size(df) = 8`, at the very least we know it should return something with a size of 8. To accomplish this, rather than coercing to a list and combining the columns together, `vec_c()` instead leaves them as data frames and _combines the rows_.
 
 ```{r}
 vec_c(df, df)

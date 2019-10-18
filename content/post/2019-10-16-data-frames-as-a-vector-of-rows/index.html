@@ -145,7 +145,7 @@ NROW(lm_cars)</code></pre>
 <p>So what does <code>vec_c()</code> do? For 1d vectors it acts like <code>c()</code>, as you might expect.</p>
 <pre class="r"><code>vec_c(1:2, 3)</code></pre>
 <pre><code>## [1] 1 2 3</code></pre>
-<p>But what about with <code>vec_c(df, df)</code>? Based on the fact that <code>vec_size(df) + vec_size(df) = 8</code>, at the very least we know it should return something with a size of 8. To accomplish this, rather than coercing to a list and combining the columns together, <code>vec_c()</code> instead leaves tham as data frames and <em>combines the rows</em>.</p>
+<p>But what about with <code>vec_c(df, df)</code>? Based on the fact that <code>vec_size(df) + vec_size(df) = 8</code>, at the very least we know it should return something with a size of 8. To accomplish this, rather than coercing to a list and combining the columns together, <code>vec_c()</code> instead leaves them as data frames and <em>combines the rows</em>.</p>
 <pre class="r"><code>vec_c(df, df)</code></pre>
 <pre><code>## # A tibble: 8 x 3
 ##       x y     z    
