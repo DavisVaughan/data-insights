@@ -408,9 +408,6 @@ bench::mark(
 ```
 
 Second, `unique()` doesn't handle the idea of a _packed_ data frame well. This is a relatively new idea in the tidyverse, and it isn't one that we want to expose users to very much yet, but it is powerful. A packed data frame is a data frame where one of the columns is another data frame. This is different from a list-column of data frames. You can create one by providing `tibble()` another `tibble()` as a column along with a name for that data frame column.
-<span class="marginnote">
-Even though you can create one of these, as an end user there isn't much yet that you can do with them, so you shouldn't have to worry about this very much.
-</span>
 
 ```{r}
 df_packed <- tibble(
@@ -427,6 +424,9 @@ df_packed
 # `x` itself is another data frame
 df_packed$x
 ```
+<span class="marginnote">
+Even though you can create one of these, as an end user there isn't much yet that you can do with them, so you shouldn't have to worry about this very much.
+</span>
 
 Looking at `df_packed`, the unique rows are 1, 3, and 4, which `vec_unique()` can determine, but `unique()` doesn't correctly pick up on.
 
