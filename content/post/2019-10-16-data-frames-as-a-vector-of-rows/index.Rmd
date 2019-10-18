@@ -255,6 +255,9 @@ vec_match(needles, haystack)
 ```
 
 Again, it's not that anything R is doing is _wrong_, or even that this is "better". This just answers a different question by looking at a data frame from a different angle.
+<span class="marginnote">
+Even though `c()` and `match()` treat data frames as vectors of columns, not all R functions do. At the end of the post I discuss how `split()` and `unique()` actually treat them as vectors of rows, and what the vctrs equivalents are.
+</span>
 
 ### `slide()`
 
@@ -336,3 +339,136 @@ slide(parameters, ~runif(n = .x$n, min = .x$minimum, max = .x$maximum))
 ### Conclusion
 
 Treatment of a data frame as a vector of rows is a fairly novel concept in R, because of the way that data frames were originally implemented as a list of columns. But viewing them in this way can be incredibly powerful, especially for data analysis work. I, for one, am looking forward to seeing this concept explored more in the future, both in vctrs and in other packages built on top of it.
+
+### Extra - `unique()` and `split()`
+
+On the vctrs side, we are trying to be consistent in our treatment of data frames as vectors of rows. However, it is worth mentioning that there are some functions in R where data frames are already treated this way, rather than as a vector of columns. Two in particular are `unique()` and `split()`.
+
+#### `unique()`
+
+With `unique()`, uniqueness is actually determined using data frame rows, not columns. Looking at columns `y` and `z` of `df`, we can see that rows 1 and 4 are duplicates. Calling `unique()` on this removes the duplicate row.
+
+```{r}
+df_yz <- df[, c("y", "z")]
+
+df_yz
+```
+
+```{r}
+unique(df_yz)
+```
+
+It's actually pretty interesting to see how this one works. If you look into `unique.data.frame()`, you'll see that it calls `duplicated.data.frame()`. In there is this somewhat cryptic line that actually does the rowwise check:
+
+```{r, eval=FALSE}
+duplicated(do.call(Map, `names<-`(c(list, x), NULL)), fromLast = fromLast)
+```
+
+Breaking this down, it first combines the function `list()` with the data frame to end up with:
+
+```{r}
+c(list, df_yz)
+```
+
+which it then removes the names of:
+
+```{r}
+`names<-`(c(list, df_yz), NULL)
+```
+
+Next it uses `do.call()` to call `Map()`, which is a wrapper around `mapply()` meaning that it will repeatedly call `list()` on parallel elements of the columns of `df_yz`. Visually that means we end up with list elements holding the rows, which `duplicated()` is then run on to locate the duplicates.
+
+```{r}
+do.call(Map, `names<-`(c(list, df_yz), NULL))
+
+duplicated(do.call(Map, `names<-`(c(list, df_yz), NULL)))
+```
+
+In vctrs there is `vec_unique()`. Because `unique()` already works row wise, they are essentially equivalent in terms of functionality with data frames. However, there are two key differences. First, because `vec_unique()`'s handling of data frames is in C, it does end up being faster.
+
+```{r}
+large_df <- vec_rbind(!!!rep_len(list(df_yz), 10000))
+
+bench::mark(
+  unique(large_df),
+  vec_unique(large_df)
+)
+```
+
+Second, `unique()` doesn't handle the idea of a _packed_ data frame well. This is a relatively new idea in the tidyverse, and it isn't one that we want to expose users to very much yet, but it is powerful. A packed data frame is a data frame where one of the columns is another data frame. This is different from a list-column of data frames. You can create one by providing `tibble()` another `tibble()` as a column along with a name for that data frame column.
+<span class="marginnote">
+Even though you can create one of these, as an end user there isn't much yet that you can do with them, so you shouldn't have to worry about this very much.
+</span>
+
+```{r}
+df_packed <- tibble(
+  x = tibble(
+    a = c(1, 1, 1, 3), 
+    b = c(1, 1, 3, 3)
+  ), 
+  y = c(1, 1, 1, 2)
+)
+
+# Both `$a` and `$b` are columns in the data frame column, `x`
+df_packed
+
+# `x` itself is another data frame
+df_packed$x
+```
+
+Looking at `df_packed`, the unique rows are 1, 3, and 4, which `vec_unique()` can determine, but `unique()` doesn't correctly pick up on.
+
+```{r}
+vec_unique(df_packed)
+
+unique(df_packed)
+```
+
+As packed data frames become more prevelant in the tidyverse, it will be nice to have tools that handle them consistently.
+<span class="marginnote">
+For example, there is already `tidyr::pack()` and `tidyr::unpack()`, which helps power `tidyr::unnest()`.
+</span>
+
+#### `split()`
+
+`split(x, by)` will divide up `x` into groups using `by` to determine where the unique groups are. It assumes `by` is a factor, and will coerce your input to a factor if it isn't already one. Like `unique()`, it will slice up a data frame by rows rather than by columns.
+
+```{r}
+split(df, df$y)
+```
+
+One thing about `split()` is that it uses the unique values as labels on the list elements. To take a slightly different approach, `vec_split()` was created, which returns a data frame instead, holding the unique `key` values in their own parallel column. `vec_split()` returns a data frame to keep vctrs lightweight, but the print method for these can be a little complex, and I think tibble's print method does a nicer job.
+
+```{r}
+df_split <- vec_split(df, df$y)
+df_split <- as_tibble(df_split)
+
+df_split
+
+df_split$val
+```
+
+One useful feature of `vec_split()` is that it doesn't expect a factor as the second argument, which means that a data frame can be provided to split by, and since uniqueness is determined row wise this allows us to split by multiple columns. The `key` ends up as the unique rows of the data frame, meaning that the `key` is actually a data frame column, creating a packed data frame!
+
+```{r}
+df_multi_split <- vec_split(df, df[c("y", "z")])
+df_multi_split <- as_tibble(df_multi_split)
+
+df_multi_split
+```
+
+Technically you can provide `split()` a data frame to split `by`, but remember that it will try and treat it like a factor! Since the data frame is technically a list, it will run `interaction()` on it first to get a single factor it can use to split by. Notice that this gives a level for `b.y` which does not exist as a row in our data frame.
+
+```{r}
+df[c("y", "z")]
+
+interaction(df[c("y", "z")])
+```
+
+This results in the following split, with a `b.y` element with no rows which we may or may not have wanted.
+
+```{r}
+split(df, df[c("y", "z")])
+```
+
+

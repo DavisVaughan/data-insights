@@ -230,7 +230,10 @@ needles</code></pre>
 <p>If we instead treat both <code>needles</code> and <code>haystack</code> as vectors of rows, what we are really trying to do is find one set of rows inside another set of rows. In vctrs, we’ve created <code>vec_match()</code> for this.</p>
 <pre class="r"><code>vec_match(needles, haystack)</code></pre>
 <pre><code>## [1]  3 NA</code></pre>
-<p>Again, it’s not that anything R is doing is <em>wrong</em>, or even that this is “better”. This just answers a different question by looking at a data frame from a different angle.</p>
+<p>Again, it’s not that anything R is doing is <em>wrong</em>, or even that this is “better”. This just answers a different question by looking at a data frame from a different angle.
+<span class="marginnote">
+Even though <code>c()</code> and <code>match()</code> treat data frames as vectors of columns, not all R functions do. At the end of the post I discuss how <code>split()</code> and <code>unique()</code> actually treat them as vectors of rows, and what the vctrs equivalents are.
+</span></p>
 </div>
 <div id="slide" class="section level3">
 <h3><code>slide()</code></h3>
@@ -348,4 +351,242 @@ slide(parameters, ~runif(n = .x$n, min = .x$minimum, max = .x$maximum))</code></
 <div id="conclusion" class="section level3">
 <h3>Conclusion</h3>
 <p>Treatment of a data frame as a vector of rows is a fairly novel concept in R, because of the way that data frames were originally implemented as a list of columns. But viewing them in this way can be incredibly powerful, especially for data analysis work. I, for one, am looking forward to seeing this concept explored more in the future, both in vctrs and in other packages built on top of it.</p>
+</div>
+<div id="extra---unique-and-split" class="section level3">
+<h3>Extra - <code>unique()</code> and <code>split()</code></h3>
+<p>On the vctrs side, we are trying to be consistent in our treatment of data frames as vectors of rows. However, it is worth mentioning that there are some functions in R where data frames are already treated this way, rather than as a vector of columns. Two in particular are <code>unique()</code> and <code>split()</code>.</p>
+<div id="unique" class="section level4">
+<h4><code>unique()</code></h4>
+<p>With <code>unique()</code>, uniqueness is actually determined using data frame rows, not columns. Looking at columns <code>y</code> and <code>z</code> of <code>df</code>, we can see that rows 1 and 4 are duplicates. Calling <code>unique()</code> on this removes the duplicate row.</p>
+<pre class="r"><code>df_yz &lt;- df[, c(&quot;y&quot;, &quot;z&quot;)]
+
+df_yz</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##   y     z    
+##   &lt;chr&gt; &lt;chr&gt;
+## 1 a     x    
+## 2 b     x    
+## 3 a     y    
+## 4 a     x</code></pre>
+<pre class="r"><code>unique(df_yz)</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##   y     z    
+##   &lt;chr&gt; &lt;chr&gt;
+## 1 a     x    
+## 2 b     x    
+## 3 a     y</code></pre>
+<p>It’s actually pretty interesting to see how this one works. If you look into <code>unique.data.frame()</code>, you’ll see that it calls <code>duplicated.data.frame()</code>. In there is this somewhat cryptic line that actually does the rowwise check:</p>
+<pre class="r"><code>duplicated(do.call(Map, `names&lt;-`(c(list, x), NULL)), fromLast = fromLast)</code></pre>
+<p>Breaking this down, it first combines the function <code>list()</code> with the data frame to end up with:</p>
+<pre class="r"><code>c(list, df_yz)</code></pre>
+<pre><code>## [[1]]
+## function (...)  .Primitive(&quot;list&quot;)
+## 
+## $y
+## [1] &quot;a&quot; &quot;b&quot; &quot;a&quot; &quot;a&quot;
+## 
+## $z
+## [1] &quot;x&quot; &quot;x&quot; &quot;y&quot; &quot;x&quot;</code></pre>
+<p>which it then removes the names of:</p>
+<pre class="r"><code>`names&lt;-`(c(list, df_yz), NULL)</code></pre>
+<pre><code>## [[1]]
+## function (...)  .Primitive(&quot;list&quot;)
+## 
+## [[2]]
+## [1] &quot;a&quot; &quot;b&quot; &quot;a&quot; &quot;a&quot;
+## 
+## [[3]]
+## [1] &quot;x&quot; &quot;x&quot; &quot;y&quot; &quot;x&quot;</code></pre>
+<p>Next it uses <code>do.call()</code> to call <code>Map()</code>, which is a wrapper around <code>mapply()</code> meaning that it will repeatedly call <code>list()</code> on parallel elements of the columns of <code>df_yz</code>. Visually that means we end up with list elements holding the rows, which <code>duplicated()</code> is then run on to locate the duplicates.</p>
+<pre class="r"><code>do.call(Map, `names&lt;-`(c(list, df_yz), NULL))</code></pre>
+<pre><code>## $a
+## $a[[1]]
+## [1] &quot;a&quot;
+## 
+## $a[[2]]
+## [1] &quot;x&quot;
+## 
+## 
+## $b
+## $b[[1]]
+## [1] &quot;b&quot;
+## 
+## $b[[2]]
+## [1] &quot;x&quot;
+## 
+## 
+## $a
+## $a[[1]]
+## [1] &quot;a&quot;
+## 
+## $a[[2]]
+## [1] &quot;y&quot;
+## 
+## 
+## $a
+## $a[[1]]
+## [1] &quot;a&quot;
+## 
+## $a[[2]]
+## [1] &quot;x&quot;</code></pre>
+<pre class="r"><code>duplicated(do.call(Map, `names&lt;-`(c(list, df_yz), NULL)))</code></pre>
+<pre><code>## [1] FALSE FALSE FALSE  TRUE</code></pre>
+<p>In vctrs there is <code>vec_unique()</code>. Because <code>unique()</code> already works row wise, they are essentially equivalent in terms of functionality with data frames. However, there are two key differences. First, because <code>vec_unique()</code>’s handling of data frames is in C, it does end up being faster.</p>
+<pre class="r"><code>large_df &lt;- vec_rbind(!!!rep_len(list(df_yz), 10000))
+
+bench::mark(
+  unique(large_df),
+  vec_unique(large_df)
+)</code></pre>
+<pre><code>## # A tibble: 2 x 6
+##   expression                min   median `itr/sec` mem_alloc `gc/sec`
+##   &lt;bch:expr&gt;           &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
+## 1 unique(large_df)      29.27ms  32.26ms      31.0    1.42MB     202.
+## 2 vec_unique(large_df)   4.29ms   4.48ms     219.   429.61KB       0</code></pre>
+<p>Second, <code>unique()</code> doesn’t handle the idea of a <em>packed</em> data frame well. This is a relatively new idea in the tidyverse, and it isn’t one that we want to expose users to very much yet, but it is powerful. A packed data frame is a data frame where one of the columns is another data frame. This is different from a list-column of data frames. You can create one by providing <code>tibble()</code> another <code>tibble()</code> as a column along with a name for that data frame column.
+<span class="marginnote">
+Even though you can create one of these, as an end user there isn’t much yet that you can do with them, so you shouldn’t have to worry about this very much.
+</span></p>
+<pre class="r"><code>df_packed &lt;- tibble(
+  x = tibble(
+    a = c(1, 1, 1, 3), 
+    b = c(1, 1, 3, 3)
+  ), 
+  y = c(1, 1, 1, 2)
+)
+
+# Both `$a` and `$b` are columns in the data frame column, `x`
+df_packed</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##     x$a    $b     y
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     1     1
+## 2     1     1     1
+## 3     1     3     1
+## 4     3     3     2</code></pre>
+<pre class="r"><code># `x` itself is another data frame
+df_packed$x</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##       a     b
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     1
+## 2     1     1
+## 3     1     3
+## 4     3     3</code></pre>
+<p>Looking at <code>df_packed</code>, the unique rows are 1, 3, and 4, which <code>vec_unique()</code> can determine, but <code>unique()</code> doesn’t correctly pick up on.</p>
+<pre class="r"><code>vec_unique(df_packed)</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##     x$a    $b     y
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     1     1
+## 2     1     3     1
+## 3     3     3     2</code></pre>
+<pre class="r"><code>unique(df_packed)</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##     x$a    $b     y
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     1     1
+## 2     1     1     1
+## 3     3     3     2</code></pre>
+<p>As packed data frames become more prevelant in the tidyverse, it will be nice to have tools that handle them consistently.
+<span class="marginnote">
+For example, there is already <code>tidyr::pack()</code> and <code>tidyr::unpack()</code>, which helps power <code>tidyr::unnest()</code>.
+</span></p>
+</div>
+<div id="split" class="section level4">
+<h4><code>split()</code></h4>
+<p><code>split(x, by)</code> will divide up <code>x</code> into groups using <code>by</code> to determine where the unique groups are. It assumes <code>by</code> is a factor, and will coerce your input to a factor if it isn’t already one. Like <code>unique()</code>, it will slice up a data frame by rows rather than by columns.</p>
+<pre class="r"><code>split(df, df$y)</code></pre>
+<pre><code>## $a
+## # A tibble: 3 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     1 a     x    
+## 2     3 a     y    
+## 3     4 a     x    
+## 
+## $b
+## # A tibble: 1 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     2 b     x</code></pre>
+<p>One thing about <code>split()</code> is that it uses the unique values as labels on the list elements. To take a slightly different approach, <code>vec_split()</code> was created, which returns a data frame instead, holding the unique <code>key</code> values in their own parallel column. <code>vec_split()</code> returns a data frame to keep vctrs lightweight, but the print method for these can be a little complex, and I think tibble’s print method does a nicer job.</p>
+<pre class="r"><code>df_split &lt;- vec_split(df, df$y)
+df_split &lt;- as_tibble(df_split)
+
+df_split</code></pre>
+<pre><code>## # A tibble: 2 x 2
+##   key              val
+##   &lt;chr&gt; &lt;list&lt;df[,3]&gt;&gt;
+## 1 a            [3 × 3]
+## 2 b            [1 × 3]</code></pre>
+<pre class="r"><code>df_split$val</code></pre>
+<pre><code>## &lt;list_of&lt;
+##   tbl_df&lt;
+##     x: integer
+##     y: character
+##     z: character
+##   &gt;
+## &gt;[2]&gt;
+## [[1]]
+## # A tibble: 3 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     1 a     x    
+## 2     3 a     y    
+## 3     4 a     x    
+## 
+## [[2]]
+## # A tibble: 1 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     2 b     x</code></pre>
+<p>One useful feature of <code>vec_split()</code> is that it doesn’t expect a factor as the second argument, which means that a data frame can be provided to split by, and since uniqueness is determined row wise this allows us to split by multiple columns. The <code>key</code> ends up as the unique rows of the data frame, meaning that the <code>key</code> is actually a data frame column, creating a packed data frame!</p>
+<pre class="r"><code>df_multi_split &lt;- vec_split(df, df[c(&quot;y&quot;, &quot;z&quot;)])
+df_multi_split &lt;- as_tibble(df_multi_split)
+
+df_multi_split</code></pre>
+<pre><code>## # A tibble: 3 x 2
+##   key$y $z               val
+##   &lt;chr&gt; &lt;chr&gt; &lt;list&lt;df[,3]&gt;&gt;
+## 1 a     x            [2 × 3]
+## 2 b     x            [1 × 3]
+## 3 a     y            [1 × 3]</code></pre>
+<p>Technically you can provide <code>split()</code> a data frame to split <code>by</code>, but remember that it will try and treat it like a factor! Since the data frame is technically a list, it will run <code>interaction()</code> on it first to get a single factor it can use to split by. Notice that this gives a level for <code>b.y</code> which does not exist as a row in our data frame.</p>
+<pre class="r"><code>df[c(&quot;y&quot;, &quot;z&quot;)]</code></pre>
+<pre><code>## # A tibble: 4 x 2
+##   y     z    
+##   &lt;chr&gt; &lt;chr&gt;
+## 1 a     x    
+## 2 b     x    
+## 3 a     y    
+## 4 a     x</code></pre>
+<pre class="r"><code>interaction(df[c(&quot;y&quot;, &quot;z&quot;)])</code></pre>
+<pre><code>## [1] a.x b.x a.y a.x
+## Levels: a.x b.x a.y b.y</code></pre>
+<p>This results in the following split, with a <code>b.y</code> element with no rows which we may or may not have wanted.</p>
+<pre class="r"><code>split(df, df[c(&quot;y&quot;, &quot;z&quot;)])</code></pre>
+<pre><code>## $a.x
+## # A tibble: 2 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     1 a     x    
+## 2     4 a     x    
+## 
+## $b.x
+## # A tibble: 1 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     2 b     x    
+## 
+## $a.y
+## # A tibble: 1 x 3
+##       x y     z    
+##   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     3 a     y    
+## 
+## $b.y
+## # A tibble: 0 x 3
+## # … with 3 variables: x &lt;int&gt;, y &lt;chr&gt;, z &lt;chr&gt;</code></pre>
+</div>
 </div>
