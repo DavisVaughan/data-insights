@@ -387,12 +387,24 @@ duplicated(do.call(Map, `names<-`(c(list, df_yz), NULL)))
 In vctrs there is `vec_unique()`. Because `unique()` already works row wise, they are essentially equivalent in terms of functionality with data frames. However, there are two key differences. First, because `vec_unique()`'s handling of data frames is in C, it does end up being faster.
 
 ```{r}
+# row bind df_yz 10000 times, making a 40000 row data frame
 large_df <- vec_rbind(!!!rep_len(list(df_yz), 10000))
+dim(large_df)
+```
 
+```{r, eval = FALSE}
 bench::mark(
   unique(large_df),
   vec_unique(large_df)
 )
+```
+
+```{r, eval = FALSE}
+## # A tibble: 2 x 6
+##   expression                min   median `itr/sec` mem_alloc `gc/sec`
+##   <bch:expr>           <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+## 1 unique(large_df)      28.38ms   31.6ms      31.7    1.42MB     137.
+## 2 vec_unique(large_df)   4.34ms    4.6ms     216.   429.61KB       0
 ```
 
 Second, `unique()` doesn't handle the idea of a _packed_ data frame well. This is a relatively new idea in the tidyverse, and it isn't one that we want to expose users to very much yet, but it is powerful. A packed data frame is a data frame where one of the columns is another data frame. This is different from a list-column of data frames. You can create one by providing `tibble()` another `tibble()` as a column along with a name for that data frame column.
