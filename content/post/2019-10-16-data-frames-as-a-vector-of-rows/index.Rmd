@@ -10,6 +10,9 @@ editor_options:
 Recently, I have been working a lot on [{vctrs}](https://github.com/r-lib/vctrs). This package is an attempt to analyze the atomic types in R, such as `integer`, `character` and `double`, alongside the recursive types of `list` and `data.frame`, to extract a set of common principles. From this analysis, a growing toolkit of functions for working with vector types has developed around two themes of _size_ and _prototype_. vctrs is a _fun_ package to work on, and even more fun to build on top of. 
 
 The goal of this post is two fold. First, I want to show off a few functions and packages that have been built using this new toolkit which contribute to why I think this package is so fun. Second, I'd like to introduce a shift in the way you might normally think about data frames, _from a vector of columns to a vector of rows_.
+<span class="marginnote">
+[Hadley](http://hadley.nz/) is the one who recognized that viewing data frames from this angle opens up powerful new workflows that are especially useful for data analysis.
+</span>
 
 If you've never heard of vctrs before, there's a reason for that. For the most part, it's a developer focused package, and honestly if you never knew this package existed, but still used the higher level packages that were built on top of it, then we've done our job. A few examples of packages that rely heavily on vctrs right now are:
 
