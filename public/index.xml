@@ -6,10 +6,19 @@
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 13 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 16 Oct 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Data Frames as Vectors of Rows</title>
+      <link>/2019/10/16/data-frames-as-vectors-of-rows/</link>
+      <pubDate>Wed, 16 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/10/16/data-frames-as-vectors-of-rows/</guid>
+      <description>Recently, I have been working a lot on {vctrs}. This package is an attempt to analyze the atomic types in R, such as integer, character and double, alongside the recursive types of list and data.frame, to extract a set of common principles. From this analysis, a growing toolkit of functions for working with vector types has developed around two themes of size and prototype. vctrs is a fun package to work on, and even more fun to build on top of.</description>
+    </item>
     
     <item>
       <title>Persistent R Objects in C</title>
