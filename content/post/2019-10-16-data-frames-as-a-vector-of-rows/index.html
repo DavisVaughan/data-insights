@@ -195,7 +195,7 @@ vec_c(df, df_w)</code></pre>
 ## [1] 2</code></pre>
 </div>
 <div id="vec_match" class="section level3">
-<h3>vec_match()</h3>
+<h3><code>vec_match()</code></h3>
 <p>Treatment of a data frame as a vector of rows extends well past <code>vec_c()</code>, and bleeds into many other vctrs tools where we have been experimenting with this idea. As one more example, we’ll take a look at <code>match()</code>. If you aren’t familiar with <code>match()</code>, it tells you the location of <code>x</code> inside a <code>table</code>. Another way to think about this is that you want to find a <code>needle</code> in a <code>haystack</code>. More concretely:</p>
 <pre class="r"><code># Where is `&quot;a&quot;` inside the vector `c(&quot;b&quot;, &quot;c&quot;, &quot;a&quot;, &quot;d&quot;)`?
 match(x = &quot;a&quot;, table = c(&quot;b&quot;, &quot;c&quot;, &quot;a&quot;, &quot;d&quot;))</code></pre>
@@ -230,7 +230,7 @@ needles</code></pre>
 <p>Again, it’s not that anything R is doing is <em>wrong</em>, or even that this is “better”. This just answers a different question by looking at a data frame from a different angle.</p>
 </div>
 <div id="slide" class="section level3">
-<h3>slide()</h3>
+<h3><code>slide()</code></h3>
 <p>Lastly, I’d like to show an example of a package that builds on top of vctrs principles. {slide} is my attempt at a package for working with “window functions”, functions that enable some kind of “rolling” analysis. A moving average, rolling regression, and even a cumulative sum are all examples of usage of window functions.</p>
 <pre class="r"><code># devtools::install_github(&quot;DavisVaughan/slide&quot;)
 library(slide)</code></pre>

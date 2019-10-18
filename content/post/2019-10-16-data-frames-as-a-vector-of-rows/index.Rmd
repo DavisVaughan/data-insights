@@ -213,7 +213,7 @@ Compare that with the result from `c()` which upholds its length invariant givin
 c(df, c(1, 2))
 ```
 
-### vec_match()
+### `vec_match()`
 
 Treatment of a data frame as a vector of rows extends well past `vec_c()`, and bleeds into many other vctrs tools where we have been experimenting with this idea. As one more example, we'll take a look at `match()`. If you aren't familiar with `match()`, it tells you the location of `x` inside a `table`. Another way to think about this is that you want to find a `needle` in a `haystack`. More concretely:
 
@@ -253,7 +253,7 @@ vec_match(needles, haystack)
 
 Again, it's not that anything R is doing is _wrong_, or even that this is "better". This just answers a different question by looking at a data frame from a different angle.
 
-### slide()
+### `slide()`
 
 Lastly, I'd like to show an example of a package that builds on top of vctrs principles. {slide} is my attempt at a package for working with "window functions", functions that enable some kind of "rolling" analysis. A moving average, rolling regression, and even a cumulative sum are all examples of usage of window functions.
 
