@@ -6,10 +6,19 @@
     <description>Recent content on Data Insights</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 16 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 27 May 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>almanac 0.1.0</title>
+      <link>/2020/05/27/almanac-0-1-0/</link>
+      <pubDate>Wed, 27 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/05/27/almanac-0-1-0/</guid>
+      <description>I’m very excited to announce that the first release of almanac has made its way to CRAN! almanac is a package for working with recurring events. These typically include dates that occur on some kind of recurring basis, like weekends or holidays. As you’ll soon see, one of the most powerful features of almanac is the ability to build up a set of these recurring events, like a company’s holiday calendar, so that you can then shift a vector of dates by, say, 5 business days, skipping over any weekends or holidays that might be specific to your company.</description>
+    </item>
     
     <item>
       <title>Data Frames as Vectors of Rows</title>
